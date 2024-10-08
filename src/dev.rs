@@ -180,22 +180,4 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
     ) -> String {
         todo!()
     }
-
-    fn cmd_for_migrate_in(
-        &self,
-        src: &Node<Ports>,
-        dst: &Node<Ports>,
-        e: &EnvMeta<CustomInfo, Node<Ports>>,
-    ) -> String {
-        todo!()
-    }
-
-    fn cmd_for_migrate_out(
-        &self,
-        src: &Node<Ports>,
-        dst: &Node<Ports>,
-        e: &EnvMeta<CustomInfo, Node<Ports>>,
-    ) -> String {
-        todo!()
-    }
 }
