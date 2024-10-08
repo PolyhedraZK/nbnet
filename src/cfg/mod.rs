@@ -79,10 +79,11 @@ pub enum DevOp {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
-            short = 'A',
             default_value_t = false,
-            help = "For the archive node, set true"
+            help = "To use reth as the el client, set true"
         )]
+        is_reth: bool,
+        #[clap(default_value_t = false, help = "For the archive node, set true")]
         is_archive: bool,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
@@ -266,6 +267,11 @@ pub enum DDevOp {
         env_name: Option<String>,
         #[clap(short = 'H', long)]
         host_addr: Option<String>,
+        #[clap(
+            default_value_t = false,
+            help = "To use reth as the el client, set true"
+        )]
+        is_reth: bool,
         #[clap(short = 'A', long)]
         is_archive: bool,
     },

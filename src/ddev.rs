@@ -142,6 +142,7 @@ impl From<DDevCfg> for EnvCfg {
             DDevOp::PushNode {
                 env_name,
                 host_addr,
+                is_reth,
                 is_archive,
             } => {
                 if let Some(n) = env_name {
@@ -149,6 +150,7 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::PushNode((
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
+                    alt!(is_reth, 1, 0),
                     is_archive,
                 ))
             }

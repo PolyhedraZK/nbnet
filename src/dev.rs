@@ -116,12 +116,13 @@ impl From<DevCfg> for EnvCfg {
             DevOp::StopAll => Op::StopAll(false),
             DevOp::PushNode {
                 env_name,
+                is_reth,
                 is_archive,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNode(is_archive)
+                Op::PushNode((alt!(is_reth, 1, 0), is_archive))
             }
             DevOp::KickNode { env_name, node_id } => {
                 if let Some(n) = env_name {
