@@ -33,7 +33,7 @@ default = []
 # vsdb = { path = "../vsdb/wrappers" }
 
 [patch."https://github.com/rust-util-collections/chaindev"]
-# chaindev = { path = "../chaindev" }
+chaindev = { path = "../chaindev" }
 
 [profile.release]
 lto = "thin"

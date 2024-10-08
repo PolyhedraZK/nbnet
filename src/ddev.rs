@@ -249,7 +249,8 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                todo!()
+                // no cfg files on the remove hosts for now
+                Op::Custom(())
             }
         };
 
@@ -297,22 +298,13 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         )
     }
 
-    fn cmd_for_migrate_in(
+    fn cmd_for_migrate(
         &self,
         src: &Node<Ports>,
         dst: &Node<Ports>,
         e: &EnvMeta<CustomInfo, Node<Ports>>,
-    ) -> String {
-        todo!()
-    }
-
-    fn cmd_for_migrate_out(
-        &self,
-        src: &Node<Ports>,
-        dst: &Node<Ports>,
-        e: &EnvMeta<CustomInfo, Node<Ports>>,
-    ) -> String {
-        todo!()
+    ) -> impl FnOnce() -> Result<()> {
+        || Err(eg!())
     }
 }
 
