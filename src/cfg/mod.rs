@@ -10,9 +10,12 @@ pub struct Cfg {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    #[clap(about = "Manage development clusters on local host")]
+    #[clap(about = "Manage development clusters on a local host")]
     Dev(DevCfg),
-    #[clap(name = "ddev", about = "Manage development clusters on remote hosts")]
+    #[clap(
+        name = "ddev",
+        about = "Manage development clusters on various distributed hosts"
+    )]
     DDev(DDevCfg),
 }
 
@@ -358,7 +361,7 @@ pub enum DDevOp {
         )]
         hosts: Option<HostExpression>,
     },
-    #[clap(about = "Get all node logs from remote hosts")]
+    #[clap(about = "Get the remote logs from all nodes of the ENV")]
     GetLogs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -369,7 +372,7 @@ pub enum DDevOp {
         )]
         local_base_dir: Option<String>,
     },
-    #[clap(about = "Get all node configurations from remote hosts")]
+    #[clap(about = "Dump the validator client data from all nodes of the ENV")]
     DumpVcData {
         #[clap(short = 'e', long)]
         env_name: Option<String>,

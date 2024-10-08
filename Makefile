@@ -6,11 +6,17 @@ build:
 release:
 	cargo build --release --bins
 
+install:
+	cargo install --path .
+
+lint:
+	cargo clippy
+
+update:
+	cargo update
+
 fmt:
 	cargo fmt
 
 fmtall:
 	bash tools/fmt.sh
-
-lint:
-	cargo clippy
