@@ -9,8 +9,15 @@ use crate::{
     common::*,
 };
 use chaindev::{
-    beacon_ddev::{self, EnvMeta, HostAddr, Hosts, Node, NodeCmdGenerator, Op},
-    EnvName,
+    beacon_ddev::{
+        remote::{
+            collect_files_from_nodes as env_collect_files,
+            collect_tgz_from_nodes as env_collect_tgz,
+        },
+        Env, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, HostAddr, Hosts, Node,
+        NodeCmdGenerator, Op,
+    },
+    CustomOps, EnvName,
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
@@ -18,7 +25,7 @@ use std::{env, fs, str::FromStr};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
-    sys_cfg: beacon_ddev::EnvCfg<CustomInfo, Ports, ()>,
+    sys_cfg: SysCfg<CustomInfo, Ports, ExtraOp>,
 }
 
 impl EnvCfg {
@@ -80,7 +87,7 @@ impl From<DDevCfg> for EnvCfg {
                     cl_extra_options: copts.cl_extra_options.unwrap_or_default(),
                 };
 
-                let envopts = beacon_ddev::EnvOpts {
+                let envopts = SysOpts {
                     hosts,
                     block_itv: copts.block_time_secs.unwrap_or(0),
                     genesis_pre_settings: copts
@@ -240,22 +247,21 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                todo!()
+                Op::Custom(ExtraOp::GetLogs(local_base_dir))
             }
-            DDevOp::GetCfgs {
+            DDevOp::DumpVcData {
                 env_name,
                 local_base_dir,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                // no cfg files on the remove hosts for now
-                Op::Custom(())
+                Op::Custom(ExtraOp::DumpVcData(local_base_dir))
             }
         };
 
         Self {
-            sys_cfg: beacon_ddev::EnvCfg { name: en, op },
+            sys_cfg: SysCfg { name: en, op },
         }
     }
 }
@@ -320,3 +326,33 @@ fn env_hosts() -> Option<Hosts> {
 
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+enum ExtraOp {
+    DumpVcData(Option<String>),
+    GetLogs(Option<String>),
+}
+
+impl CustomOps for ExtraOp {
+    fn exec(&self, en: &EnvName) -> Result<()> {
+        let env = Env::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
+            .c(d!())?
+            .c(d!("ENV does not exist!"))?;
+
+        match self {
+            Self::GetLogs(ldir) => env_collect_files(
+                &env,
+                &[
+                    "{EL_DIR}/{EL_LOG_NAME}",
+                    "{CL_BN_DIR}/{CL_BN_LOG_NAME}",
+                    "{CL_VC_DIR}/{CL_VC_LOG_NAME}",
+                ],
+                ldir.as_deref(),
+            )
+            .c(d!()),
+            Self::DumpVcData(ldir) => {
+                env_collect_tgz(&env, &["{CL_VC_DIR}"], ldir.as_deref()).c(d!())
+            }
+        }
+    }
+}
