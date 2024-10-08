@@ -9,10 +9,7 @@ use crate::{
     common::*,
 };
 use chaindev::{
-    beacon_ddev::{
-        self, remote::Remote, EnvMeta, HostAddr, Hosts, Node, NodeCmdGenerator,
-        NodePorts, Op,
-    },
+    beacon_ddev::{self, EnvMeta, HostAddr, Hosts, Node, NodeCmdGenerator, Op},
     EnvName,
 };
 use ruc::*;
