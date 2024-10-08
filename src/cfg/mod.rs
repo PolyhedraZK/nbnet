@@ -30,20 +30,17 @@ pub struct DevCfg {
 #[derive(Debug, Subcommand)]
 pub enum DevOp {
     #[clap(about = "Create a new ENV")]
-    Create(DevCreationOptions),
+    Create(Box<DevCreationOptions>),
     #[clap(about = "Destroy an existing ENV")]
     Destroy {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'f', help = "Destroy the target ENV even if it is protected")]
+        #[clap(help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
     #[clap(about = "Destroy all existing ENVs")]
     DestroyAll {
-        #[clap(
-            short = 'f',
-            help = "Destroy the target ENVs even if they are protected"
-        )]
+        #[clap(help = "Destroy the target ENVs even if they are protected")]
         force: bool,
     },
     #[clap(about = "Protect an existing ENV")]
@@ -78,12 +75,9 @@ pub enum DevOp {
     PushNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(
-            default_value_t = false,
-            help = "To use reth as the el client, set true"
-        )]
+        #[clap(help = "To use reth as the el client, set true")]
         is_reth: bool,
-        #[clap(default_value_t = false, help = "For the archive node, set true")]
+        #[clap(help = "To get a archive node, set true")]
         is_archive: bool,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
@@ -131,12 +125,7 @@ pub struct DevCreationOptions {
     )]
     pub initial_node_num: u8,
 
-    #[clap(
-        short = 'a',
-        long,
-        default_value_t = false,
-        help = "Set the initial nodes in archive mode?"
-    )]
+    #[clap(short = 'a', long, help = "Set the initial nodes in archive mode?")]
     pub initial_nodes_archive_mode: bool,
 
     #[clap(
@@ -217,20 +206,17 @@ pub struct DDevCfg {
 #[derive(Debug, Subcommand)]
 pub enum DDevOp {
     #[clap(about = "Create a new ENV")]
-    Create(DDevCreationOptions),
+    Create(Box<DDevCreationOptions>),
     #[clap(about = "Destroy an existing ENV")]
     Destroy {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'f', help = "Destroy the target ENV even if it is protected")]
+        #[clap(help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
     #[clap(about = "Destroy all existing ENVs")]
     DestroyAll {
-        #[clap(
-            short = 'f',
-            help = "Destroy the target ENVs even if they are protected"
-        )]
+        #[clap(help = "Destroy the target ENVs even if they are protected")]
         force: bool,
     },
     #[clap(about = "Protect an existing ENV")]
@@ -265,14 +251,11 @@ pub enum DDevOp {
     PushNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'H', long)]
+        #[clap(long)]
         host_addr: Option<String>,
-        #[clap(
-            default_value_t = false,
-            help = "To use reth as the el client, set true"
-        )]
+        #[clap(help = "To use reth as the el client, set true")]
         is_reth: bool,
-        #[clap(short = 'A', long)]
+        #[clap(help = "To get a archive node, set true")]
         is_archive: bool,
     },
     #[clap(about = "Migrate an existing node to another host")]
@@ -306,9 +289,9 @@ pub enum DDevOp {
     KickHost {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'H', long)]
+        #[clap(long)]
         host_addr: String,
-        #[clap(short = 'f', long)]
+        #[clap(long)]
         force: bool,
     },
     #[clap(about = "Default operation, show the information of an existing ENV")]
@@ -426,12 +409,7 @@ pub struct DDevCreationOptions {
     )]
     pub initial_node_num: u8,
 
-    #[clap(
-        short = 'a',
-        long,
-        default_value_t = false,
-        help = "Set the initial nodes in archive mode?"
-    )]
+    #[clap(short = 'a', long, help = "Set the initial nodes in archive mode?")]
     pub initial_nodes_archive_mode: bool,
 
     #[clap(
