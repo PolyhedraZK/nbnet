@@ -1,7 +1,5 @@
 use chaindev::{beacon_ddev::HostExpression, NodeID};
 use clap::{Args, Parser, Subcommand};
-use ruc::*;
-use std::env;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]

@@ -143,7 +143,7 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::PushNode((
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
-                    alt!(is_reth, 1, 0),
+                    alt!(is_reth, RETH_MARK, GETH_MARK),
                     is_archive,
                 ))
             }

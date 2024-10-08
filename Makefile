@@ -10,7 +10,7 @@ fmt:
 	cargo fmt
 
 fmtall:
-	bash -x tools/fmt.sh
+	bash tools/fmt.sh
 
 lint:
 	cargo clippy

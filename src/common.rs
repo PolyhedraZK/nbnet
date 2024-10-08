@@ -1,6 +1,18 @@
-use chaindev::beacon_dev::NodePorts;
+use chaindev::beacon_based::common::{NodeMark, NodePorts};
+use rayon::prelude::*;
 use ruc::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+pub const GETH_MARK: NodeMark = 0;
+pub const RETH_MARK: NodeMark = 1;
+
+pub const EL_LOG_NAME: &str = "el.log";
+pub const CL_BN_LOG_NAME: &str = "cl.bn.log";
+pub const CL_VC_LOG_NAME: &str = "cl.vc.log";
+
+// TODO: fix me
+pub const FEE_RECIPIENT: &str = "0x47102e476Bb96e616756ea7701C227547080Ea48";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomInfo {
@@ -25,27 +37,28 @@ impl Default for CustomInfo {
     }
 }
 
-impl CustomInfo {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
+// impl CustomInfo {
+//     pub fn new() -> Self {
+//         Self::default()
+//     }
+// }
 
 /// Active ports of a node
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct Ports {
-    el_discovery: u16,
-    el_discovery_v5: u16, // reth only
-    el_engine_api: u16,
-    el_rpc: u16,
-    el_metric: u16, // geth only
+    pub el_discovery: u16,
+    pub el_discovery_v5: u16, // reth only
+    pub el_engine_api: u16,
+    pub el_rpc: u16,
+    pub el_rpc_ws: u16,
+    pub el_metric: u16, // geth only
 
-    cl_discovery: u16,
-    cl_discovery_quic: u16,
-    cl_bn_rpc: u16,
-    cl_vc_rpc: u16,
-    cl_bn_metric: u16,
-    cl_vc_metric: u16,
+    pub cl_discovery: u16,
+    pub cl_discovery_quic: u16,
+    pub cl_bn_rpc: u16,
+    pub cl_vc_rpc: u16,
+    pub cl_bn_metric: u16,
+    pub cl_vc_metric: u16,
 }
 
 impl NodePorts for Ports {
@@ -59,14 +72,15 @@ impl NodePorts for Ports {
             el_discovery_v5: ports[1], // reth only
             el_engine_api: ports[2],
             el_rpc: ports[3],
-            el_metric: ports[4], // geth only
+            el_rpc_ws: ports[4],
+            el_metric: ports[5], // geth only
 
-            cl_discovery: ports[5],
-            cl_discovery_quic: ports[6],
-            cl_bn_rpc: ports[7],
-            cl_vc_rpc: ports[8],
-            cl_bn_metric: ports[9],
-            cl_vc_metric: ports[10],
+            cl_discovery: ports[6],
+            cl_discovery_quic: ports[7],
+            cl_bn_rpc: ports[8],
+            cl_vc_rpc: ports[9],
+            cl_bn_metric: ports[10],
+            cl_vc_metric: ports[11],
         };
 
         Ok(i)
@@ -80,6 +94,7 @@ impl NodePorts for Ports {
             self.el_discovery_v5,
             self.el_engine_api,
             self.el_rpc,
+            self.el_rpc_ws,
             self.el_metric,
             self.cl_discovery,
             self.cl_discovery_quic,
@@ -103,9 +118,15 @@ impl NodePorts for Ports {
     }
 
     /// The rpc listening port in the app side,
-    /// eg. ETH el(geth/reth) web3 API rpc
+    /// eg. ETH el(geth/reth) web3 http API rpc
     fn get_el_rpc(&self) -> u16 {
         self.el_rpc
+    }
+
+    /// The rpc listening port in the app side,
+    /// eg. ETH el(geth/reth) web3 websocket API rpc
+    fn get_el_rpc_ws(&self) -> u16 {
+        self.el_rpc_ws
     }
 
     /// The p2p(tcp/udp protocol) listening port in the beacon side
@@ -130,4 +151,62 @@ impl NodePorts for Ports {
     fn get_cl_rpc_vc(&self) -> u16 {
         self.cl_vc_rpc
     }
+}
+
+/// Return: "enode,enode,enode"
+pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
+    let ret = rpc_endpoints
+        .par_iter()
+        .map(|addr| {
+            let body =
+                r#"{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}"#;
+            let ret = ruc::http::post(
+                addr,
+                body.as_bytes(),
+                Some(&[("Content-Type", "application/json")]),
+            )
+            .c(d!())
+            .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
+            .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned());
+            info!(ret)
+        })
+        .filter(|i| i.is_ok())
+        .collect::<Result<Vec<_>>>()
+        .unwrap();
+
+    if ret.is_empty() {
+        return Err(eg!("No valid data return"));
+    }
+
+    Ok(ret.join(","))
+}
+
+/// Return: "(<enr,enr,enr>,<peer_id,peer_id,peer_id>)"
+pub fn cl_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<(String, String)> {
+    let ret: (Vec<_>, Vec<_>) = rpc_endpoints
+        .par_iter()
+        .map(|addr| {
+            let ret = ruc::http::get(
+                &format!("{addr}/eth/v1/node/identity"),
+                Some(&[("Content-Type", "application/json")]),
+            )
+            .c(d!())
+            .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
+            .map(|v| {
+                (
+                    pnk!(v["data"]["enr"].as_str()).to_owned(),
+                    pnk!(v["data"]["peer_id"].as_str()).to_owned(),
+                )
+            });
+            info!(ret)
+        })
+        .filter(|i| i.is_ok())
+        .map(|i| i.unwrap())
+        .unzip();
+
+    if ret.0.is_empty() {
+        return Err(eg!("No valid data return"));
+    }
+
+    Ok((ret.0.join(","), ret.1.join(",")))
 }
