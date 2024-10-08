@@ -164,46 +164,32 @@ the `+` is the delimiter between them two"
     )]
     pub genesis_data_pre_created: Option<String>,
 
-    #[clap(
-        short = 'E',
-        long,
-        help = "The path of your custom execution layer binary"
-    )]
-    pub el_bin: Option<String>,
+    #[clap(long, help = "The path of your custom geth binary")]
+    pub el_geth_bin: Option<String>,
+
+    #[clap(long, help = "The path of your custom reth binary")]
+    pub el_reth_bin: Option<String>,
 
     #[clap(
-        short = 'r',
-        long,
-        help = "Distinguish whether `--el-bin` is reth or geth"
-    )]
-    pub el_is_reth: bool,
-
-    #[clap(
-        short = 'x',
         long,
         allow_hyphen_values = true,
-        help = "Custom options you want to add to the el cmdline,
+        help = "Custom options you want to add to the geth el cmdline,
 NOTE: a pair of quotes should be used when specifying extra options"
     )]
-    pub el_extra_options: Option<String>,
+    pub el_geth_extra_options: Option<String>,
 
     #[clap(
-        short = 'C',
         long,
-        help = "The path of your custom consensus layer binary"
+        allow_hyphen_values = true,
+        help = "Custom options you want to add to the reth el cmdline,
+NOTE: a pair of quotes should be used when specifying extra options"
     )]
+    pub el_reth_extra_options: Option<String>,
+
+    #[clap(long, help = "The path of your custom lighthouse binary")]
     pub cl_bin: Option<String>,
 
     #[clap(
-        short = 'p',
-        long,
-        help = "Distinguish whether `--cl-bin` is prysm or lighthouse,
-has no effect for now, lighthouse is the only option"
-    )]
-    pub cl_is_prysm: bool,
-
-    #[clap(
-        short = 'X',
         long,
         allow_hyphen_values = true,
         help = "Custom options you want to add to the cl cmdline,
@@ -212,7 +198,6 @@ NOTE: a pair of quotes should be used when specifying extra options"
     pub cl_extra_options: Option<String>,
 
     #[clap(
-        short = 'f',
         long = "force",
         help = "Try to destroy the target ENV and then recreate it"
     )]
@@ -422,7 +407,6 @@ pub struct DDevCreationOptions {
     pub env_name: Option<String>,
 
     #[clap(
-        short = 'H',
         long,
         help = include_str!("hosts.format")
     )]
@@ -470,46 +454,32 @@ the `+` is the delimiter between them two"
     )]
     pub genesis_data_pre_created: Option<String>,
 
-    #[clap(
-        short = 'E',
-        long,
-        help = "The path of your custom execution layer binary"
-    )]
-    pub el_bin: Option<String>,
+    #[clap(long, help = "The path of your custom geth binary")]
+    pub el_geth_bin: Option<String>,
+
+    #[clap(long, help = "The path of your custom reth binary")]
+    pub el_reth_bin: Option<String>,
 
     #[clap(
-        short = 'r',
-        long,
-        help = "Distinguish whether `--el-bin` is reth or geth"
-    )]
-    pub el_is_reth: bool,
-
-    #[clap(
-        short = 'x',
         long,
         allow_hyphen_values = true,
-        help = "Custom options you want to add to the el cmdline,
+        help = "Custom options you want to add to the geth el cmdline,
 NOTE: a pair of quotes should be used when specifying extra options"
     )]
-    pub el_extra_options: Option<String>,
+    pub el_geth_extra_options: Option<String>,
 
     #[clap(
-        short = 'C',
         long,
-        help = "The path of your custom consensus layer binary"
+        allow_hyphen_values = true,
+        help = "Custom options you want to add to the reth el cmdline,
+NOTE: a pair of quotes should be used when specifying extra options"
     )]
+    pub el_reth_extra_options: Option<String>,
+
+    #[clap(long, help = "The path of your custom consensus layer binary")]
     pub cl_bin: Option<String>,
 
     #[clap(
-        short = 'p',
-        long,
-        help = "Distinguish whether `--cl-bin` is prysm or lighthouse,
-has no effect for now, lighthouse is the only option"
-    )]
-    pub cl_is_prysm: bool,
-
-    #[clap(
-        short = 'X',
         long,
         allow_hyphen_values = true,
         help = "Custom options you want to add to the cl cmdline,
@@ -518,7 +488,6 @@ NOTE: a pair of quotes should be used when specifying extra options"
     pub cl_extra_options: Option<String>,
 
     #[clap(
-        short = 'f',
         long = "force",
         help = "Try to destroy the target ENV and then recreate it"
     )]

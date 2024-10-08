@@ -78,13 +78,15 @@ impl From<DDevCfg> for EnvCfg {
                     };
 
                 let custom_data = CustomInfo {
-                    el_bin: copts.el_bin.unwrap_or_else(|| {
-                        alt!(copts.el_is_reth, "reth", "geth").to_owned()
-                    }),
-                    el_is_reth: copts.el_is_reth,
-                    el_extra_options: copts.el_extra_options.unwrap_or_default(),
+                    el_geth_bin: copts.el_geth_bin.unwrap_or("geth".to_owned()),
+                    el_geth_extra_options: copts
+                        .el_geth_extra_options
+                        .unwrap_or_default(),
+                    el_reth_bin: copts.el_reth_bin.unwrap_or("reth".to_owned()),
+                    el_reth_extra_options: copts
+                        .el_reth_extra_options
+                        .unwrap_or_default(),
                     cl_bin: copts.cl_bin.unwrap_or_else(|| "lighthouse".to_owned()),
-                    cl_is_prysm: false, // always `false` for now
                     cl_extra_options: copts.cl_extra_options.unwrap_or_default(),
                 };
 

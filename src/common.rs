@@ -4,22 +4,22 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomInfo {
-    pub el_bin: String,
-    pub el_is_reth: bool,
-    pub el_extra_options: String,
+    pub el_geth_bin: String,
+    pub el_geth_extra_options: String,
+    pub el_reth_bin: String,
+    pub el_reth_extra_options: String,
     pub cl_bin: String,
-    pub cl_is_prysm: bool,
     pub cl_extra_options: String,
 }
 
 impl Default for CustomInfo {
     fn default() -> Self {
         Self {
-            el_bin: String::from("geth"),
-            el_is_reth: false,
-            el_extra_options: String::from(""),
+            el_geth_bin: String::from("geth"),
+            el_geth_extra_options: String::from(""),
+            el_reth_bin: String::from("reth"),
+            el_reth_extra_options: String::from(""),
             cl_bin: String::from("lighthouse"),
-            cl_is_prysm: false,
             cl_extra_options: String::from(""),
         }
     }
