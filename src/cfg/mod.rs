@@ -283,7 +283,7 @@ pub enum DDevOp {
             long,
             help = include_str!("hosts.format")
         )]
-        hosts: HostExpression,
+        hosts: Option<HostExpression>,
     },
     #[clap(about = "Remove a host from the cluster")]
     KickHost {

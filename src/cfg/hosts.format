@@ -25,4 +25,5 @@ Only the `host_ip` field is mandatory, the others are optional;
 If the `external_ip` is missing, will fallback to the `host_ip` for external connections;
 All whitespace characters(\n,\t, etc.) will be removed before parsing the value;
 The `host_weight` should be a positive number(1~10), the default value is 5,
-the larger the number, the more nodes the host will carry.
+the larger the number, the more nodes the host will carry;
+The configuration here will override the `$NBNET_DDEV_HOSTS` settings.

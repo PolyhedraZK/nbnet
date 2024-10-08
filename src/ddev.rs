@@ -16,15 +16,7 @@ use chaindev::{
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
-use std::{env, fs, str::FromStr, sync::LazyLock};
-
-static DDEV_HOSTS: LazyLock<Option<Hosts>> = LazyLock::new(|| {
-    let mut ret = None;
-    if let Ok(hosts) = env::var("NBNET_DDEV_HOSTS") {
-        ret = Some(Hosts::from(&hosts));
-    }
-    ret
-});
+use std::{env, fs, str::FromStr};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
@@ -55,7 +47,7 @@ impl From<DDevCfg> for EnvCfg {
                     .hosts
                     .as_deref()
                     .map(|hs| hs.into())
-                    .or_else(|| DDEV_HOSTS.clone());
+                    .or_else(env_hosts);
                 let hosts = pnk!(
                     hosts,
                     "No hosts registered! Use `--hosts` or $NBNET_DDEV_HOSTS to set."
@@ -177,6 +169,7 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
+                let hosts = pnk!(hosts.map(|h| h.into()).or_else(env_hosts));
                 Op::PushHost(hosts)
             }
             DDevOp::KickHost {
@@ -209,7 +202,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostPutFile {
                     local_path,
                     remote_path,
-                    hosts: hosts.map(|h| h.into()).or_else(|| DDEV_HOSTS.clone()),
+                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
                 }
             }
             DDevOp::HostGetFile {
@@ -224,7 +217,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostGetFile {
                     remote_path,
                     local_base_dir,
-                    hosts: hosts.map(|h| h.into()).or_else(|| DDEV_HOSTS.clone()),
+                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
                 }
             }
             DDevOp::HostExec {
@@ -239,7 +232,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostExec {
                     cmd,
                     script_path,
-                    hosts: hosts.map(|h| h.into()).or_else(|| DDEV_HOSTS.clone()),
+                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
                 }
             }
             DDevOp::GetLogs {
@@ -315,3 +308,16 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         todo!()
     }
 }
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+fn env_hosts() -> Option<Hosts> {
+    env::var("NBNET_DDEV_HOSTS")
+        .c(d!())
+        .map(|s| Hosts::from(&s))
+        .ok()
+}
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
