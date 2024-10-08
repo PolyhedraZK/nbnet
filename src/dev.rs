@@ -12,8 +12,8 @@ use crate::{
 };
 use chaindev::{
     beacon_dev::{
-        self, EnvMeta, Node, NodeCmdGenerator, NodeKind, NodePorts, Op,
-        NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
+        self, EnvMeta, Node, NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST,
+        NODE_HOME_VCDATA_DST,
     },
     EnvName,
 };

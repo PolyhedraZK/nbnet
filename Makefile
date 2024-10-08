@@ -1,4 +1,4 @@
-all: fmt lint build
+all: fmt lint
 
 build:
 	cargo build --bins
