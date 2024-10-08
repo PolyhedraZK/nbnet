@@ -10,7 +10,8 @@ use crate::{
 };
 use chaindev::{
     beacon_ddev::{
-        self, EnvMeta, HostAddr, Hosts, Node, NodeCmdGenerator, NodePorts, Op,
+        self, remote::Remote, EnvMeta, HostAddr, Hosts, Node, NodeCmdGenerator,
+        NodePorts, Op,
     },
     EnvName,
 };
@@ -265,12 +266,15 @@ impl From<DDevCfg> for EnvCfg {
 struct CmdGenerator;
 
 impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGenerator {
-    fn cmd_is_running(
+    fn cmd_cnt_running(
         &self,
         n: &Node<Ports>,
         e: &EnvMeta<CustomInfo, Node<Ports>>,
-    ) -> Result<bool> {
-        todo!()
+    ) -> String {
+        format!(
+            "ps ax -o pid,args | grep -E '({0}.*{3})|({1}.*{3})|({2}.*{3})' | grep -v 'grep' | wc -l",
+            e.custom_data.el_geth_bin, e.custom_data.el_reth_bin, e.custom_data.cl_bin, n.home
+        )
     }
 
     fn cmd_for_start(
@@ -287,7 +291,13 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         e: &EnvMeta<CustomInfo, Node<Ports>>,
         force: bool,
     ) -> String {
-        todo!()
+        format!(
+            "for i in \
+            $(ps ax -o pid,args|grep '{}'|sed -r 's/(^ *)|( +)/ /g'|cut -d ' ' -f 2); \
+            do kill {} $i; done",
+            &n.home,
+            alt!(force, "-9", ""),
+        )
     }
 
     fn cmd_for_migrate_in(
