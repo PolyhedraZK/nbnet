@@ -7,6 +7,10 @@ use serde_json::Value;
 pub const GETH_MARK: NodeMark = 0;
 pub const RETH_MARK: NodeMark = 1;
 
+pub const EL_DIR: &str = "el";
+pub const CL_BN_DIR: &str = "cl/bn";
+pub const CL_VC_DIR: &str = "cl/vc";
+
 pub const EL_LOG_NAME: &str = "el.log";
 pub const CL_BN_LOG_NAME: &str = "cl.bn.log";
 pub const CL_VC_LOG_NAME: &str = "cl.vc.log";

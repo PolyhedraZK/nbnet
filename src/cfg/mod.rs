@@ -370,7 +370,7 @@ pub enum DDevOp {
         local_base_dir: Option<String>,
     },
     #[clap(about = "Get all node configurations from remote hosts")]
-    GetCfgs {
+    DumpVcData {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(

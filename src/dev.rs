@@ -12,8 +12,8 @@ use crate::{
 };
 use chaindev::{
     beacon_dev::{
-        self, EnvMeta, Node, NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST,
-        NODE_HOME_VCDATA_DST,
+        EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node, NodeCmdGenerator, NodeKind,
+        Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
     },
     EnvName,
 };
@@ -23,7 +23,7 @@ use std::fs;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
-    sys_cfg: beacon_dev::EnvCfg<CustomInfo, Ports, ()>,
+    sys_cfg: SysCfg<CustomInfo, Ports, ()>,
 }
 
 impl From<DevCfg> for EnvCfg {
@@ -68,7 +68,7 @@ impl From<DevCfg> for EnvCfg {
                     en = n.into();
                 }
 
-                let envopts = beacon_dev::EnvOpts {
+                let envopts = SysOpts {
                     host_ip: copts.host_ip,
                     block_itv: copts.block_time_secs.unwrap_or(0),
                     genesis_pre_settings: copts
@@ -144,7 +144,7 @@ impl From<DevCfg> for EnvCfg {
         };
 
         Self {
-            sys_cfg: beacon_dev::EnvCfg { name: en, op },
+            sys_cfg: SysCfg { name: en, op },
         }
     }
 }
@@ -218,7 +218,7 @@ fi "#
         // EL
         ////////////////////////////////////////////////
 
-        let el_dir = format!("{home}/el");
+        let el_dir = format!("{home}/{EL_DIR}");
         let el_genesis = format!("{genesis_dir}/genesis.json");
         let el_discovery_port = n.ports.el_discovery;
         let el_discovery_v5_port = n.ports.el_discovery_v5;
@@ -279,7 +279,7 @@ fi "#
                 format!(" --bootnodes='{el_bootnodes}'")
             };
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 ");
+            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
         } else if RETH_MARK == mark {
@@ -323,7 +323,7 @@ fi "#
                 cmd_run_part_1.push_str(" --full");
             }
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 ");
+            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
         } else {
@@ -336,8 +336,8 @@ fi "#
 
         let lighthouse = &e.custom_data.cl_bin;
 
-        let cl_bn_dir = format!("{home}/cl/bn");
-        let cl_vc_dir = format!("{home}/cl/vc");
+        let cl_bn_dir = format!("{home}/{CL_BN_DIR}");
+        let cl_vc_dir = format!("{home}/{CL_VC_DIR}");
         let cl_genesis = genesis_dir;
         let cl_bn_discovery_port = n.ports.cl_discovery;
         let cl_bn_discovery_quic_port = n.ports.cl_discovery_quic;
@@ -371,7 +371,7 @@ fi "#
 
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
-                r#"
+                r#" (sleep 1;
 {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
@@ -406,7 +406,7 @@ fi "#
             // Disable this line in the `ddev` mod
             cmd_run_part_1.push_str(" --enable-private-discovery");
 
-            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1 ");
+            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1) &");
 
             cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
         };
@@ -429,7 +429,7 @@ fi "#
             };
 
             let cmd_run_part_1 = format!(
-                r#"
+                r#"(sleep 2;
 {lighthouse}/lighthouse validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir}\
@@ -441,7 +441,8 @@ fi "#
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={ext_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1 "#
+     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1) &
+     "#
             );
 
             cmd_run_part_0 + &cmd_run_part_1
@@ -451,7 +452,13 @@ fi "#
         // FINAL
         ////////////////////////////////////////////////
 
-        format!("{prepare_cmd} & {el_cmd} & {cl_bn_cmd} & {cl_vc_cmd} &")
+        format!(
+            r#"
+            {prepare_cmd}
+            {el_cmd}
+            {cl_bn_cmd}
+            {cl_vc_cmd} "#
+        )
     }
 
     fn cmd_for_stop(
