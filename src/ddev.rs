@@ -194,6 +194,12 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Show
             }
+            DDevOp::ShowWeb3RpcList { env_name } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::ShowWeb3RpcList)
+            }
             DDevOp::ShowAll => Op::ShowAll,
             DDevOp::List => Op::List,
             DDevOp::HostPutFile {
@@ -650,6 +656,7 @@ fn env_hosts() -> Option<Hosts> {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
+    ShowWeb3RpcList,
     GetLogs(Option<String>),
     DumpVcData(Option<String>),
     SwitchELToGeth(NodeID),
@@ -663,6 +670,16 @@ impl CustomOps for ExtraOp {
             .c(d!("ENV does not exist!"))?;
 
         match self {
+            Self::ShowWeb3RpcList => {
+                env.meta
+                    .bootstraps
+                    .values()
+                    .chain(env.meta.nodes.values())
+                    .for_each(|n| {
+                        println!("{}:{}", n.host.addr.connection_addr(), n.ports.el_rpc);
+                    });
+                Ok(())
+            }
             Self::GetLogs(ldir) => env_collect_files(
                 &env,
                 &[

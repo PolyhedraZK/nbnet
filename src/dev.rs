@@ -151,6 +151,12 @@ impl From<DevCfg> for EnvCfg {
                 }
                 Op::Show
             }
+            DevOp::ShowWeb3RpcList { env_name } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::ShowWeb3RpcList)
+            }
             DevOp::ShowAll => Op::ShowAll,
             DevOp::List => Op::List,
         };
@@ -494,6 +500,7 @@ fi "#
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
+    ShowWeb3RpcList,
     SwitchELToGeth(NodeID),
     SwitchELToReth(NodeID),
 }
@@ -505,6 +512,16 @@ impl CustomOps for ExtraOp {
             .c(d!("ENV does not exist!"))?;
 
         match self {
+            Self::ShowWeb3RpcList => {
+                env.meta
+                    .bootstraps
+                    .values()
+                    .chain(env.meta.nodes.values())
+                    .for_each(|n| {
+                        println!("{}:{}", &env.meta.host_ip, n.ports.el_rpc);
+                    });
+                Ok(())
+            }
             Self::SwitchELToGeth(id) => {
                 let n = env
                     .meta

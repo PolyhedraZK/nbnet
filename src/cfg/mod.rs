@@ -127,6 +127,14 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     },
     #[clap(about = "Show informations of all existing ENVs")]
     ShowAll,
+    #[clap(
+        short_flag = 'w',
+        about = "Show the collection of web3 RPC endpoints of the entire ENV"
+    )]
+    ShowWeb3RpcList {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+    },
     #[clap(about = "Show names of all existing ENVs")]
     List,
 }
@@ -357,6 +365,14 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     },
     #[clap(about = "Show informations of all existing ENVs")]
     ShowAll,
+    #[clap(
+        short_flag = 'w',
+        about = "Show the collection of web3 RPC endpoints of the entire ENV"
+    )]
+    ShowWeb3RpcList {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+    },
     #[clap(about = "Show names of all existing ENVs")]
     List,
     #[clap(about = "Put a local file to all remote hosts")]
