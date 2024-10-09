@@ -1,4 +1,7 @@
-use chaindev::{beacon_ddev::HostExpression, NodeID};
+use chaindev::{
+    beacon_ddev::{HostExpression, HostID},
+    NodeID,
+};
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -367,7 +370,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(long)]
-        host_addr: String,
+        host_id: HostID,
         #[clap(long)]
         force: bool,
     },

@@ -180,13 +180,13 @@ impl From<DDevCfg> for EnvCfg {
             }
             DDevOp::KickHost {
                 env_name,
-                host_addr,
+                host_id,
                 force,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickHost((pnk!(HostAddr::from_str(&host_addr)), force))
+                Op::KickHost((host_id, force))
             }
             DDevOp::Show { env_name } => {
                 if let Some(n) = env_name {
