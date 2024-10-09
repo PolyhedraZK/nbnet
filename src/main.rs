@@ -1,6 +1,7 @@
 // #![deny(warnings)]
 
 use cfg::{Cfg, Commands};
+use chaindev::beacon_based::common::BASE_DIR;
 use clap::{crate_name, CommandFactory, Parser};
 use clap_complete::{
     generate,
@@ -16,6 +17,11 @@ mod dev;
 
 fn main() {
     let config = Cfg::parse();
+
+    pnk!(vsdb::vsdb_set_base_dir(format!(
+        "{}/__VSDB__",
+        BASE_DIR.as_str()
+    )));
 
     match config.commands {
         Commands::Dev(cfg) => {

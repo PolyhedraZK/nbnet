@@ -20,6 +20,7 @@ ruc = { version = "7.2", features = [ "http", "algo_rand" ] }
 
 # chaindev = "0.32.0"
 chaindev = { git = "https://github.com/rust-util-collections/chaindev", branch = "master" }
+vsdb = { version = "2.0", default-features = false }
 
 [build-dependencies]
 vergen = "9.0"
