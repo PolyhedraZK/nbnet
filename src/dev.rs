@@ -12,10 +12,10 @@ use crate::{
 };
 use chaindev::{
     beacon_dev::{
-        EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node, NodeCmdGenerator, NodeKind,
-        Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
+        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node,
+        NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
     },
-    EnvName,
+    CustomOps, EnvName, NodeID,
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
@@ -23,7 +23,7 @@ use std::fs;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
-    sys_cfg: SysCfg<CustomInfo, Ports, ()>,
+    sys_cfg: SysCfg<CustomInfo, Ports, ExtraOp>,
 }
 
 impl From<DevCfg> for EnvCfg {
@@ -132,6 +132,18 @@ impl From<DevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::KickNode(node_id)
+            }
+            DevOp::SwitchELToGeth { env_name, node_id } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::SwitchELToGeth(node_id))
+            }
+            DevOp::SwitchELToReth { env_name, node_id } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::SwitchELToReth(node_id))
             }
             DevOp::Show { env_name } => {
                 if let Some(n) = env_name {
@@ -474,5 +486,77 @@ fi "#
             &n.home,
             alt!(force, "-9", ""),
         )
+    }
+}
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+enum ExtraOp {
+    SwitchELToGeth(NodeID),
+    SwitchELToReth(NodeID),
+}
+
+impl CustomOps for ExtraOp {
+    fn exec(&self, en: &EnvName) -> Result<()> {
+        let mut env = SysEnv::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
+            .c(d!())?
+            .c(d!("ENV does not exist!"))?;
+
+        match self {
+            Self::SwitchELToGeth(id) => {
+                let n = env
+                    .meta
+                    .nodes
+                    .get_mut(id)
+                    .or_else(|| env.meta.bootstraps.get_mut(id))
+                    .c(d!())?;
+
+                SysCfg {
+                    name: en.clone(),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                }
+                .exec(CmdGenerator)
+                .c(d!())?;
+
+                sleep_ms!(3000); // wait for the graceful exiting process
+
+                n.mark = Some(GETH_MARK);
+
+                // Just remove $EL_DIR.
+                // When starting up, if $EL_DIR is detected to not exist,
+                // the new client will re-create it, and sync data from the CL.
+                fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
+
+                env.write_cfg().c(d!())
+            }
+            Self::SwitchELToReth(id) => {
+                let n = env
+                    .meta
+                    .nodes
+                    .get_mut(id)
+                    .or_else(|| env.meta.bootstraps.get_mut(id))
+                    .c(d!())?;
+
+                SysCfg {
+                    name: en.clone(),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                }
+                .exec(CmdGenerator)
+                .c(d!())?;
+
+                sleep_ms!(3000); // wait for the graceful exiting process
+
+                n.mark = Some(RETH_MARK);
+
+                // Just remove $EL_DIR.
+                // When starting up, if $EL_DIR is detected to not exist,
+                // the new client will re-create it, and sync data from the CL.
+                fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
+
+                env.write_cfg().c(d!())
+            }
+        }
     }
 }

@@ -92,6 +92,26 @@ pub enum DevOp {
         #[clap(short = 'N', long)]
         node_id: Option<NodeID>,
     },
+    #[clap(
+        name = "switch-EL-to-geth",
+        about = "Switch the EL client to `geth`, NOTE: the node will be left stopped, you need to start it manually"
+    )]
+    SwitchELToGeth {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'N', long)]
+        node_id: NodeID,
+    },
+    #[clap(
+        name = "switch-EL-to-reth",
+        about = "Switch the EL client to `reth`, NOTE: the node will be left stopped, you need to start it manually"
+    )]
+    SwitchELToReth {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'N', long)]
+        node_id: NodeID,
+    },
     #[clap(about = "Default operation, show the information of an existing ENV")]
     Show {
         #[clap(short = 'e', long)]
@@ -263,7 +283,9 @@ pub enum DDevOp {
         #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
-    #[clap(about = "Migrate an existing node to another host")]
+    #[clap(
+        about = "Migrate an existing node to another host, NOTE: the node will be left stopped, you need to start it manually"
+    )]
     MigrateNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -278,6 +300,26 @@ pub enum DDevOp {
         env_name: Option<String>,
         #[clap(short = 'N', long)]
         node_id: Option<NodeID>,
+    },
+    #[clap(
+        name = "switch-EL-to-geth",
+        about = "Switch the EL client to `geth`, NOTE: the node will be left stopped, you need to start it manually"
+    )]
+    SwitchELToGeth {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'N', long)]
+        node_id: NodeID,
+    },
+    #[clap(
+        name = "switch-EL-to-reth",
+        about = "Switch the EL client to `reth`, NOTE: the node will be left stopped, you need to start it manually"
+    )]
+    SwitchELToReth {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'N', long)]
+        node_id: NodeID,
     },
     #[clap(about = "Add a new host to the cluster")]
     PushHost {

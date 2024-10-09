@@ -14,10 +14,11 @@ use chaindev::{
             collect_files_from_nodes as env_collect_files,
             collect_tgz_from_nodes as env_collect_tgz, Remote,
         },
-        Env, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, HostAddr, Hosts, Node,
-        NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
+        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, HostAddr, Hosts,
+        Node, NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST,
+        NODE_HOME_VCDATA_DST,
     },
-    CustomOps, EnvName,
+    CustomOps, EnvName, NodeID,
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
@@ -257,6 +258,18 @@ impl From<DDevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::Custom(ExtraOp::DumpVcData(local_base_dir))
+            }
+            DDevOp::SwitchELToGeth { env_name, node_id } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::SwitchELToGeth(node_id))
+            }
+            DDevOp::SwitchELToReth { env_name, node_id } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::SwitchELToReth(node_id))
             }
         };
 
@@ -639,11 +652,13 @@ fn env_hosts() -> Option<Hosts> {
 enum ExtraOp {
     GetLogs(Option<String>),
     DumpVcData(Option<String>),
+    SwitchELToGeth(NodeID),
+    SwitchELToReth(NodeID),
 }
 
 impl CustomOps for ExtraOp {
     fn exec(&self, en: &EnvName) -> Result<()> {
-        let env = Env::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
+        let mut env = SysEnv::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
             .c(d!())?
             .c(d!("ENV does not exist!"))?;
 
@@ -660,6 +675,66 @@ impl CustomOps for ExtraOp {
             .c(d!()),
             Self::DumpVcData(ldir) => {
                 env_collect_tgz(&env, &["{CL_VC_DIR}"], ldir.as_deref()).c(d!())
+            }
+            Self::SwitchELToGeth(id) => {
+                let n = env
+                    .meta
+                    .nodes
+                    .get_mut(id)
+                    .or_else(|| env.meta.bootstraps.get_mut(id))
+                    .c(d!())?;
+
+                SysCfg {
+                    name: en.clone(),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                }
+                .exec(CmdGenerator)
+                .c(d!())?;
+
+                sleep_ms!(3000); // wait for the graceful exiting process
+
+                n.mark = Some(GETH_MARK);
+
+                let remote = Remote::from(&n.host);
+
+                // Just remove $EL_DIR.
+                // When starting up, if $EL_DIR is detected to not exist,
+                // the new client will re-create it, and sync data from the CL.
+                remote
+                    .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
+                    .c(d!())?;
+
+                env.write_cfg().c(d!())
+            }
+            Self::SwitchELToReth(id) => {
+                let n = env
+                    .meta
+                    .nodes
+                    .get_mut(id)
+                    .or_else(|| env.meta.bootstraps.get_mut(id))
+                    .c(d!())?;
+
+                SysCfg {
+                    name: en.clone(),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                }
+                .exec(CmdGenerator)
+                .c(d!())?;
+
+                sleep_ms!(3000); // wait for the graceful exiting process
+
+                n.mark = Some(RETH_MARK);
+
+                let remote = Remote::from(&n.host);
+
+                // Just remove $EL_DIR.
+                // When starting up, if $EL_DIR is detected to not exist,
+                // the new client will re-create it, and sync data from the CL.
+                remote
+                    .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
+                    .c(d!())?;
+
+                env.write_cfg().c(d!())
             }
         }
     }
