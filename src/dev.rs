@@ -19,7 +19,7 @@ use chaindev::{
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{collections::HashSet, fs};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
@@ -221,7 +221,10 @@ fi "#
             let online_nodes = e
                 .nodes_should_be_online
                 .iter()
-                .copied()
+                .map(|(k, _)| k)
+                .filter(|k| *k < n.id) // early nodes only
+                .collect::<HashSet<_>>() // for random purpose
+                .into_iter()
                 .take(5)
                 .collect::<Vec<_>>();
 
@@ -313,7 +316,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-nohup {geth} \
+{geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
@@ -356,7 +359,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-nohup {reth} node \
+{reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
@@ -418,7 +421,8 @@ nohup {reth} node \
             let cmd_run_part_0 = format!(
                 r#"
 mkdir -p {cl_bn_dir} || exit 1
-nohup {lighthouse} beacon_node \
+
+{lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
     --staking \
@@ -486,7 +490,8 @@ fi "#
             let cmd_run_part_1 = format!(
                 r#"
 mkdir -p {cl_vc_dir} || exit 1
-nohup {lighthouse} validator_client \
+
+{lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir}\
     --beacon-nodes='{beacon_nodes}' \
@@ -510,10 +515,16 @@ nohup {lighthouse} validator_client \
 
         format!(
             r#"
+
             {prepare_cmd}
+
             {el_cmd}
+
             {cl_bn_cmd}
-            {cl_vc_cmd} "#
+
+            {cl_vc_cmd}
+
+            "#
         )
     }
 
