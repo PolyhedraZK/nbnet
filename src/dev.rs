@@ -378,15 +378,19 @@ fi "#
     --metrics='{ext_ip}:{el_metric_port}' "#
             );
 
-            let mut cmd_run_part_1 = if el_bootnodes.is_empty() {
+            let cmd_run_part_1 = if el_bootnodes.is_empty() {
                 String::new()
             } else {
                 format!(" --bootnodes='{el_bootnodes}' --trusted-peers='{el_bootnodes}'")
             };
 
-            if matches!(n.kind, NodeKind::FullNode) {
-                cmd_run_part_1.push_str(" --full");
-            }
+            //
+            // // This option is unstable in `reth`,
+            // // should do NOT use it for now
+            //
+            // if matches!(n.kind, NodeKind::FullNode) {
+            //     cmd_run_part_1.push_str(" --full");
+            // }
 
             let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
 
