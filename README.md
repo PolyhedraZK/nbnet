@@ -5,14 +5,14 @@
 For zsh:
 ```shell
 nbnet -z > ~/.cargo/bin/zsh.nbnet
-echo -e "\n source ~/.cargo/bin/zsh.nbnet" >>~/.zshrc
+echo -e "\n source ~/.cargo/bin/zsh.nbnet" >> ~/.zshrc
 source ~/.zshrc
 ```
 
 For bash:
 ```shell
 nbnet -b > ~/.cargo/bin/bash.nbnet
-echo -e "\n source ~/.cargo/bin/bash.nbnet" >>~/.bashrc
+echo -e "\n source ~/.cargo/bin/bash.nbnet" >> ~/.bashrc
 source ~/.bashrc
 ```
 
