@@ -7,7 +7,7 @@ release:
 	cargo build --release --bins
 
 install:
-	cargo install --path .
+	cargo install --force --path .
 
 lint:
 	cargo clippy
