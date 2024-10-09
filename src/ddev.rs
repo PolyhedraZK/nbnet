@@ -436,7 +436,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-{geth} \
+nohup {geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
@@ -479,7 +479,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-{reth} node \
+nohup {reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
@@ -546,7 +546,7 @@ fi "#
                 r#"
 mkdir -p {cl_bn_dir} || exit 1
 
-{lighthouse} beacon_node \
+nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
     --staking \
@@ -612,7 +612,7 @@ fi "#
                 r#"
 mkdir -p {cl_vc_dir} || exit 1
 
-{lighthouse} validator_client \
+nohup {lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir}\
     --beacon-nodes='{beacon_nodes}' \
