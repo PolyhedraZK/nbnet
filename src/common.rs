@@ -164,15 +164,15 @@ pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
         .map(|addr| {
             let body =
                 r#"{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}"#;
-            let ret = ruc::http::post(
+
+            ruc::http::post(
                 addr,
                 body.as_bytes(),
                 Some(&[("Content-Type", "application/json")]),
             )
             .c(d!())
             .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
-            .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned());
-            info!(ret)
+            .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned())
         })
         .filter(|i| i.is_ok())
         .collect::<Result<Vec<_>>>()
@@ -192,7 +192,7 @@ pub fn cl_get_boot_nodes(
     let ret: (Vec<_>, (Vec<_>, Vec<_>)) = rpc_endpoints
         .par_iter()
         .map(|url| {
-            let ret = ruc::http::get(
+            ruc::http::get(
                 &format!("{url}/eth/v1/node/identity"),
                 Some(&[("Content-Type", "application/json")]),
             )
@@ -206,8 +206,7 @@ pub fn cl_get_boot_nodes(
                         pnk!(v["data"]["peer_id"].as_str()).to_owned(),
                     ),
                 )
-            });
-            info!(ret)
+            })
         })
         .filter(|i| i.is_ok())
         .map(|i| i.unwrap())

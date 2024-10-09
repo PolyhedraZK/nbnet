@@ -250,8 +250,7 @@ fi "#
                 .map(|i| i.as_str())
                 .collect::<Vec<_>>();
 
-            let el_bootnodes = if let Ok(r) = info!(el_get_boot_nodes(&el_rpc_endpoints))
-            {
+            let el_bootnodes = if let Ok(r) = el_get_boot_nodes(&el_rpc_endpoints) {
                 r
             } else if 10 > (ts!() - ts_start) {
                 sleep_ms!(500);
@@ -266,7 +265,7 @@ fi "#
                 .collect::<Vec<_>>();
 
             let (online_urls, cl_bn_bootnodes, cl_bn_trusted_peers) =
-                if let Ok((a, b, c)) = info!(cl_get_boot_nodes(&cl_bn_rpc_endpoints)) {
+                if let Ok((a, b, c)) = cl_get_boot_nodes(&cl_bn_rpc_endpoints) {
                     (a, b, c)
                 } else if 10 > (ts!() - ts_start) {
                     sleep_ms!(500);
@@ -425,6 +424,7 @@ nohup {reth} node \
             let cmd_run_part_0 = format!(
                 r#"
 mkdir -p {cl_bn_dir} || exit 1
+sleep 0.5
 
 nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
@@ -494,6 +494,7 @@ fi "#
             let cmd_run_part_1 = format!(
                 r#"
 mkdir -p {cl_vc_dir} || exit 1
+sleep 1
 
 nohup {lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
