@@ -305,52 +305,100 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         n: &Node<Ports>,
         e: &EnvMeta<CustomInfo, Node<Ports>>,
     ) -> String {
-        let mark = n.mark.unwrap_or(GETH_MARK);
-
         let home = &n.home;
         let genesis_dir = format!("{home}/genesis");
+
+        let rand_jwt = ruc::algo::rand::rand_jwt();
         let auth_jwt = format!("{home}/auth.jwt");
-
-        pnk!(fs::write(&auth_jwt, ruc::algo::rand::rand_jwt()));
-
-        let local_ip = &n.host.addr.local;
-        let ext_ip = &n.host.addr.connection_addr();
-
-        let online_nodes = e
-            .nodes_should_be_online
-            .iter()
-            .copied()
-            .take(5)
-            .collect::<Vec<_>>();
-
-        let (el_rpc_endpoints, cl_bn_rpc_endpoints): (Vec<_>, Vec<_>) = e
-            .nodes
-            .values()
-            .chain(e.bootstraps.values())
-            .filter(|n| online_nodes.contains(&n.id))
-            .map(|n| {
-                (
-                    format!(
-                        "http://{}:{}",
-                        &n.host.addr.connection_addr(),
-                        n.ports.el_rpc
-                    ),
-                    format!(
-                        "http://{}:{}",
-                        &n.host.addr.connection_addr(),
-                        n.ports.cl_bn_rpc
-                    ),
-                )
-            })
-            .unzip();
 
         let prepare_cmd = format!(
             r#"
+echo "{rand_jwt}" > {auth_jwt} | tr -d '\n' || exit 1
+
 if [ ! -d {genesis_dir} ]; then
     tar -C {home} -xpf {home}/{NODE_HOME_GENESIS_DST} || exit 1
-    mv {home}/$(tar -tf {home}/{NODE_HOME_VCDATA_DST} | head -1) {genesis_dir} || exit 1
+    if [ ! -d {genesis_dir} ]; then
+        mv {home}/$(tar -tf {home}/{NODE_HOME_GENESIS_DST} | head -1) {genesis_dir} || exit 1
+    fi
 fi "#
         );
+
+        let mark = n.mark.unwrap_or(GETH_MARK);
+
+        let local_ip = &n.host.addr.local;
+        let ext_ip = &n.host.addr.connection_addr(); // for `ddev` it should be e.external_ip
+
+        let ts_start = ts!();
+        let (el_bootnodes, cl_bn_bootnodes, cl_bn_trusted_peers, checkpoint_sync_url) = loop {
+            let online_nodes = e
+                .nodes_should_be_online
+                .iter()
+                .copied()
+                .take(5)
+                .collect::<Vec<_>>();
+
+            if online_nodes.is_empty() {
+                break (String::new(), String::new(), String::new(), String::new());
+            }
+
+            let (el_rpc_endpoints, cl_bn_rpc_endpoints): (Vec<_>, Vec<_>) = e
+                .nodes
+                .values()
+                .chain(e.bootstraps.values())
+                .filter(|n| online_nodes.contains(&n.id))
+                .map(|n| {
+                    (
+                        format!(
+                            "http://{}:{}",
+                            &n.host.addr.connection_addr(),
+                            n.ports.el_rpc
+                        ),
+                        format!(
+                            "http://{}:{}",
+                            &n.host.addr.connection_addr(),
+                            n.ports.cl_bn_rpc
+                        ),
+                    )
+                })
+                .unzip();
+
+            let el_rpc_endpoints = el_rpc_endpoints
+                .iter()
+                .map(|i| i.as_str())
+                .collect::<Vec<_>>();
+
+            let el_bootnodes = if let Ok(r) = info!(el_get_boot_nodes(&el_rpc_endpoints))
+            {
+                r
+            } else if 10 > (ts!() - ts_start) {
+                sleep_ms!(500);
+                continue;
+            } else {
+                break (String::new(), String::new(), String::new(), String::new());
+            };
+
+            let cl_bn_rpc_endpoints = cl_bn_rpc_endpoints
+                .iter()
+                .map(|i| i.as_str())
+                .collect::<Vec<_>>();
+
+            let (online_urls, cl_bn_bootnodes, cl_bn_trusted_peers) =
+                if let Ok((a, b, c)) = info!(cl_get_boot_nodes(&cl_bn_rpc_endpoints)) {
+                    (a, b, c)
+                } else if 10 > (ts!() - ts_start) {
+                    sleep_ms!(500);
+                    continue;
+                } else {
+                    break (el_bootnodes, String::new(), String::new(), String::new());
+                };
+
+            break (
+                el_bootnodes,
+                cl_bn_bootnodes,
+                cl_bn_trusted_peers,
+                online_urls.into_iter().next().unwrap_or_default(),
+            );
+        };
 
         ////////////////////////////////////////////////
         // EL
@@ -365,14 +413,6 @@ fi "#
         let el_engine_port = n.ports.el_engine_api;
         let el_metric_port = n.ports.el_metric;
 
-        let el_rpc_endpoints = el_rpc_endpoints
-            .iter()
-            .map(|i| i.as_str())
-            .collect::<Vec<_>>();
-
-        let el_bootnodes =
-            info!(el_get_boot_nodes(&el_rpc_endpoints)).unwrap_or_default();
-
         let el_cmd = if GETH_MARK == mark {
             let geth = &e.custom_data.el_geth_bin;
 
@@ -385,6 +425,7 @@ fi "#
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
+    mkdir -p {el_dir} || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
         {el_genesis} >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
@@ -392,20 +433,21 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-{geth} \
+nohup {geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
     --datadir={el_dir} \
     --state.scheme=hash \
     --nat=extip:{ext_ip} \
+    --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
     --discovery.v5 \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.vhosts='*' --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port}--ws.origins='*' \
+    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --authrpc.addr={local_ip} --authrpc.port={el_engine_port}\
+    --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
     --metrics \
     --metrics.port={el_metric_port} "#
@@ -426,6 +468,7 @@ fi "#
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
+    mkdir -p {el_dir} || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
         --log.file.directory={el_dir}/logs >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
@@ -433,20 +476,21 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-{reth} node \
+nohup {reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
     --ipcdisable \
     --nat=extip:{ext_ip} \
+    --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
     --enable-discv5-discovery
     --discovery.v5.port={el_discovery_v5_port} \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port}--ws.origins='*' \
+    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --authrpc.addr={local_ip} --authrpc.port={el_engine_port}\
+    --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
     --metrics='{ext_ip}:{el_metric_port}' "#
             );
@@ -490,27 +534,11 @@ fi "#
             32
         };
 
-        let cl_bn_rpc_endpoints = cl_bn_rpc_endpoints
-            .iter()
-            .map(|i| i.as_str())
-            .collect::<Vec<_>>();
-
-        let (cl_bn_bootnodes, cl_bn_trusted_peers) =
-            info!(cl_get_boot_nodes(&cl_bn_rpc_endpoints)).unwrap_or_default();
-
-        // For `ddev`, should change to `n.host.addr`
-        let checkpoint_sync_url = e
-            .nodes_should_be_online
-            .iter()
-            .take(1)
-            .flat_map(|n| e.bootstraps.get(n).or_else(|| e.nodes.get(n)))
-            .next()
-            .map(|n| format!("http://{ext_ip}:{}", n.ports.cl_bn_rpc));
-
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
-                r#" (sleep 1;
-{lighthouse} beacon_node \
+                r#"
+mkdir -p {cl_bn_dir} || exit 1
+nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
     --staking \
@@ -521,7 +549,7 @@ fi "#
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
-    --quic-port={cl_bn_discovery_quic_port}\
+    --quic-port={cl_bn_discovery_quic_port} \
     --execution-endpoints='http://{local_ip}:{el_engine_port}' \
     --jwt-secrets={auth_jwt} \
     --suggested-fee-recipient={FEE_RECIPIENT} \
@@ -537,11 +565,14 @@ fi "#
                 format!(" --boot-nodes='{cl_bn_bootnodes}' --trusted-peers='{cl_bn_trusted_peers}'")
             };
 
-            if let Some(url) = checkpoint_sync_url {
-                cmd_run_part_1.push_str(&format!(" --checkpoint-sync-url={url}"));
+            if checkpoint_sync_url.is_empty() {
+                cmd_run_part_1.push_str(" --allow-insecure-genesis-sync");
+            } else {
+                cmd_run_part_1
+                    .push_str(&format!(" --checkpoint-sync-url={checkpoint_sync_url}"));
             }
 
-            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1) &");
+            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1 &");
 
             cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
         };
@@ -550,25 +581,32 @@ fi "#
             let beacon_nodes = format!("http://{local_ip}:{}", n.ports.cl_bn_rpc);
 
             let cmd_run_part_0 = if n.id == *e.bootstraps.keys().next().unwrap() {
+                let id = n.id;
+                let ts = ts!();
                 // The first bootstrap node
                 format!(
                     r#"
-                if [[ ! -d '{cl_vc_dir}/validators' ]]; then
-                    mkdir -p {cl_vc_dir} || exit 1
-                    tar -C {cl_vc_dir} -xpf {home}/{NODE_HOME_VCDATA_DST} || exit 1
-                    mv $(tar -tf {home}/{NODE_HOME_VCDATA_DST} | head -1)/* ./ || exit 1
-                fi "#
+if [[ -f '{home}/{NODE_HOME_VCDATA_DST}' ]]; then
+    vcdata_dir_name=$(tar -tf {home}/{NODE_HOME_VCDATA_DST} | head -1 | tr -d '/')
+    if [[ (! -d '{cl_vc_dir}/validators') && ("" != $vcdata_dir_name) ]]; then
+        rm -rf /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
+        mkdir -p {cl_vc_dir} /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
+        tar -C /tmp/{cl_vc_dir}_{id}_{ts} -xpf {home}/{NODE_HOME_VCDATA_DST} || exit 1
+        mv /tmp/{cl_vc_dir}_{id}_{ts}/${{vcdata_dir_name}}/* {cl_vc_dir}/ || exit 1
+    fi
+fi "#
                 )
             } else {
                 String::new()
             };
 
             let cmd_run_part_1 = format!(
-                r#"(sleep 2;
-{lighthouse}/lighthouse validator_client \
+                r#"
+mkdir -p {cl_vc_dir} || exit 1
+nohup {lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir}\
-    --beacon-nodes='{beacon_nodes} \
+    --beacon-nodes='{beacon_nodes}' \
     --init-slashing-protection \
     --suggested-fee-recipient={FEE_RECIPIENT} \
     --unencrypted-http-transport \
@@ -576,7 +614,7 @@ fi "#
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={ext_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1) &
+     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1 &
      "#
             );
 
@@ -604,7 +642,7 @@ fi "#
     ) -> String {
         format!(
             "for i in \
-            $(ps ax -o pid,args|grep '{}'|sed -r 's/(^ *)|( +)/ /g'|cut -d ' ' -f 2); \
+            $(ps ax -o pid,args|grep '{}'|grep -v grep|sed -r 's/(^ *)|( +)/ /g'|cut -d ' ' -f 2); \
             do kill {} $i; done",
             &n.home,
             alt!(force, "-9", ""),

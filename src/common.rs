@@ -186,20 +186,25 @@ pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
 }
 
 /// Return: "(<enr,enr,enr>,<peer_id,peer_id,peer_id>)"
-pub fn cl_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<(String, String)> {
-    let ret: (Vec<_>, Vec<_>) = rpc_endpoints
+pub fn cl_get_boot_nodes(
+    rpc_endpoints: &[&str],
+) -> Result<(Vec<String>, String, String)> {
+    let ret: (Vec<_>, (Vec<_>, Vec<_>)) = rpc_endpoints
         .par_iter()
-        .map(|addr| {
+        .map(|url| {
             let ret = ruc::http::get(
-                &format!("{addr}/eth/v1/node/identity"),
+                &format!("{url}/eth/v1/node/identity"),
                 Some(&[("Content-Type", "application/json")]),
             )
             .c(d!())
             .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
             .map(|v| {
                 (
-                    pnk!(v["data"]["enr"].as_str()).to_owned(),
-                    pnk!(v["data"]["peer_id"].as_str()).to_owned(),
+                    url.to_string(),
+                    (
+                        pnk!(v["data"]["enr"].as_str()).to_owned(),
+                        pnk!(v["data"]["peer_id"].as_str()).to_owned(),
+                    ),
                 )
             });
             info!(ret)
@@ -212,5 +217,5 @@ pub fn cl_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<(String, String)> {
         return Err(eg!("No valid data return"));
     }
 
-    Ok((ret.0.join(","), ret.1.join(",")))
+    Ok((ret.0, ret.1 .0.join(","), ret.1 .1.join(",")))
 }
