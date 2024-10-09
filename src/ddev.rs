@@ -494,7 +494,7 @@ nohup {reth} node \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
     --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
-    --metrics='{ext_ip}:{el_metric_port}' "#
+    --metrics='{local_ip}:{el_metric_port}' "#
             );
 
             let cmd_run_part_1 = if el_bootnodes.is_empty() {
@@ -620,9 +620,9 @@ nohup {lighthouse} validator_client \
     --init-slashing-protection \
     --suggested-fee-recipient={FEE_RECIPIENT} \
     --unencrypted-http-transport \
-    --http --http-address={ext_ip} \
+    --http --http-address={local_ip} \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
-    --metrics --metrics-address={ext_ip} \
+    --metrics --metrics-address={local_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
      >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1 &
      "#
