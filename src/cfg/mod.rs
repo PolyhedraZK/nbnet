@@ -86,10 +86,14 @@ pub enum DevOp {
     PushNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(long, help = "To use reth as the el client, set true")]
-        using_reth: bool,
-        #[clap(long, help = "To get a archive node, set true")]
-        is_archive: bool,
+        #[clap(
+            conflicts_with = "fullnode",
+            long,
+            help = "To use reth as the el client, set true"
+        )]
+        reth: bool,
+        #[clap(conflicts_with = "reth", long, help = "To get a FullNode, set true")]
+        fullnode: bool,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
     KickNode {
@@ -166,8 +170,12 @@ pub struct DevCreationOptions {
     )]
     pub initial_node_num: u8,
 
-    #[clap(short = 'a', long, help = "Set the initial nodes in archive mode?")]
-    pub initial_nodes_archive_mode: bool,
+    #[clap(
+        short = 'a',
+        long,
+        help = "Set the initial nodes in FullNode(opposite to ArchiveNode) mode?"
+    )]
+    pub initial_nodes_fullnode: bool,
 
     #[clap(
         short = 't',
@@ -294,10 +302,15 @@ pub enum DDevOp {
         env_name: Option<String>,
         #[clap(long)]
         host_addr: Option<String>,
-        #[clap(long, help = "To use reth as the el client, set true")]
-        using_reth: bool,
-        #[clap(long, help = "To get a archive node, set true")]
-        is_archive: bool,
+        #[clap(
+            conflicts_with = "fullnode",
+            long,
+            help = "To use reth as the el client, set true;
+NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
+        )]
+        reth: bool,
+        #[clap(conflicts_with = "reth", long, help = "To get a FullNode, set true")]
+        fullnode: bool,
     },
     #[clap(about = "Migrate an existing node to another host,
 NOTE: the node will be left stopped, a `start` operation may be needed")]
@@ -481,8 +494,12 @@ pub struct DDevCreationOptions {
     )]
     pub initial_node_num: u8,
 
-    #[clap(short = 'a', long, help = "Set the initial nodes in archive mode?")]
-    pub initial_nodes_archive_mode: bool,
+    #[clap(
+        short = 'a',
+        long,
+        help = "Set the initial nodes in FullNode(opposite to ArchiveNode) mode?"
+    )]
+    pub initial_nodes_fullnode: bool,
 
     #[clap(
         short = 't',

@@ -77,7 +77,7 @@ impl From<DevCfg> for EnvCfg {
                     genesis_tgz_path,
                     genesis_vkeys_tgz_path,
                     initial_node_num: copts.initial_node_num,
-                    initial_nodes_archive_mode: copts.initial_nodes_archive_mode,
+                    initial_nodes_fullnode: copts.initial_nodes_fullnode,
                     custom_data,
                     force_create: copts.force_create,
                 };
@@ -119,13 +119,13 @@ impl From<DevCfg> for EnvCfg {
             DevOp::StopAll => Op::StopAll(false),
             DevOp::PushNode {
                 env_name,
-                using_reth,
-                is_archive,
+                reth,
+                fullnode,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNode((alt!(using_reth, RETH_MARK, GETH_MARK), is_archive))
+                Op::PushNode((alt!(reth, RETH_MARK, GETH_MARK), fullnode))
             }
             DevOp::KickNode { env_name, node_id } => {
                 if let Some(n) = env_name {
@@ -302,7 +302,7 @@ fi "#
             let el_gc_mode = if matches!(n.kind, NodeKind::FullNode) {
                 "full"
             } else {
-                "archive" // Bootstrap nodes and Archive nodes
+                "archive" // Bootstrap nodes belong to The ArchiveNode
             };
 
             let cmd_init_part = format!(

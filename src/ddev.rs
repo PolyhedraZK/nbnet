@@ -97,7 +97,7 @@ impl From<DDevCfg> for EnvCfg {
                     genesis_tgz_path,
                     genesis_vkeys_tgz_path,
                     initial_node_num: copts.initial_node_num,
-                    initial_nodes_archive_mode: copts.initial_nodes_archive_mode,
+                    initial_nodes_fullnode: copts.initial_nodes_fullnode,
                     custom_data,
                     force_create: copts.force_create,
                 };
@@ -140,16 +140,16 @@ impl From<DDevCfg> for EnvCfg {
             DDevOp::PushNode {
                 env_name,
                 host_addr,
-                using_reth,
-                is_archive,
+                reth,
+                fullnode,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
                 Op::PushNode((
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
-                    alt!(using_reth, RETH_MARK, GETH_MARK),
-                    is_archive,
+                    alt!(reth, RETH_MARK, GETH_MARK),
+                    fullnode,
                 ))
             }
             DDevOp::MigrateNode {
@@ -422,7 +422,7 @@ fi "#
             let el_gc_mode = if matches!(n.kind, NodeKind::FullNode) {
                 "full"
             } else {
-                "archive" // Bootstrap nodes and Archive nodes
+                "archive" // Bootstrap nodes belong to The ArchiveNode
             };
 
             let cmd_init_part = format!(
