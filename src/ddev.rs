@@ -740,6 +740,7 @@ impl CustomOps for ExtraOp {
                     "{EL_DIR}/{EL_LOG_NAME}",
                     "{CL_BN_DIR}/{CL_BN_LOG_NAME}",
                     "{CL_VC_DIR}/{CL_VC_LOG_NAME}",
+                    "mgmt.log",
                 ],
                 ldir.as_deref(),
             )
