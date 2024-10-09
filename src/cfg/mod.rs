@@ -4,7 +4,7 @@ use clap::{Args, Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
 pub struct Cfg {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     pub commands: Commands,
 }
 
@@ -17,6 +17,10 @@ pub enum Commands {
         about = "Manage development clusters on various distributed hosts"
     )]
     DDev(DDevCfg),
+    #[clap(short_flag = 'z', about = "Generate cmdline completions and zsh")]
+    GenZshCompletions,
+    #[clap(short_flag = 'b', about = "Generate cmdline completions and bash")]
+    GenBashCompletions,
 }
 
 #[derive(Debug, Args)]
@@ -36,12 +40,12 @@ pub enum DevOp {
     Destroy {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(help = "Destroy the target ENV even if it is protected")]
+        #[clap(long, help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
     #[clap(about = "Destroy all existing ENVs")]
     DestroyAll {
-        #[clap(help = "Destroy the target ENVs even if they are protected")]
+        #[clap(long, help = "Destroy the target ENVs even if they are protected")]
         force: bool,
     },
     #[clap(about = "Protect an existing ENV")]
@@ -76,9 +80,9 @@ pub enum DevOp {
     PushNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(help = "To use reth as the el client, set true")]
+        #[clap(long, help = "To use reth as the el client, set true")]
         is_reth: bool,
-        #[clap(help = "To get a archive node, set true")]
+        #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
@@ -212,12 +216,12 @@ pub enum DDevOp {
     Destroy {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(help = "Destroy the target ENV even if it is protected")]
+        #[clap(long, help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
     #[clap(about = "Destroy all existing ENVs")]
     DestroyAll {
-        #[clap(help = "Destroy the target ENVs even if they are protected")]
+        #[clap(long, help = "Destroy the target ENVs even if they are protected")]
         force: bool,
     },
     #[clap(about = "Protect an existing ENV")]
@@ -254,9 +258,9 @@ pub enum DDevOp {
         env_name: Option<String>,
         #[clap(long)]
         host_addr: Option<String>,
-        #[clap(help = "To use reth as the el client, set true")]
+        #[clap(long, help = "To use reth as the el client, set true")]
         is_reth: bool,
-        #[clap(help = "To get a archive node, set true")]
+        #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
     #[clap(about = "Migrate an existing node to another host")]
