@@ -119,13 +119,13 @@ impl From<DevCfg> for EnvCfg {
             DevOp::StopAll => Op::StopAll(false),
             DevOp::PushNode {
                 env_name,
-                is_reth,
+                using_reth,
                 is_archive,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNode((alt!(is_reth, RETH_MARK, GETH_MARK), is_archive))
+                Op::PushNode((alt!(using_reth, RETH_MARK, GETH_MARK), is_archive))
             }
             DevOp::KickNode { env_name, node_id } => {
                 if let Some(n) = env_name {
@@ -367,7 +367,7 @@ fi "#
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
-    --enable-discv5-discovery
+    --enable-discv5-discovery \
     --discovery.v5.port={el_discovery_v5_port} \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \

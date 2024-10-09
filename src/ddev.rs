@@ -140,7 +140,7 @@ impl From<DDevCfg> for EnvCfg {
             DDevOp::PushNode {
                 env_name,
                 host_addr,
-                is_reth,
+                using_reth,
                 is_archive,
             } => {
                 if let Some(n) = env_name {
@@ -148,7 +148,7 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::PushNode((
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
-                    alt!(is_reth, RETH_MARK, GETH_MARK),
+                    alt!(using_reth, RETH_MARK, GETH_MARK),
                     is_archive,
                 ))
             }
@@ -487,7 +487,7 @@ fi "#
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
-    --enable-discv5-discovery
+    --enable-discv5-discovery \
     --discovery.v5.port={el_discovery_v5_port} \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \

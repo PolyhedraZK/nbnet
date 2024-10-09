@@ -87,7 +87,7 @@ pub enum DevOp {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(long, help = "To use reth as the el client, set true")]
-        is_reth: bool,
+        using_reth: bool,
         #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
@@ -295,7 +295,7 @@ pub enum DDevOp {
         #[clap(long)]
         host_addr: Option<String>,
         #[clap(long, help = "To use reth as the el client, set true")]
-        is_reth: bool,
+        using_reth: bool,
         #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
