@@ -17,9 +17,15 @@ pub enum Commands {
         about = "Manage development clusters on various distributed hosts"
     )]
     DDev(DDevCfg),
-    #[clap(short_flag = 'z', about = "Generate cmdline completions and zsh")]
+    #[clap(
+        short_flag = 'z',
+        about = "Generate the cmdline completion script for zsh"
+    )]
     GenZshCompletions,
-    #[clap(short_flag = 'b', about = "Generate cmdline completions and bash")]
+    #[clap(
+        short_flag = 'b',
+        about = "Generate the cmdline completion script for bash"
+    )]
     GenBashCompletions,
 }
 
@@ -94,7 +100,8 @@ pub enum DevOp {
     },
     #[clap(
         name = "switch-EL-to-geth",
-        about = "Switch the EL client to `geth`, NOTE: the node will be left stopped, you need to start it manually"
+        about = "Switch the EL client to `geth`,
+NOTE: the node will be left stopped, a `start` operation may be needed"
     )]
     SwitchELToGeth {
         #[clap(short = 'e', long)]
@@ -104,7 +111,8 @@ pub enum DevOp {
     },
     #[clap(
         name = "switch-EL-to-reth",
-        about = "Switch the EL client to `reth`, NOTE: the node will be left stopped, you need to start it manually"
+        about = "Switch the EL client to `reth`,
+NOTE: the node will be left stopped, a `start` operation may be needed"
     )]
     SwitchELToReth {
         #[clap(short = 'e', long)]
@@ -283,9 +291,8 @@ pub enum DDevOp {
         #[clap(long, help = "To get a archive node, set true")]
         is_archive: bool,
     },
-    #[clap(
-        about = "Migrate an existing node to another host, NOTE: the node will be left stopped, you need to start it manually"
-    )]
+    #[clap(about = "Migrate an existing node to another host,
+NOTE: the node will be left stopped, a `start` operation may be needed")]
     MigrateNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -303,7 +310,8 @@ pub enum DDevOp {
     },
     #[clap(
         name = "switch-EL-to-geth",
-        about = "Switch the EL client to `geth`, NOTE: the node will be left stopped, you need to start it manually"
+        about = "Switch the EL client to `geth`,
+NOTE: the node will be left stopped, a `start` operation may be needed"
     )]
     SwitchELToGeth {
         #[clap(short = 'e', long)]
@@ -313,7 +321,8 @@ pub enum DDevOp {
     },
     #[clap(
         name = "switch-EL-to-reth",
-        about = "Switch the EL client to `reth`, NOTE: the node will be left stopped, you need to start it manually"
+        about = "Switch the EL client to `reth`,
+NOTE: the node will be left stopped, a `start` operation may be needed"
     )]
     SwitchELToReth {
         #[clap(short = 'e', long)]
