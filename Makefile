@@ -6,7 +6,7 @@ build:
 release:
 	cargo build --release --bins
 
-install:
+install: update
 	cargo install --force --path .
 
 lint:
