@@ -19,7 +19,7 @@ fn main() {
     let config = Cfg::parse();
 
     pnk!(vsdb::vsdb_set_base_dir(format!(
-        "{}/__VSDB__",
+        "{}/.vsdb",
         BASE_DIR.as_str()
     )));
 
