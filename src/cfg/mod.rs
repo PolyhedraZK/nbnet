@@ -434,7 +434,11 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     HostExec {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'c', long, help = "Commands to be executed on the remote hosts")]
+        #[clap(
+            short = 'c',
+            long,
+            help = "Commands to be executed on the remote hosts"
+        )]
         cmd: Option<String>,
         #[clap(
             short = 's',

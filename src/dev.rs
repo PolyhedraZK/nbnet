@@ -306,6 +306,9 @@ fi "#
 
             let cmd_init_part = format!(
                 r#"
+which geth 2>/dev/null
+{geth} version; echo
+
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir} || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
@@ -349,6 +352,9 @@ nohup {geth} \
 
             let cmd_init_part = format!(
                 r#"
+which reth 2>/dev/null
+{reth} --version; echo
+
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir} || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
@@ -423,6 +429,9 @@ nohup {reth} node \
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
                 r#"
+which lighthouse 2>/dev/null
+{lighthouse} --version; echo
+
 mkdir -p {cl_bn_dir} || exit 1
 sleep 0.5
 
