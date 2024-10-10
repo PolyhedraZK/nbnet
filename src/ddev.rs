@@ -737,16 +737,16 @@ impl CustomOps for ExtraOp {
             Self::GetLogs(ldir) => env_collect_files(
                 &env,
                 &[
-                    "{EL_DIR}/{EL_LOG_NAME}",
-                    "{CL_BN_DIR}/{CL_BN_LOG_NAME}",
-                    "{CL_VC_DIR}/{CL_VC_LOG_NAME}",
+                    &format!("{EL_DIR}/{EL_LOG_NAME}"),
+                    &format!("{CL_BN_DIR}/{CL_BN_LOG_NAME}"),
+                    &format!("{CL_VC_DIR}/{CL_VC_LOG_NAME}"),
                     "mgmt.log",
                 ],
                 ldir.as_deref(),
             )
             .c(d!()),
             Self::DumpVcData(ldir) => {
-                env_collect_tgz(&env, &["{CL_VC_DIR}"], ldir.as_deref()).c(d!())
+                env_collect_tgz(&env, &[CL_VC_DIR], ldir.as_deref()).c(d!())
             }
             Self::SwitchELToGeth(id) => {
                 let n = env
