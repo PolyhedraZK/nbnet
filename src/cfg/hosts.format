@@ -1,4 +1,6 @@
-Add new hosts to the ENV, value format:
+Define the remote hosts for creating a new ENV,
+or perform some batch operations on these hosts directly,
+FORMAT:
 "
     host_ip,
     host_ip | external_ip,
@@ -8,6 +10,7 @@ Add new hosts to the ENV, value format:
     host_ip | external_ip # ssh_user # ssh_remote_port # host_weight # ssh_seckey_path,
     ... lines one by one ...
 "
+
 Example A:
 "
     10.0.0.2,

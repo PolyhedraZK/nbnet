@@ -434,12 +434,13 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     HostExec {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'c', long, help = "nft commands to be executed")]
+        #[clap(short = 'c', long, help = "Commands to be executed on the remote hosts")]
         cmd: Option<String>,
         #[clap(
             short = 's',
             long,
-            help = "The path of a script to be executed, will be ignored if the 'cmd' field has value"
+            help = "The path of a script to be executed,
+will be ignored if the 'cmd' field has value"
         )]
         script_path: Option<String>,
         #[clap(
