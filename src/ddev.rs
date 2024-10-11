@@ -155,7 +155,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Stop((node_ids, false))
             }
             DDevOp::StopAll => Op::StopAll(false),
-            DDevOp::PushNode {
+            DDevOp::PushNodes {
                 env_name,
                 host_addr,
                 reth,
@@ -172,7 +172,7 @@ impl From<DDevCfg> for EnvCfg {
                     num,
                 ))
             }
-            DDevOp::MigrateNode {
+            DDevOp::MigrateNodes {
                 env_name,
                 node_ids,
                 host_addr,
@@ -190,7 +190,7 @@ impl From<DDevCfg> for EnvCfg {
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
                 ))
             }
-            DDevOp::KickNode {
+            DDevOp::KickNodes {
                 env_name,
                 node_ids,
                 num,
@@ -207,14 +207,14 @@ impl From<DDevCfg> for EnvCfg {
                 });
                 Op::KickNodes((node_ids, num))
             }
-            DDevOp::PushHost { env_name, hosts } => {
+            DDevOp::PushHosts { env_name, hosts } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
                 let hosts = pnk!(hosts.map(|h| h.into()).or_else(env_hosts));
                 Op::PushHosts(hosts)
             }
-            DDevOp::KickHost {
+            DDevOp::KickHosts {
                 env_name,
                 host_ids,
                 force,

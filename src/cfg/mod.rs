@@ -91,7 +91,7 @@ pub enum DevOp {
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
     #[clap(about = "Push a new node to an existing ENV")]
-    PushNode {
+    PushNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
@@ -112,7 +112,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         num: u8,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
-    KickNode {
+    KickNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
@@ -341,7 +341,7 @@ pub enum DDevOp {
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
     #[clap(about = "Push a new node to an existing ENV")]
-    PushNode {
+    PushNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(long)]
@@ -365,7 +365,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
     },
     #[clap(about = "Migrate an existing node to another host,
 NOTE: the node will be left stopped, a `start` operation may be needed")]
-    MigrateNode {
+    MigrateNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
@@ -378,7 +378,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed")]
         host_addr: Option<String>,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
-    KickNode {
+    KickNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
@@ -426,7 +426,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         node_ids: String,
     },
     #[clap(about = "Add a new host to the cluster")]
-    PushHost {
+    PushHosts {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
@@ -437,7 +437,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         hosts: Option<HostExpression>,
     },
     #[clap(about = "Remove a host from the cluster")]
-    KickHost {
+    KickHosts {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(

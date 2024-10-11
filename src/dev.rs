@@ -134,7 +134,7 @@ impl From<DevCfg> for EnvCfg {
                 Op::Stop((node_ids, false))
             }
             DevOp::StopAll => Op::StopAll(false),
-            DevOp::PushNode {
+            DevOp::PushNodes {
                 env_name,
                 reth,
                 fullnode,
@@ -145,7 +145,7 @@ impl From<DevCfg> for EnvCfg {
                 }
                 Op::PushNodes((alt!(reth, RETH_MARK, GETH_MARK), fullnode, num))
             }
-            DevOp::KickNode {
+            DevOp::KickNodes {
                 env_name,
                 node_ids,
                 num,
