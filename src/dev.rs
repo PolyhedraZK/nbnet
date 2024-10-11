@@ -9,6 +9,7 @@
 use crate::{
     cfg::{DevCfg, DevOp},
     common::*,
+    select_nodes_by_el_kind,
 };
 use chaindev::{
     beacon_dev::{
@@ -106,32 +107,28 @@ impl From<DevCfg> for EnvCfg {
                 }
                 Op::Unprotect
             }
-            DevOp::Start { env_name, node_ids } => {
+            DevOp::Start {
+                env_name,
+                node_ids,
+                geth,
+                reth,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::Start(node_ids)
+                Op::Start(select_nodes_by_el_kind!(node_ids, geth, reth, en))
             }
             DevOp::StartAll => Op::StartAll,
-            DevOp::Stop { env_name, node_ids } => {
+            DevOp::Stop {
+                env_name,
+                node_ids,
+                geth,
+                reth,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::Stop((node_ids, false))
+                Op::Stop((select_nodes_by_el_kind!(node_ids, geth, reth, en), false))
             }
             DevOp::StopAll => Op::StopAll(false),
             DevOp::PushNodes {
@@ -149,18 +146,13 @@ impl From<DevCfg> for EnvCfg {
                 env_name,
                 node_ids,
                 num,
+                geth,
+                reth,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::KickNodes((node_ids, num))
+                Op::KickNodes((select_nodes_by_el_kind!(node_ids, geth, reth, en), num))
             }
             DevOp::SwitchELToGeth { env_name, node_ids } => {
                 if let Some(n) = env_name {
@@ -607,9 +599,7 @@ enum ExtraOp {
 
 impl CustomOps for ExtraOp {
     fn exec(&self, en: &EnvName) -> Result<()> {
-        let mut env = SysEnv::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
-            .c(d!())?
-            .c(d!("ENV does not exist!"))?;
+        let mut env = load_sysenv(en).c(d!())?;
 
         match self {
             Self::ListWeb3Rpcs => {
@@ -631,10 +621,8 @@ impl CustomOps for ExtraOp {
                         .get(id)
                         .or_else(|| env.meta.fucks.get(id))
                         .cloned()
-                        .c(d!(id))?;
-                    if n.mark.unwrap_or(GETH_MARK) != GETH_MARK {
-                        nodes.push(n);
-                    }
+                        .c(d!("The node(id: {id}) not found"))?;
+                    alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, nodes.push(n));
                 }
 
                 SysCfg {
@@ -682,10 +670,8 @@ impl CustomOps for ExtraOp {
                         .get(id)
                         .or_else(|| env.meta.fucks.get(id))
                         .cloned()
-                        .c(d!(id))?;
-                    if n.mark.unwrap_or(GETH_MARK) != RETH_MARK {
-                        nodes.push(n);
-                    }
+                        .c(d!("The node(id: {id}) not found"))?;
+                    alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, nodes.push(n));
                 }
 
                 SysCfg {
@@ -726,4 +712,11 @@ impl CustomOps for ExtraOp {
             }
         }
     }
+}
+
+#[inline(always)]
+fn load_sysenv(en: &EnvName) -> Result<SysEnv<CustomInfo, Ports, CmdGenerator>> {
+    SysEnv::load_env_by_name(en)
+        .c(d!())?
+        .c(d!("ENV does not exist!"))
 }

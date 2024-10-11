@@ -39,6 +39,52 @@ impl EnvCfg {
     }
 }
 
+#[macro_export]
+macro_rules! select_nodes_by_el_kind {
+    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr) => {{
+        if $node_ids.is_none() && !$geth && !$reth {
+            None
+        } else if $node_ids.is_some() && !$geth && !$reth {
+            let parsed = $node_ids
+                .unwrap()
+                .split(',')
+                .map(|id| id.parse::<NodeID>().c(d!()))
+                .collect::<Result<BTreeSet<_>>>();
+
+            Some(pnk!(parsed, "Invalid ID[s], parse failed"))
+        } else {
+            let env = pnk!(load_sysenv(&$en));
+            let mut ids = env
+                .meta
+                .nodes
+                .values()
+                .chain(env.meta.fucks.values())
+                .filter(|n| {
+                    if $geth {
+                        n.mark.unwrap_or(GETH_MARK) == GETH_MARK
+                    } else if $reth {
+                        n.mark.unwrap_or(GETH_MARK) == RETH_MARK
+                    } else {
+                        true
+                    }
+                })
+                .map(|n| n.id)
+                .collect::<BTreeSet<_>>();
+
+            if let Some(s) = $node_ids {
+                let parsed = s
+                    .split(',')
+                    .map(|id| id.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                let parsed_ids = pnk!(parsed, "Invalid ID[s], parse failed");
+                ids = ids.intersection(&parsed_ids).copied().collect();
+            }
+
+            Some(ids)
+        }
+    }};
+}
+
 impl From<DDevCfg> for EnvCfg {
     fn from(cfg: DDevCfg) -> Self {
         let mut en = cfg
@@ -127,32 +173,28 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Unprotect
             }
-            DDevOp::Start { env_name, node_ids } => {
+            DDevOp::Start {
+                env_name,
+                node_ids,
+                geth,
+                reth,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::Start(node_ids)
+                Op::Start(select_nodes_by_el_kind!(node_ids, geth, reth, en))
             }
             DDevOp::StartAll => Op::StartAll,
-            DDevOp::Stop { env_name, node_ids } => {
+            DDevOp::Stop {
+                env_name,
+                node_ids,
+                geth,
+                reth,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::Stop((node_ids, false))
+                Op::Stop((select_nodes_by_el_kind!(node_ids, geth, reth, en), false))
             }
             DDevOp::StopAll => Op::StopAll(false),
             DDevOp::PushNodes {
@@ -194,18 +236,13 @@ impl From<DDevCfg> for EnvCfg {
                 env_name,
                 node_ids,
                 num,
+                geth,
+                reth,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids.map(|s| {
-                    let parsed = s
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<BTreeSet<_>>>();
-                    pnk!(parsed, "Invalid ID[s], parse failed")
-                });
-                Op::KickNodes((node_ids, num))
+                Op::KickNodes((select_nodes_by_el_kind!(node_ids, geth, reth, en), num))
             }
             DDevOp::PushHosts { env_name, hosts } => {
                 if let Some(n) = env_name {
@@ -775,9 +812,7 @@ enum ExtraOp {
 
 impl CustomOps for ExtraOp {
     fn exec(&self, en: &EnvName) -> Result<()> {
-        let mut env = SysEnv::<CustomInfo, Ports, CmdGenerator>::load_env_by_name(en)
-            .c(d!())?
-            .c(d!("ENV does not exist!"))?;
+        let mut env = load_sysenv(en).c(d!())?;
 
         match self {
             Self::ListWeb3Rpcs => {
@@ -817,10 +852,8 @@ impl CustomOps for ExtraOp {
                         .get(id)
                         .or_else(|| env.meta.fucks.get(id))
                         .cloned()
-                        .c(d!(id))?;
-                    if n.mark.unwrap_or(GETH_MARK) != GETH_MARK {
-                        nodes.push(n);
-                    }
+                        .c(d!("The node(id: {id}) not found"))?;
+                    alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, nodes.push(n));
                 }
 
                 SysCfg {
@@ -872,10 +905,8 @@ impl CustomOps for ExtraOp {
                         .get(id)
                         .or_else(|| env.meta.fucks.get(id))
                         .cloned()
-                        .c(d!(id))?;
-                    if n.mark.unwrap_or(GETH_MARK) != RETH_MARK {
-                        nodes.push(n);
-                    }
+                        .c(d!("The node(id: {id}) not found"))?;
+                    alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, nodes.push(n));
                 }
 
                 SysCfg {
@@ -920,4 +951,11 @@ impl CustomOps for ExtraOp {
             }
         }
     }
+}
+
+#[inline(always)]
+fn load_sysenv(en: &EnvName) -> Result<SysEnv<CustomInfo, Ports, CmdGenerator>> {
+    SysEnv::load_env_by_name(en)
+        .c(d!())?
+        .c(d!("ENV does not exist!"))
 }

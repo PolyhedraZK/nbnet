@@ -74,6 +74,10 @@ pub enum DevOp {
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
         node_ids: Option<String>,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,
@@ -87,6 +91,10 @@ pub enum DevOp {
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
         node_ids: Option<String>,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
@@ -128,6 +136,10 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
             help = "How many node[s] to kick"
         )]
         num: u8,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(
         name = "switch-EL-to-geth",
@@ -324,6 +336,10 @@ pub enum DDevOp {
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
         node_ids: Option<String>,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,
@@ -337,6 +353,10 @@ pub enum DDevOp {
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
         node_ids: Option<String>,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
@@ -394,6 +414,10 @@ NOTE: the node will be left stopped, a `start` operation may be needed")]
             help = "How many node[s] to kick"
         )]
         num: u8,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
     },
     #[clap(
         name = "switch-EL-to-geth",
