@@ -98,7 +98,7 @@ pub enum DevOp {
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
-    #[clap(about = "Push a new node to an existing ENV")]
+    #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -109,7 +109,7 @@ pub enum DevOp {
 NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         )]
         reth: bool,
-        #[clap(conflicts_with = "reth", long, help = "To get a FullNode, set true")]
+        #[clap(conflicts_with = "reth", long, help = "To get FullNode[s], set true")]
         fullnode: bool,
         #[clap(
             short = 'n',
@@ -119,7 +119,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         )]
         num: u8,
     },
-    #[clap(about = "Remove an existing node from an existing ENV")]
+    #[clap(about = "Remove(destroy) some nodes from an existing ENV")]
     KickNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -360,7 +360,7 @@ pub enum DDevOp {
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
-    #[clap(about = "Push a new node to an existing ENV")]
+    #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -383,8 +383,8 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         )]
         num: u8,
     },
-    #[clap(about = "Migrate an existing node to another host,
-NOTE: the node will be left stopped, a `start` operation may be needed")]
+    #[clap(about = "Migrate some existing nodes to other hosts,
+NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
     MigrateNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -397,7 +397,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed")]
         #[clap(short = 'H', long)]
         host_addr: Option<String>,
     },
-    #[clap(about = "Remove an existing node from an existing ENV")]
+    #[clap(about = "Remove(destroy) some node from an existing ENV")]
     KickNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -449,7 +449,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         )]
         node_ids: String,
     },
-    #[clap(about = "Add a new host to the cluster")]
+    #[clap(about = "Add some new hosts to the cluster")]
     PushHosts {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -460,7 +460,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         )]
         hosts: Option<HostExpression>,
     },
-    #[clap(about = "Remove a host from the cluster")]
+    #[clap(about = "Remove some hosts from the cluster")]
     KickHosts {
         #[clap(short = 'e', long)]
         env_name: Option<String>,

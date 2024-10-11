@@ -50,8 +50,8 @@ Commands:
   start-all           Start all existing ENVs
   stop                Stop an existing ENV
   stop-all            Stop all existing ENVs
-  push-nodes          Push a new node to an existing ENV
-  kick-nodes          Remove an existing node from an existing ENV
+  push-nodes          Push some new nodes to an existing ENV
+  kick-nodes          Remove(destroy) some nodes from an existing ENV
   switch-EL-to-geth   Switch the EL client to `geth`,
                       NOTE: the node will be left stopped, a `start` operation may be needed
   switch-EL-to-reth   Switch the EL client to `reth`,
@@ -83,16 +83,16 @@ Commands:
   start-all           Start all existing ENVs
   stop                Stop an existing ENV
   stop-all            Stop all existing ENVs
-  push-nodes          Push a new node to an existing ENV
-  migrate-nodes       Migrate an existing node to another host,
-                      NOTE: the node will be left stopped, a `start` operation may be needed
-  kick-nodes          Remove an existing node from an existing ENV
+  push-nodes          Push some new nodes to an existing ENV
+  migrate-nodes       Migrate some existing nodes to other hosts,
+                      NOTE: the 'new' node will be left stopped, a `start` operation may be needed
+  kick-nodes          Remove(destroy) some node from an existing ENV
   switch-EL-to-geth   Switch the EL client to `geth`,
                       NOTE: the node will be left stopped, a `start` operation may be needed
   switch-EL-to-reth   Switch the EL client to `reth`,
                       NOTE: the node will be left stopped, a `start` operation may be needed
-  push-hosts          Add a new host to the cluster
-  kick-hosts          Remove a host from the cluster
+  push-hosts          Add some new hosts to the cluster
+  kick-hosts          Remove some hosts from the cluster
   show                Default operation, show the information of an existing ENV
   show-all            Show informations of all existing ENVs
   list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
