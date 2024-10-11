@@ -19,7 +19,10 @@ use chaindev::{
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, fs};
+use std::{
+    collections::{BTreeSet, HashSet},
+    fs,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
@@ -103,47 +106,81 @@ impl From<DevCfg> for EnvCfg {
                 }
                 Op::Unprotect
             }
-            DevOp::Start { env_name, node_id } => {
+            DevOp::Start { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Start(node_id)
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::Start(node_ids)
             }
             DevOp::StartAll => Op::StartAll,
-            DevOp::Stop { env_name, node_id } => {
+            DevOp::Stop { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Stop((node_id, false))
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::Stop((node_ids, false))
             }
             DevOp::StopAll => Op::StopAll(false),
             DevOp::PushNode {
                 env_name,
                 reth,
                 fullnode,
+                num,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNode((alt!(reth, RETH_MARK, GETH_MARK), fullnode))
+                Op::PushNodes((alt!(reth, RETH_MARK, GETH_MARK), fullnode, num))
             }
-            DevOp::KickNode { env_name, node_id } => {
+            DevOp::KickNode {
+                env_name,
+                node_ids,
+                num,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickNode(node_id)
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::KickNodes((node_ids, num))
             }
-            DevOp::SwitchELToGeth { env_name, node_id } => {
+            DevOp::SwitchELToGeth { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::SwitchELToGeth(node_id))
+                let node_ids = node_ids
+                    .split(',')
+                    .map(|s| s.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                Op::Custom(ExtraOp::SwitchELToGeth(pnk!(node_ids)))
             }
-            DevOp::SwitchELToReth { env_name, node_id } => {
+            DevOp::SwitchELToReth { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::SwitchELToReth(node_id))
+                let node_ids = node_ids
+                    .split(',')
+                    .map(|s| s.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                Op::Custom(ExtraOp::SwitchELToReth(pnk!(node_ids)))
             }
             DevOp::Show { env_name } => {
                 if let Some(n) = env_name {
@@ -564,8 +601,8 @@ nohup {lighthouse} validator_client \
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
     ListWeb3Rpcs,
-    SwitchELToGeth(NodeID),
-    SwitchELToReth(NodeID),
+    SwitchELToGeth(BTreeSet<NodeID>),
+    SwitchELToReth(BTreeSet<NodeID>),
 }
 
 impl CustomOps for ExtraOp {
@@ -585,55 +622,105 @@ impl CustomOps for ExtraOp {
                     });
                 Ok(())
             }
-            Self::SwitchELToGeth(id) => {
-                let n = env
-                    .meta
-                    .nodes
-                    .get_mut(id)
-                    .or_else(|| env.meta.fucks.get_mut(id))
-                    .c(d!())?;
+            Self::SwitchELToGeth(ids) => {
+                let mut nodes = vec![];
+                for id in ids.iter() {
+                    let n = env
+                        .meta
+                        .nodes
+                        .get(id)
+                        .or_else(|| env.meta.fucks.get(id))
+                        .cloned()
+                        .c(d!(id))?;
+                    if n.mark.unwrap_or(GETH_MARK) != GETH_MARK {
+                        nodes.push(n);
+                    }
+                }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
+                        Some(nodes.iter().map(|n| n.id).collect()),
+                        false,
+                    )),
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                n.mark = Some(GETH_MARK);
+                for (i, n) in nodes.iter().enumerate() {
+                    // Just remove $EL_DIR.
+                    // When starting up, if $EL_DIR is detected to not exist,
+                    // the new client will re-create it, and sync data from the CL.
+                    fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
 
-                // Just remove $EL_DIR.
-                // When starting up, if $EL_DIR is detected to not exist,
-                // the new client will re-create it, and sync data from the CL.
-                fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
+                    println!(
+                        "The {}th node has been switched, node id: {}",
+                        1 + i,
+                        n.id
+                    );
+                }
+
+                for id in nodes.iter().map(|n| n.id) {
+                    env.meta
+                        .nodes
+                        .get_mut(&id)
+                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .unwrap()
+                        .mark = Some(GETH_MARK);
+                }
 
                 env.write_cfg().c(d!())
             }
-            Self::SwitchELToReth(id) => {
-                let n = env
-                    .meta
-                    .nodes
-                    .get_mut(id)
-                    .or_else(|| env.meta.fucks.get_mut(id))
-                    .c(d!())?;
+            Self::SwitchELToReth(ids) => {
+                let mut nodes = vec![];
+                for id in ids.iter() {
+                    let n = env
+                        .meta
+                        .nodes
+                        .get(id)
+                        .or_else(|| env.meta.fucks.get(id))
+                        .cloned()
+                        .c(d!(id))?;
+                    if n.mark.unwrap_or(GETH_MARK) != RETH_MARK {
+                        nodes.push(n);
+                    }
+                }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
+                        Some(nodes.iter().map(|n| n.id).collect()),
+                        false,
+                    )),
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                n.mark = Some(RETH_MARK);
+                for (i, n) in nodes.iter().enumerate() {
+                    // Just remove $EL_DIR.
+                    // When starting up, if $EL_DIR is detected to not exist,
+                    // the new client will re-create it, and sync data from the CL.
+                    fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
 
-                // Just remove $EL_DIR.
-                // When starting up, if $EL_DIR is detected to not exist,
-                // the new client will re-create it, and sync data from the CL.
-                fs::remove_dir_all(format!("{}/{EL_DIR}", n.home)).c(d!())?;
+                    println!(
+                        "The {}th node has been switched, node id: {}",
+                        1 + i,
+                        n.id
+                    );
+                }
+
+                for id in nodes.iter().map(|n| n.id) {
+                    env.meta
+                        .nodes
+                        .get_mut(&id)
+                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .unwrap()
+                        .mark = Some(RETH_MARK);
+                }
 
                 env.write_cfg().c(d!())
             }

@@ -1,7 +1,4 @@
-use chaindev::{
-    beacon_ddev::{HostExpression, HostID},
-    NodeID,
-};
+use chaindev::beacon_ddev::HostExpression;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -71,8 +68,12 @@ pub enum DevOp {
     Start {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,
@@ -80,8 +81,12 @@ pub enum DevOp {
     Stop {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
@@ -92,18 +97,37 @@ pub enum DevOp {
         #[clap(
             conflicts_with = "fullnode",
             long,
-            help = "To use reth as the el client, set true"
+            help = "To use reth as the el client, set true;
+NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         )]
         reth: bool,
         #[clap(conflicts_with = "reth", long, help = "To get a FullNode, set true")]
         fullnode: bool,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many new node[s] to add"
+        )]
+        num: u8,
     },
     #[clap(about = "Remove an existing node from an existing ENV")]
     KickNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many node[s] to kick"
+        )]
+        num: u8,
     },
     #[clap(
         name = "switch-EL-to-geth",
@@ -113,8 +137,12 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     SwitchELToGeth {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: NodeID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+        )]
+        node_ids: String,
     },
     #[clap(
         name = "switch-EL-to-reth",
@@ -124,8 +152,12 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     SwitchELToReth {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: NodeID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+        )]
+        node_ids: String,
     },
     #[clap(about = "Default operation, show the information of an existing ENV")]
     Show {
@@ -286,8 +318,12 @@ pub enum DDevOp {
     Start {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,
@@ -295,8 +331,12 @@ pub enum DDevOp {
     Stop {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
     },
     #[clap(about = "Stop all existing ENVs")]
     StopAll,
@@ -315,14 +355,25 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         reth: bool,
         #[clap(conflicts_with = "reth", long, help = "To get a FullNode, set true")]
         fullnode: bool,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many new node[s] to add"
+        )]
+        num: u8,
     },
     #[clap(about = "Migrate an existing node to another host,
 NOTE: the node will be left stopped, a `start` operation may be needed")]
     MigrateNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: NodeID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: String,
         #[clap(short = 'H', long)]
         host_addr: Option<String>,
     },
@@ -330,8 +381,19 @@ NOTE: the node will be left stopped, a `start` operation may be needed")]
     KickNode {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: Option<NodeID>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many node[s] to kick"
+        )]
+        num: u8,
     },
     #[clap(
         name = "switch-EL-to-geth",
@@ -341,8 +403,12 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     SwitchELToGeth {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: NodeID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+        )]
+        node_ids: String,
     },
     #[clap(
         name = "switch-EL-to-reth",
@@ -352,8 +418,12 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     SwitchELToReth {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'N', long)]
-        node_id: NodeID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+        )]
+        node_ids: String,
     },
     #[clap(about = "Add a new host to the cluster")]
     PushHost {
@@ -370,8 +440,12 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     KickHost {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(long)]
-        host_id: HostID,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+        )]
+        host_ids: String,
         #[clap(long)]
         force: bool,
     },

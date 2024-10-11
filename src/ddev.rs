@@ -22,7 +22,11 @@ use chaindev::{
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, env, fs, str::FromStr};
+use std::{
+    collections::{BTreeSet, HashSet},
+    env, fs,
+    str::FromStr,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnvCfg {
@@ -123,18 +127,32 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Unprotect
             }
-            DDevOp::Start { env_name, node_id } => {
+            DDevOp::Start { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Start(node_id)
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::Start(node_ids)
             }
             DDevOp::StartAll => Op::StartAll,
-            DDevOp::Stop { env_name, node_id } => {
+            DDevOp::Stop { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Stop((node_id, false))
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::Stop((node_ids, false))
             }
             DDevOp::StopAll => Op::StopAll(false),
             DDevOp::PushNode {
@@ -142,51 +160,72 @@ impl From<DDevCfg> for EnvCfg {
                 host_addr,
                 reth,
                 fullnode,
+                num,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNode((
+                Op::PushNodes((
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
                     alt!(reth, RETH_MARK, GETH_MARK),
                     fullnode,
+                    num,
                 ))
             }
             DDevOp::MigrateNode {
                 env_name,
-                node_id,
+                node_ids,
                 host_addr,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::MigrateNode((
-                    node_id,
+                let parsed = node_ids
+                    .split(',')
+                    .map(|id| id.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                let node_ids = pnk!(parsed, "Invalid ID[s], parse failed");
+                Op::MigrateNodes((
+                    node_ids,
                     host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
                 ))
             }
-            DDevOp::KickNode { env_name, node_id } => {
+            DDevOp::KickNode {
+                env_name,
+                node_ids,
+                num,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickNode(node_id)
+                let node_ids = node_ids.map(|s| {
+                    let parsed = s
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<BTreeSet<_>>>();
+                    pnk!(parsed, "Invalid ID[s], parse failed")
+                });
+                Op::KickNodes((node_ids, num))
             }
             DDevOp::PushHost { env_name, hosts } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
                 let hosts = pnk!(hosts.map(|h| h.into()).or_else(env_hosts));
-                Op::PushHost(hosts)
+                Op::PushHosts(hosts)
             }
             DDevOp::KickHost {
                 env_name,
-                host_id,
+                host_ids,
                 force,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickHost((host_id, force))
+                Op::KickHosts((
+                    host_ids.split(",").map(|h| h.to_owned()).collect(),
+                    force,
+                ))
             }
             DDevOp::Show { env_name } => {
                 if let Some(n) = env_name {
@@ -265,17 +304,25 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Custom(ExtraOp::DumpVcData(local_base_dir))
             }
-            DDevOp::SwitchELToGeth { env_name, node_id } => {
+            DDevOp::SwitchELToGeth { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::SwitchELToGeth(node_id))
+                let node_ids = node_ids
+                    .split(',')
+                    .map(|s| s.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                Op::Custom(ExtraOp::SwitchELToGeth(pnk!(node_ids)))
             }
-            DDevOp::SwitchELToReth { env_name, node_id } => {
+            DDevOp::SwitchELToReth { env_name, node_ids } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::SwitchELToReth(node_id))
+                let node_ids = node_ids
+                    .split(',')
+                    .map(|s| s.parse::<NodeID>().c(d!()))
+                    .collect::<Result<BTreeSet<_>>>();
+                Op::Custom(ExtraOp::SwitchELToReth(pnk!(node_ids)))
             }
         };
 
@@ -722,8 +769,8 @@ enum ExtraOp {
     ListWeb3Rpcs,
     GetLogs(Option<String>),
     DumpVcData(Option<String>),
-    SwitchELToGeth(NodeID),
-    SwitchELToReth(NodeID),
+    SwitchELToGeth(BTreeSet<NodeID>),
+    SwitchELToReth(BTreeSet<NodeID>),
 }
 
 impl CustomOps for ExtraOp {
@@ -761,63 +808,113 @@ impl CustomOps for ExtraOp {
             Self::DumpVcData(ldir) => {
                 env_collect_tgz(&env, &[CL_VC_DIR], ldir.as_deref()).c(d!())
             }
-            Self::SwitchELToGeth(id) => {
-                let n = env
-                    .meta
-                    .nodes
-                    .get_mut(id)
-                    .or_else(|| env.meta.fucks.get_mut(id))
-                    .c(d!())?;
+            Self::SwitchELToGeth(ids) => {
+                let mut nodes = vec![];
+                for id in ids.iter() {
+                    let n = env
+                        .meta
+                        .nodes
+                        .get(id)
+                        .or_else(|| env.meta.fucks.get(id))
+                        .cloned()
+                        .c(d!(id))?;
+                    if n.mark.unwrap_or(GETH_MARK) != GETH_MARK {
+                        nodes.push(n);
+                    }
+                }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
+                        Some(nodes.iter().map(|n| n.id).collect()),
+                        false,
+                    )),
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                n.mark = Some(GETH_MARK);
+                for (i, n) in nodes.iter().enumerate() {
+                    let remote = Remote::from(&n.host);
 
-                let remote = Remote::from(&n.host);
+                    // Just remove $EL_DIR.
+                    // When starting up, if $EL_DIR is detected to not exist,
+                    // the new client will re-create it, and sync data from the CL.
+                    remote
+                        .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
+                        .c(d!())?;
 
-                // Just remove $EL_DIR.
-                // When starting up, if $EL_DIR is detected to not exist,
-                // the new client will re-create it, and sync data from the CL.
-                remote
-                    .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
-                    .c(d!())?;
+                    println!(
+                        "The {}th node has been switched, node id: {}",
+                        1 + i,
+                        n.id
+                    );
+                }
+
+                for id in nodes.iter().map(|n| n.id) {
+                    env.meta
+                        .nodes
+                        .get_mut(&id)
+                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .unwrap()
+                        .mark = Some(GETH_MARK);
+                }
 
                 env.write_cfg().c(d!())
             }
-            Self::SwitchELToReth(id) => {
-                let n = env
-                    .meta
-                    .nodes
-                    .get_mut(id)
-                    .or_else(|| env.meta.fucks.get_mut(id))
-                    .c(d!())?;
+            Self::SwitchELToReth(ids) => {
+                let mut nodes = vec![];
+                for id in ids.iter() {
+                    let n = env
+                        .meta
+                        .nodes
+                        .get(id)
+                        .or_else(|| env.meta.fucks.get(id))
+                        .cloned()
+                        .c(d!(id))?;
+                    if n.mark.unwrap_or(GETH_MARK) != RETH_MARK {
+                        nodes.push(n);
+                    }
+                }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((Some(*id), false)),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
+                        Some(nodes.iter().map(|n| n.id).collect()),
+                        false,
+                    )),
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                n.mark = Some(RETH_MARK);
+                for (i, n) in nodes.iter().enumerate() {
+                    let remote = Remote::from(&n.host);
 
-                let remote = Remote::from(&n.host);
+                    // Just remove $EL_DIR.
+                    // When starting up, if $EL_DIR is detected to not exist,
+                    // the new client will re-create it, and sync data from the CL.
+                    remote
+                        .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
+                        .c(d!())?;
 
-                // Just remove $EL_DIR.
-                // When starting up, if $EL_DIR is detected to not exist,
-                // the new client will re-create it, and sync data from the CL.
-                remote
-                    .exec_cmd(&format!("rm -rf {}/{EL_DIR}", n.home))
-                    .c(d!())?;
+                    println!(
+                        "The {}th node has been switched, node id: {}",
+                        1 + i,
+                        n.id
+                    );
+                }
+
+                for id in nodes.iter().map(|n| n.id) {
+                    env.meta
+                        .nodes
+                        .get_mut(&id)
+                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .unwrap()
+                        .mark = Some(RETH_MARK);
+                }
 
                 env.write_cfg().c(d!())
             }
