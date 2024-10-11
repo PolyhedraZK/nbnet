@@ -53,3 +53,17 @@ start_filter_geth:
 
 start_all:
 	nbnet ddev start
+
+docker_runtime:
+	if [[ 0 -eq $(shell docker images --format json | jq '.Tag' | grep -c 'nbnet_24.04') ]]; then \
+		docker pull ubuntu:24.04 || exit 1 ; \
+		docker tag ubuntu:24.04 ubuntu:nbnet_24.04 || exit 1 ; \
+	fi
+	docker build --build-context ssh="${HOME}/.ssh" -t ubuntu:nbnet_runtime_v0 .
+	docker inspect nbnet_runtime >/dev/null 2>&1 && docker rm -f nbnet_runtime >/dev/null; docker images
+	mkdir -p ${HOME}/__NB_DATA__
+	docker run --rm -d --network=host \
+		-v ${HOME}/__NB_DATA__:/tmp \
+		--name nbnet_runtime \
+		ubuntu:nbnet_runtime_v0
+	docker ps
