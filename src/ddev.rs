@@ -194,11 +194,11 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Show
             }
-            DDevOp::ShowWeb3RpcList { env_name } => {
+            DDevOp::ListWeb3Rpcs { env_name } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::ShowWeb3RpcList)
+                Op::Custom(ExtraOp::ListWeb3Rpcs)
             }
             DDevOp::ShowAll => Op::ShowAll,
             DDevOp::List => Op::List,
@@ -719,7 +719,7 @@ fn env_hosts() -> Option<Hosts> {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
-    ShowWeb3RpcList,
+    ListWeb3Rpcs,
     GetLogs(Option<String>),
     DumpVcData(Option<String>),
     SwitchELToGeth(NodeID),
@@ -733,13 +733,17 @@ impl CustomOps for ExtraOp {
             .c(d!("ENV does not exist!"))?;
 
         match self {
-            Self::ShowWeb3RpcList => {
+            Self::ListWeb3Rpcs => {
                 env.meta
                     .fucks
                     .values()
                     .chain(env.meta.nodes.values())
                     .for_each(|n| {
-                        println!("{}:{}", n.host.addr.connection_addr(), n.ports.el_rpc);
+                        println!(
+                            " http://{}:{}",
+                            n.host.addr.connection_addr(),
+                            n.ports.el_rpc
+                        );
                     });
                 Ok(())
             }

@@ -136,9 +136,9 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     ShowAll,
     #[clap(
         short_flag = 'w',
-        about = "Show the collection of web3 RPC endpoints of the entire ENV"
+        about = "List all web3 RPC endpoints of the entire ENV"
     )]
-    ShowWeb3RpcList {
+    ListWeb3Rpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
@@ -384,9 +384,9 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     ShowAll,
     #[clap(
         short_flag = 'w',
-        about = "Show the collection of web3 RPC endpoints of the entire ENV"
+        about = "List all web3 RPC endpoints of the entire ENV"
     )]
-    ShowWeb3RpcList {
+    ListWeb3Rpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
