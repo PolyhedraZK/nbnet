@@ -63,6 +63,7 @@ docker_runtime:
 	docker build -t ubuntu:nbnet_runtime_v0 .
 	docker inspect nbnet_runtime >/dev/null 2>&1 && docker rm -f nbnet_runtime >/dev/null; docker images
 	mkdir -p ${HOME}/__NB_DATA__/usr_local_bin
+	chmod -R 1777 ${HOME}/__NB_DATA__
 	docker run --rm -d --network=host \
 		-v ${HOME}/__NB_DATA__:/tmp \
 		--name nbnet_runtime \
