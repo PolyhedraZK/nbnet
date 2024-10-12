@@ -6,8 +6,7 @@ RUN echo 'nb:nbnb' | chpasswd
 
 RUN mkdir -p /home/nb/.ssh
 
-# <context ssh> = <host user home>/.ssh
-COPY --from=ssh authorized_keys /home/nb/.ssh/authorized_keys
+COPY authorized_keys /home/nb/.ssh/authorized_keys
 
 RUN chown nb /home/nb/.ssh/authorized_keys
 
@@ -21,7 +20,9 @@ RUN sed -ri 's/^#*Port\s*22.*$/Port 2222/' /etc/ssh/sshd_config
 
 RUN echo 'nb ALL=NOPASSWD:ALL' >>/etc/sudoers
 
-RUN chown nb /usr/local/bin
+RUN rm -rf /usr/local/bin
+
+RUN ln -sv /tmp/usr_local_bin /usr/local/bin
 
 RUN service ssh start
 

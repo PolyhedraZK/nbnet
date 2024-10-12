@@ -21,7 +21,6 @@ fmt:
 fmtall:
 	bash tools/fmt.sh
 
-
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_reth:
@@ -55,15 +54,20 @@ start_all:
 	nbnet ddev start
 
 docker_runtime:
-	if [[ 0 -eq $(shell docker images --format json | jq '.Tag' | grep -c 'nbnet_24.04') ]]; then \
+	if [ 0 -eq $(shell docker images --format json | jq '.Tag' | grep -c 'nbnet_24.04') ]; then \
 		docker pull ubuntu:24.04 || exit 1 ; \
 		docker tag ubuntu:24.04 ubuntu:nbnet_24.04 || exit 1 ; \
 	fi
-	docker build --build-context ssh="${HOME}/.ssh" -t ubuntu:nbnet_runtime_v0 .
+	cp ~/.ssh/authorized_keys ./
+	docker build -t ubuntu:nbnet_runtime_v0 .
 	docker inspect nbnet_runtime >/dev/null 2>&1 && docker rm -f nbnet_runtime >/dev/null; docker images
-	mkdir -p ${HOME}/__NB_DATA__
+	mkdir -p ${HOME}/__NB_DATA__/usr_local_bin
 	docker run --rm -d --network=host \
 		-v ${HOME}/__NB_DATA__:/tmp \
 		--name nbnet_runtime \
 		ubuntu:nbnet_runtime_v0
 	docker ps
+
+git_pull_force:
+	git fetch
+	git reset --hard origin/master
