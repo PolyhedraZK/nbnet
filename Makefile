@@ -54,6 +54,7 @@ start_all:
 	nbnet ddev start
 
 docker_runtime:
+	- docker images --format=json | grep '"Tag":"\\u003cnone\\u003e"' | jq '.ID' | xargs docker image rm
 	if [ 0 -eq $(shell docker images --format json | jq '.Tag' | grep -c 'nbnet_24.04') ]; then \
 		docker pull ubuntu:24.04 || exit 1 ; \
 		docker tag ubuntu:24.04 ubuntu:nbnet_24.04 || exit 1 ; \
