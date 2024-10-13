@@ -2,8 +2,13 @@
 name = "nbnet"
 version = "0.1.0"
 edition = "2021"
-authors = ["fhfanhui@gmail.com"]
+authors = ["hui.fan@mail.ru"]
 build = "build.rs"
+keywords = ["eth", "blockchain", "development"]
+categories = ["development-tools::testing"]
+license = "MIT"
+homepage = "https://github.com/nbnet/nbnet"
+repository = "https://github.com/nbnet/nbnet.git"
 
 [dependencies]
 clap = { version = "4.5", features = [ "cargo", "derive" ] }
