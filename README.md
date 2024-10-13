@@ -1,5 +1,5 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/nbnet/nbnet)
-[![Rust](https://github.com/nbnet/netnet/actions/workflows/rust.yml/badge.svg)](https://github.com/nbnet/netnet/actions/workflows/rust.yml)
+[![Rust](https://github.com/nbnet/nbnet/actions/workflows/rust.yml/badge.svg)](https://github.com/nbnet/nbnet/actions/workflows/rust.yml)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.81+-lightgray.svg)
 
 # nbnet
