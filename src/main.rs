@@ -1,4 +1,4 @@
-// #![deny(warnings)]
+#![deny(warnings)]
 
 use cfg::{Cfg, Commands};
 use chaindev::beacon_based::common::BASE_DIR;

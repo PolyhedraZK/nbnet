@@ -257,7 +257,7 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let hosts = pnk!(hosts.map(|h| h.into()).or_else(env_hosts));
+                let hosts = pnk!(hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts));
                 Op::PushHosts(hosts)
             }
             DDevOp::KickHosts {
@@ -299,7 +299,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostPutFile {
                     local_path,
                     remote_path,
-                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
+                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
                 }
             }
             DDevOp::HostGetFile {
@@ -314,7 +314,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostGetFile {
                     remote_path,
                     local_base_dir,
-                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
+                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
                 }
             }
             DDevOp::HostExec {
@@ -329,7 +329,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostExec {
                     cmd,
                     script_path,
-                    hosts: hosts.map(|h| h.into()).or_else(env_hosts),
+                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
                 }
             }
             DDevOp::GetLogs {
@@ -418,7 +418,7 @@ fi "#
 
         let mark = n.mark.unwrap_or(GETH_MARK);
 
-        let local_ip = &n.host.addr.local;
+        let local_ip = &n.host.addr.local_ip;
         let ext_ip = &n.host.addr.connection_addr(); // for `ddev` it should be e.external_ip
 
         let ts_start = ts!();
@@ -800,10 +800,24 @@ nohup {lighthouse} validator_client \
 //////////////////////////////////////////////////
 
 fn env_hosts() -> Option<Hosts> {
-    env::var("NBNET_DDEV_HOSTS")
-        .c(d!())
-        .map(|s| Hosts::from(&s))
-        .ok()
+    if let Ok(json) = env::var("NBNET_DDEV_HOSTS_JSON") {
+        let r = fs::read(json)
+            .c(d!())
+            .and_then(|b| Hosts::from_json_cfg(&b).c(d!()));
+        Some(pnk!(r))
+    } else if let Ok(expr) = env::var("NBNET_DDEV_HOSTS") {
+        Some(Hosts::from(&expr))
+    } else {
+        None
+    }
+}
+
+fn parse_cfg(json_path_or_expr: &str) -> Result<Hosts> {
+    if let Ok(j) = fs::read(json_path_or_expr) {
+        Hosts::from_json_cfg(&j).c(d!())
+    } else {
+        Hosts::from_str(json_path_or_expr).c(d!())
+    }
 }
 
 //////////////////////////////////////////////////

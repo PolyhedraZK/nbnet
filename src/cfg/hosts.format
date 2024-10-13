@@ -1,5 +1,53 @@
 Define the remote hosts for creating a new ENV,
 or perform some batch operations on these hosts directly,
+there are two alterntive ways to specify the contents.
+
+# The first(recommand) way is providing a json file,
+EXAMPLE:
+```json
+{
+  "fallback_ssh_local_seckeys": [
+    "/home/bob/.ssh/id_ed25519"
+  ],
+  "fallback_ssh_port": 22,
+  "fallback_ssh_user": "bob",
+  "fallback_weight": 32,
+  "hosts": [
+    {
+      "ext_ip": "8.8.8.8",
+      "local_ip": "10.0.0.2",
+      "ssh_local_seckeys": [
+        "/home/fh/alice/.ssh/id_rsa"
+      ],
+      "ssh_port": 2222,
+      "ssh_user": "alice",
+      "weight": 8
+    },
+    {
+      "local_ip": "10.0.0.3",
+      "weight": 4
+    },
+    {
+      "ext_ip": "8.8.4.4",
+      "local_ip": "10.0.0.4",
+      "ssh_local_seckeys": [
+        "/home/jack/.ssh/id_rsa",
+        "/home/jack/.ssh/id_ed25519"
+      ],
+      "ssh_user": "jack"
+    }
+  ]
+}
+```
+Only the `local_ip` field is mandatory, the others are optional;
+The `fallback_` prefixed fields can be used to avoid duplicate entries;
+If the `ext_ip` is missing, will fallback to the `local_ip` for external connections;
+The `weight` should be a positive number(1~255),
+if not set, the number of CPU threads on the host will be used,
+the larger the number, the more nodes the host will carry;
+The configuration here will override the `$NBNET_DDEV_HOSTS_JSON` settings.
+
+# The second way is to use the custom expressions(contents directly, not a path!),
 FORMAT:
 "
     host_ip,
