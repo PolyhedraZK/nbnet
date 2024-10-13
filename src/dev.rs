@@ -344,11 +344,9 @@ fi "#
 
             let cmd_init_part = format!(
                 r#"
-which geth 2>/dev/null
-{geth} version; echo
-
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir} || exit 1
+    (which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
     {geth} init --datadir={el_dir} --state.scheme=hash \
         {el_genesis} >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
@@ -356,6 +354,8 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
+(which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+
 nohup {geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
@@ -390,11 +390,9 @@ nohup {geth} \
 
             let cmd_init_part = format!(
                 r#"
-which reth 2>/dev/null
-{reth} --version; echo
-
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir} || exit 1
+    (which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
         --log.file.directory={el_dir}/logs >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
@@ -402,6 +400,8 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
+(which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+
 nohup {reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
@@ -467,11 +467,10 @@ nohup {reth} node \
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
                 r#"
-which lighthouse 2>/dev/null
-{lighthouse} --version; echo
-
 mkdir -p {cl_bn_dir} || exit 1
 sleep 0.5
+
+(which lighthouse; {lighthouse} --version; echo) >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1
 
 nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \

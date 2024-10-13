@@ -24,7 +24,6 @@ rayon = "1.10.0"
 ruc = { version = "7.5", features = [ "http", "algo_rand" ] }
 
 chaindev = "0.35.0"
-# chaindev = { git = "https://github.com/rust-util-collections/chaindev", branch = "master" }
 vsdb = { version = "3.0", default-features = false }
 
 [build-dependencies]
@@ -38,6 +37,7 @@ default = []
 [patch.crates-io]
 # ruc = { path = "../ruc" }
 # vsdb = { path = "../vsdb/wrappers" }
+chaindev = { path = "../chaindev" }
 
 [patch."https://github.com/rust-util-collections/chaindev"]
 # chaindev = { path = "../chaindev" }

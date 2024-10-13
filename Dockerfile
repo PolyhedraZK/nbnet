@@ -14,7 +14,7 @@ RUN chmod 0600 /home/nb/.ssh/authorized_keys
 
 RUN apt update
 
-RUN apt update && apt install sudo openssh-server -y
+RUN apt update && apt install sudo openssh-server iproute2 -y
 
 RUN sed -ri 's/^#*Port\s*22.*$/Port 2222/' /etc/ssh/sshd_config
 
