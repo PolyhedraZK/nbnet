@@ -242,7 +242,16 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickNodes((select_nodes_by_el_kind!(node_ids, geth, reth, en), num))
+                let ids =
+                    select_nodes_by_el_kind!(node_ids, geth, reth, en).map(|ids| {
+                        let num = num as usize;
+                        if ids.len() > num {
+                            ids.into_iter().take(num).collect()
+                        } else {
+                            ids
+                        }
+                    });
+                Op::KickNodes((ids, num))
             }
             DDevOp::PushHosts { env_name, hosts } => {
                 if let Some(n) = env_name {

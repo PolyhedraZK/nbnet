@@ -4,6 +4,12 @@
 
 # nbnet
 
+### Known issues
+
+- The `fullnode` mode of `reth` can not be used, it is unstable in practice
+- `reth` can not be used as the genesis node, it will hang at the next restarting
+- `reth` will fail to restart without a final block(before the first final block)
+
 ### Cmdline completions
 
 For zsh:

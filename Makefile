@@ -1,5 +1,7 @@
 all: fmt lint
 
+export STATIC_CHAIN_DEV_BASE_DIR_SUFFIX = NBNET
+
 build:
 	cargo build --bins
 
