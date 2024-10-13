@@ -25,21 +25,21 @@ fmtall:
 
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
-deploy_bin_reth:
-	cd submodules/reth && make build
-	nbnet ddev stop --reth
-	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/reth /usr/local/bin/reth"'
-	nbnet ddev host-put-file --local-path=submodules/reth/target/release/reth --remote-path=/tmp/reth
-	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
-
-deploy_bin_geth:
+deploy_bin_geth: bin_geth
 	cd submodules/go-ethereum && make geth
 	nbnet ddev stop --geth
 	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/geth /usr/local/bin/geth"'
 	nbnet ddev host-put-file --local-path=submodules/geth/build/bin/geth --remote-path=/tmp/geth
 	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
 
-deploy_bin_lighthouse:
+deploy_bin_reth: bin_reth
+	cd submodules/reth && make build
+	nbnet ddev stop --reth
+	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/reth /usr/local/bin/reth"'
+	nbnet ddev host-put-file --local-path=submodules/reth/target/release/reth --remote-path=/tmp/reth
+	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
+
+deploy_bin_lighthouse: bin_lighthouse
 	cd submodules/lighthouse && make
 	nbnet ddev stop
 	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/lighthouse /usr/local/bin/lighthouse"'
@@ -75,3 +75,18 @@ docker_runtime:
 git_pull_force:
 	git fetch
 	git reset --hard origin/master
+
+binaries: bin_geth bin_reth bin_lighthouse
+
+bin_geth:
+	cd submodules/go-ethereum && make geth
+
+bin_reth:
+	cd submodules/reth && make build
+
+bin_lighthouse:
+	cd submodules/lighthouse && make
+
+update_submods:
+	git submodule update --init
+	# git submodule update --init --recursive

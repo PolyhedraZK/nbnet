@@ -1,0 +1,9 @@
+[submodule "submodules/go-ethereum"]
+	path = submodules/go-ethereum
+	url = https://github.com/NBnet/go-ethereum
+[submodule "submodules/lighthouse"]
+	path = submodules/lighthouse
+	url = https://github.com/NBnet/lighthouse
+[submodule "submodules/reth"]
+	path = submodules/reth
+	url = https://github.com/NBnet/reth
