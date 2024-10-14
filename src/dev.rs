@@ -152,15 +152,16 @@ impl From<DevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let ids =
-                    select_nodes_by_el_kind!(node_ids, geth, reth, en).map(|ids| {
+                let ids = select_nodes_by_el_kind!(node_ids, geth, reth, en, false).map(
+                    |ids| {
                         let num = num as usize;
                         if ids.len() > num {
                             ids.into_iter().take(num).collect()
                         } else {
                             ids
                         }
-                    });
+                    },
+                );
                 Op::KickNodes((ids, num))
             }
             DevOp::SwitchELToGeth { env_name, node_ids } => {

@@ -41,7 +41,7 @@ impl EnvCfg {
 
 #[macro_export]
 macro_rules! select_nodes_by_el_kind {
-    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr) => {{
+    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr, $include_fuck_nodes: expr) => {{
         if $node_ids.is_none() && !$geth && !$reth {
             None
         } else if $node_ids.is_some() && !$geth && !$reth {
@@ -54,22 +54,29 @@ macro_rules! select_nodes_by_el_kind {
             Some(pnk!(parsed, "Invalid ID[s], parse failed"))
         } else {
             let env = pnk!(load_sysenv(&$en));
-            let mut ids = env
-                .meta
-                .nodes
-                .values()
-                .chain(env.meta.fucks.values())
-                .filter(|n| {
-                    if $geth {
-                        n.mark.unwrap_or(GETH_MARK) == GETH_MARK
-                    } else if $reth {
-                        n.mark.unwrap_or(GETH_MARK) == RETH_MARK
-                    } else {
-                        true
-                    }
-                })
-                .map(|n| n.id)
-                .collect::<BTreeSet<_>>();
+            let get_ids = |nodes: std::collections::BTreeMap<NodeID, Node<Ports>>| {
+                nodes
+                    .values()
+                    .filter(|n| {
+                        if $geth && $reth {
+                            true
+                        } else if $geth {
+                            n.mark.unwrap_or(GETH_MARK) == GETH_MARK
+                        } else if $reth {
+                            n.mark.unwrap_or(GETH_MARK) == RETH_MARK
+                        } else {
+                            true
+                        }
+                    })
+                    .map(|n| n.id)
+                    .collect::<BTreeSet<_>>()
+            };
+
+            let mut ids = get_ids(env.meta.nodes);
+
+            if $include_fuck_nodes {
+                ids.append(&mut get_ids(env.meta.fucks));
+            }
 
             if let Some(s) = $node_ids {
                 let parsed = s
@@ -82,6 +89,9 @@ macro_rules! select_nodes_by_el_kind {
 
             Some(ids)
         }
+    }};
+    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr) => {{
+        select_nodes_by_el_kind!($node_ids, $geth, $reth, $en, true)
     }};
 }
 
@@ -242,15 +252,16 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let ids =
-                    select_nodes_by_el_kind!(node_ids, geth, reth, en).map(|ids| {
+                let ids = select_nodes_by_el_kind!(node_ids, geth, reth, en, false).map(
+                    |ids| {
                         let num = num as usize;
                         if ids.len() > num {
                             ids.into_iter().take(num).collect()
                         } else {
                             ids
                         }
-                    });
+                    },
+                );
                 Op::KickNodes((ids, num))
             }
             DDevOp::PushHosts { env_name, hosts } => {
