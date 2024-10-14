@@ -257,32 +257,8 @@ the `+` is the delimiter between them two"
     #[clap(long, help = "The path of your custom reth binary")]
     pub el_reth_bin: Option<String>,
 
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the geth el cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub el_geth_extra_options: Option<String>,
-
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the reth el cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub el_reth_extra_options: Option<String>,
-
     #[clap(long, help = "The path of your custom lighthouse binary")]
     pub cl_bin: Option<String>,
-
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the cl cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub cl_extra_options: Option<String>,
 
     #[clap(
         long = "force",
@@ -641,32 +617,8 @@ the `+` is the delimiter between them two"
     #[clap(long, help = "The path of your custom reth binary")]
     pub el_reth_bin: Option<String>,
 
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the geth el cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub el_geth_extra_options: Option<String>,
-
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the reth el cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub el_reth_extra_options: Option<String>,
-
     #[clap(long, help = "The path of your custom consensus layer binary")]
     pub cl_bin: Option<String>,
-
-    #[clap(
-        long,
-        allow_hyphen_values = true,
-        help = "Custom options you want to add to the cl cmdline,
-NOTE: a pair of quotes should be used when specifying extra options"
-    )]
-    pub cl_extra_options: Option<String>,
 
     #[clap(
         long = "force",

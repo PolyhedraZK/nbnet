@@ -10,6 +10,10 @@ release:
 
 install: update
 	cargo install --force --path .
+	-@ nbnet -z > ~/.cargo/bin/zsh_nbnet.completion
+	-@ sed -i '/zsh_nbnet.completion/d' ~/.zshrc
+	-@ echo '. ~/.cargo/bin/zsh_nbnet.completion' >> ~/.zshrc
+	-@ zsh ~/.zshrc
 
 lint:
 	cargo clippy
