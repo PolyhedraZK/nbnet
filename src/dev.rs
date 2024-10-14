@@ -57,15 +57,8 @@ impl From<DevCfg> for EnvCfg {
 
                 let custom_data = CustomInfo {
                     el_geth_bin: copts.el_geth_bin.unwrap_or("geth".to_owned()),
-                    el_geth_extra_options: copts
-                        .el_geth_extra_options
-                        .unwrap_or_default(),
                     el_reth_bin: copts.el_reth_bin.unwrap_or("reth".to_owned()),
-                    el_reth_extra_options: copts
-                        .el_reth_extra_options
-                        .unwrap_or_default(),
                     cl_bin: copts.cl_bin.unwrap_or_else(|| "lighthouse".to_owned()),
-                    cl_extra_options: copts.cl_extra_options.unwrap_or_default(),
                 };
 
                 if let Some(n) = copts.env_name {

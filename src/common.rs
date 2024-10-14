@@ -21,22 +21,16 @@ pub const FEE_RECIPIENT: &str = "0x47102e476Bb96e616756ea7701C227547080Ea48";
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomInfo {
     pub el_geth_bin: String,
-    pub el_geth_extra_options: String,
     pub el_reth_bin: String,
-    pub el_reth_extra_options: String,
     pub cl_bin: String,
-    pub cl_extra_options: String,
 }
 
 impl Default for CustomInfo {
     fn default() -> Self {
         Self {
             el_geth_bin: String::from("geth"),
-            el_geth_extra_options: String::from(""),
             el_reth_bin: String::from("reth"),
-            el_reth_extra_options: String::from(""),
             cl_bin: String::from("lighthouse"),
-            cl_extra_options: String::from(""),
         }
     }
 }
