@@ -213,7 +213,7 @@ pub struct DevCreationOptions {
         short = 'n',
         long,
         default_value_t = 3,
-        help = "How many initial nodes(exclude the genesis fuck node) should be created,
+        help = "How many initial nodes(exclude the fuhrer node) should be created,
 the actual node number will be `1 + this_value`"
     )]
     pub initial_node_num: u8,
@@ -597,7 +597,7 @@ pub struct DDevCreationOptions {
         short = 'n',
         long,
         default_value_t = 3,
-        help = "How many initial nodes(exclude the genesis fuck node) should be created,
+        help = "How many initial nodes(exclude the fuhrer node) should be created,
 the actual node number will be `1 + this_value`"
     )]
     pub initial_node_num: u8,

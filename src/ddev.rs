@@ -41,7 +41,7 @@ impl EnvCfg {
 
 #[macro_export]
 macro_rules! select_nodes_by_el_kind {
-    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr, $include_fuck_nodes: expr) => {{
+    ($node_ids: expr, $geth: expr, $reth: expr, $en: expr, $include_fuhrer_nodes: expr) => {{
         if $node_ids.is_none() && !$geth && !$reth {
             None
         } else if $node_ids.is_some() && !$geth && !$reth {
@@ -74,8 +74,8 @@ macro_rules! select_nodes_by_el_kind {
 
             let mut ids = get_ids(env.meta.nodes);
 
-            if $include_fuck_nodes {
-                ids.append(&mut get_ids(env.meta.fucks));
+            if $include_fuhrer_nodes {
+                ids.append(&mut get_ids(env.meta.fuhrers));
             }
 
             if let Some(s) = $node_ids {
@@ -444,7 +444,7 @@ fi "#
             let (el_rpc_endpoints, cl_bn_rpc_endpoints): (Vec<_>, Vec<_>) = e
                 .nodes
                 .values()
-                .chain(e.fucks.values())
+                .chain(e.fuhrers.values())
                 .filter(|n| online_nodes.contains(&n.id))
                 .map(|n| {
                     (
@@ -518,7 +518,7 @@ fi "#
             let el_gc_mode = if matches!(n.kind, NodeKind::FullNode) {
                 "full"
             } else {
-                "archive" // Fuck nodes belong to The ArchiveNode
+                "archive" // Fuhrer nodes belong to The ArchiveNode
             };
 
             let cmd_init_part = format!(
@@ -618,7 +618,7 @@ nohup {reth} node \
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
         } else {
-            pnk!(Err(eg!("The fucking world is over!")))
+            pnk!(Err(eg!("The fuhrering world is over!")))
         };
 
         ////////////////////////////////////////////////
@@ -693,10 +693,10 @@ nohup {lighthouse} beacon_node \
         let cl_vc_cmd = {
             let beacon_nodes = format!("http://{local_ip}:{}", n.ports.cl_bn_rpc);
 
-            let cmd_run_part_0 = if n.id == *e.fucks.keys().next().unwrap() {
+            let cmd_run_part_0 = if n.id == *e.fuhrers.keys().next().unwrap() {
                 let id = n.id;
                 let ts = ts!();
-                // The first fuck node
+                // The first fuhrer node
                 format!(
                     r#"
 if [[ -f '{home}/{NODE_HOME_VCDATA_DST}' ]]; then
@@ -843,7 +843,7 @@ impl CustomOps for ExtraOp {
         match self {
             Self::ListWeb3Rpcs => {
                 env.meta
-                    .fucks
+                    .fuhrers
                     .values()
                     .chain(env.meta.nodes.values())
                     .for_each(|n| {
@@ -876,7 +876,7 @@ impl CustomOps for ExtraOp {
                         .meta
                         .nodes
                         .get(id)
-                        .or_else(|| env.meta.fucks.get(id))
+                        .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
                     alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, nodes.push(n));
@@ -915,7 +915,7 @@ impl CustomOps for ExtraOp {
                     env.meta
                         .nodes
                         .get_mut(&id)
-                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .or_else(|| env.meta.fuhrers.get_mut(&id))
                         .unwrap()
                         .mark = Some(GETH_MARK);
                 }
@@ -929,7 +929,7 @@ impl CustomOps for ExtraOp {
                         .meta
                         .nodes
                         .get(id)
-                        .or_else(|| env.meta.fucks.get(id))
+                        .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
                     alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, nodes.push(n));
@@ -968,7 +968,7 @@ impl CustomOps for ExtraOp {
                     env.meta
                         .nodes
                         .get_mut(&id)
-                        .or_else(|| env.meta.fucks.get_mut(&id))
+                        .or_else(|| env.meta.fuhrers.get_mut(&id))
                         .unwrap()
                         .mark = Some(RETH_MARK);
                 }
