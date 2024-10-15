@@ -931,7 +931,7 @@ impl CustomOps for ExtraOp {
                         .get(id)
                         .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
-                        .c(d!("The node(id: {id}) not found"))?;
+                        .c(d!("The node(id: {}) not found", id))?;
                     alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, nodes.push(n));
                 }
 
