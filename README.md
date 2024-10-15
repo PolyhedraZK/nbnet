@@ -2,32 +2,29 @@
 [![Rust](https://github.com/nbnet/nbnet/actions/workflows/rust.yml/badge.svg)](https://github.com/nbnet/nbnet/actions/workflows/rust.yml)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.81+-lightgray.svg)
 
-# NBnet
-
 > **Yes! This is the right weapon for you 'ETH Grandmaster' !!**
+
+# NBnet
 
 **The `nb` kit is a powerful presence for creating and managing custom ETH2 networks.**
 
+It has two modes.
+
+Mode `dev` is designed to create and manage local clusters running on a single host. It does not require complex configuration, and is an excellent tool for deploying and managing devnets, very suitable for rapid development.
+
+Mode `ddev` is designed to manage distributed multi-machine clusters, and can be used to deploy formal testnet or even mainnet. Its convenient and powerful functions do not even require DevOps to participate in, the develop team can manage the network well by themselves relying on the `nb` kit.
+
+General intro:
 - You can deploy as many networks as needed
     - Each network can easily extend to hundreds of nodes
 - You can flexibly add or kick out nodes
 - You can flexibly start and stop nodes
     - Specify explicit IDs or filter by client type
-- You can choose local deployment or multi-machine distributed deployment
 - Many other practical functions...
-
-**Clients supported list:**
-- CL, consensus layer
-    - `lighthouse`
-- EL, execution layer
-    - `geth`
-    - `reth`
-        - Limited support
-        - Check [**Known Issues**](#-known-issues-) for details
 
 ## == Quick Start ==
 
-> **NOTE: all demos here are based on Linux !!**
+**NOTE: all demos below are based on the Linux OS.**
 
 #### Prepare Binaries
 
@@ -127,8 +124,8 @@ For `nb ddev`:
 
 ## == More Detailed Tutorials ==
 
-- Check [**this page**](src/dev) for `nb dev`
-- Check [**this page**](src/ddev) for `nb ddev`
+- Check [**this page**](src/dev/README.md) for `nb dev`
+- Check [**this page**](src/ddev/README.md) for `nb ddev`
 
 ## == ENV VARs ==
 - `$NB_DDEV_HOSTS_JSON`
@@ -148,6 +145,14 @@ For `nb ddev`:
     - `ssh` connection timeout, default to 20s
     - 300s at most, any value larger than this will be truncated
     - Probably only useful if you want to transfer large files to or from hosts
+
+## == Clients Support ==
+
+- CL clients:
+  - `lighthouse`
+- EL clients:
+  - `geth`
+  - `reth`, limited support
 
 ## == Known Issues ==
 
