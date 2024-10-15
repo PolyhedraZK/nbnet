@@ -8,7 +8,7 @@ build:
 release:
 	cargo build --release --bins
 
-install: update
+install:
 	cargo install --force --path .
 	-@ nbnet -z > ~/.cargo/bin/zsh_nbnet.completion
 	-@ sed -i '/zsh_nbnet.completion/d' ~/.zshrc
@@ -19,6 +19,8 @@ lint:
 	cargo clippy
 
 update:
+	git pull
+	git submodule update --init
 	cargo update
 
 fmt:
@@ -92,5 +94,4 @@ bin_lighthouse:
 	cd submodules/lighthouse && make
 
 update_submods:
-	git submodule update --init
-	# git submodule update --init --recursive
+	git submodule update --init --recursive
