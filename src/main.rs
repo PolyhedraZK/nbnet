@@ -8,7 +8,7 @@ use clap_complete::{
     shells::{Bash, Zsh},
 };
 use ruc::*;
-use std::io;
+use std::{fs, io};
 
 mod cfg;
 mod common;
@@ -23,12 +23,31 @@ fn main() {
         BASE_DIR.as_str()
     )));
 
+    let err_mgmt = |e: Box<dyn RucError>, mark: &str| {
+        let e = e.to_string();
+        let err = e.trim_start().trim_end();
+        if 24 < err.lines().count() {
+            let p = format!("/tmp/nbnet.{mark}.{}", ts!());
+            pnk!(fs::write(&p, err));
+            eprintln!(
+                "\x1b[0;31mWARNING\x1b[0m: err occur!\nThe err log is located at: {}",
+                p
+            );
+        } else {
+            eprintln!("{err}");
+        }
+    };
+
     match config.commands {
         Commands::Dev(cfg) => {
-            pnk!(dev::EnvCfg::from(cfg).exec());
+            if let Err(e) = dev::EnvCfg::from(cfg).exec() {
+                err_mgmt(e, "dev");
+            }
         }
         Commands::DDev(cfg) => {
-            pnk!(ddev::EnvCfg::from(cfg).exec());
+            if let Err(e) = ddev::EnvCfg::from(cfg).exec() {
+                err_mgmt(e, "d_dev");
+            }
         }
         Commands::GenZshCompletions => {
             generate(Zsh, &mut Cfg::command(), crate_name!(), &mut io::stdout());
