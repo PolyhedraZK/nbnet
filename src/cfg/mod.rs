@@ -236,7 +236,8 @@ has no effect when the `--genesis-data-pre-created` option is specified"
     #[clap(
         short = 'g',
         long,
-        help = "The path of a cfg file in the form of 'https://github.com/NBnet/EGG/blob/master/defaults.env',
+        help = "The path of a cfg file in the form of
+'https://github.com/rust-util-collections/EGG/blob/master/defaults.env',
 has no effect when the `--genesis-data-pre-created` option is specified"
     )]
     pub genesis_custom_settings_path: Option<String>,
@@ -245,7 +246,7 @@ has no effect when the `--genesis-data-pre-created` option is specified"
         short = 'G',
         long,
         help = "Concated paths for specifying the pre-created genesis.tar.gz and vcdata.tar.gz,
-they are usally created by the `make build` of 'https://github.com/NBnet/EGG',
+they are usally created by the `make build` of 'https://github.com/rust-util-collections/EGG',
 value format: '/PATH/TO/genesis.tar.gz+/PATH/TO/vcdata.tar.gz',
 the `+` is the delimiter between them two"
     )]
@@ -596,7 +597,8 @@ has no effect when the `--genesis-data-pre-created` option is specified"
     #[clap(
         short = 'g',
         long,
-        help = "The path of a cfg file in the form of 'https://github.com/NBnet/EGG/blob/master/defaults.env',
+        help = "The path of a cfg file in the form of
+'https://github.com/rust-util-collections/EGG/blob/master/defaults.env',
 has no effect when the `--genesis-data-pre-created` option is specified"
     )]
     pub genesis_custom_settings_path: Option<String>,
@@ -605,7 +607,7 @@ has no effect when the `--genesis-data-pre-created` option is specified"
         short = 'G',
         long,
         help = "Concated paths for specifying the pre-created genesis.tar.gz and vcdata.tar.gz,
-they are usally created by the `make build` of 'https://github.com/NBnet/EGG',
+they are usally created by the `make build` of 'https://github.com/rust-util-collections/EGG',
 value format: '/PATH/TO/genesis.tar.gz+/PATH/TO/vcdata.tar.gz',
 the `+` is the delimiter between them two"
     )]

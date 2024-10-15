@@ -1,6 +1,6 @@
 [package]
-name = "nbnet"
-version = "0.1.1"
+name = "nb"
+version = "0.2.0"
 edition = "2021"
 authors = ["hui.fan@mail.ru"]
 build = "build.rs"
@@ -23,7 +23,7 @@ rayon = "1.10.0"
 # self-maintained crates
 ruc = { version = "7.5", features = [ "http", "algo_rand" ] }
 
-chaindev = "0.37.0"
+chaindev = "0.38.1"
 vsdb = { version = "3.0", default-features = false }
 
 [build-dependencies]

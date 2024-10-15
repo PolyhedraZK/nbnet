@@ -10,9 +10,9 @@ release:
 
 install:
 	cargo install --force --path .
-	-@ nbnet -z > ~/.cargo/bin/zsh_nbnet.completion
-	-@ sed -i '/zsh_nbnet.completion/d' ~/.zshrc
-	-@ echo '. ~/.cargo/bin/zsh_nbnet.completion' >> ~/.zshrc
+	-@ nb -z > ~/.cargo/bin/zsh_nb.completion
+	-@ sed -i '/zsh_nb.completion/d' ~/.zshrc
+	-@ echo '. ~/.cargo/bin/zsh_nb.completion' >> ~/.zshrc
 	-@ zsh ~/.zshrc
 
 lint:
@@ -29,69 +29,63 @@ fmt:
 fmtall:
 	bash tools/fmt.sh
 
-docker_runtime:
-	- docker images --format=json | grep '"Tag":"\\u003cnone\\u003e"' | jq '.ID' | xargs docker image rm
-	if [ 0 -eq $(shell docker images --format json | jq '.Tag' | grep -c 'nbnet_24.04') ]; then \
-		docker pull ubuntu:24.04 || exit 1 ; \
-		docker tag ubuntu:24.04 ubuntu:nbnet_24.04 || exit 1 ; \
-	fi
-	cp ~/.ssh/authorized_keys ./
-	docker build -t ubuntu:nbnet_runtime_v0 .
-	- docker rm -f nbnet_runtime
-	mkdir -p ${HOME}/__NB_DATA__/usr_local_bin
-	chmod -R 1777 ${HOME}/__NB_DATA__
-	docker run --rm -d --network=host \
-		-v ${HOME}/__NB_DATA__:/tmp \
-		--name nbnet_runtime \
-		ubuntu:nbnet_runtime_v0
-	docker ps
+ddev_docker_runtime: install
+	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
+	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
+	nb ddev host-exec -c 'cd /tmp && bash -x /tmp/ddr.sh'
 
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_geth: bin_geth
 	cd submodules/go-ethereum && make geth
-	- nbnet ddev stop --geth
-	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/geth /usr/local/bin/geth"'
-	nbnet ddev host-put-file --local-path=submodules/go-ethereum/build/bin/geth --remote-path=/tmp/geth
-	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
+	- nb ddev stop --geth
+	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/geth /usr/local/bin/geth"'
+	nb ddev host-put-file --local-path=submodules/go-ethereum/build/bin/geth --remote-path=/tmp/geth
+	nb ddev host-exec -c 'sudo su -c "mv /tmp/geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
 
 deploy_bin_reth: bin_reth
 	cd submodules/reth && make build
-	- nbnet ddev stop --reth
-	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/reth /usr/local/bin/reth"'
-	nbnet ddev host-put-file --local-path=submodules/reth/target/release/reth --remote-path=/tmp/reth
-	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
+	- nb ddev stop --reth
+	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/reth /usr/local/bin/reth"'
+	nb ddev host-put-file --local-path=submodules/reth/target/release/reth --remote-path=/tmp/reth
+	nb ddev host-exec -c 'sudo su -c "mv /tmp/reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
 
 deploy_bin_lighthouse: bin_lighthouse
 	cd submodules/lighthouse && make
-	- nbnet ddev stop
-	nbnet ddev host-exec -c 'sudo su -c "rm -f /tmp/lighthouse /usr/local/bin/lighthouse"'
-	nbnet ddev host-put-file --local-path=submodules/lighthouse/target/release/lighthouse --remote-path=/tmp/lighthouse
-	nbnet ddev host-exec -c 'sudo su -c "mv /tmp/lighthouse /usr/local/bin/lighthouse && chmod +x /usr/local/bin/lighthouse"'
+	- nb ddev stop
+	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/lighthouse /usr/local/bin/lighthouse"'
+	nb ddev host-put-file --local-path=submodules/lighthouse/target/release/lighthouse --remote-path=/tmp/lighthouse
+	nb ddev host-exec -c 'sudo su -c "mv /tmp/lighthouse /usr/local/bin/lighthouse && chmod +x /usr/local/bin/lighthouse"'
 
 start_filter_reth:
-	nbnet ddev start --reth
+	nb ddev start --reth
 
 start_filter_geth:
-	nbnet ddev start --geth
+	nb ddev start --geth
 
 start_all:
-	nbnet ddev start
+	nb ddev start
 
 git_pull_force:
 	git fetch
 	git reset --hard origin/master
 
-bin_all: bin_geth bin_reth bin_lighthouse
+bin_all: install bin_geth bin_reth bin_lighthouse
 
 bin_geth:
+	mkdir -p ~/.cargo/bin
 	cd submodules/go-ethereum && make geth
+	cp -f submodules/go-ethereum/build/bin/geth ~/.cargo/bin/
 
 bin_reth:
+	mkdir -p ~/.cargo/bin
 	cd submodules/reth && make build
+	cp -f submodules/reth/target/release/reth ~/.cargo/bin/
 
 bin_lighthouse:
+	mkdir -p ~/.cargo/bin
 	cd submodules/lighthouse && make
+	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
 
 update_submods:
 	git submodule update --init --recursive

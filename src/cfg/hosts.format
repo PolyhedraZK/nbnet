@@ -45,7 +45,7 @@ If the `ext_ip` is missing, will fallback to the `local_ip` for external connect
 The `weight` should be a positive number(1~255),
 if not set, the number of CPU threads on the host will be used,
 the larger the number, the more nodes the host will carry;
-The configuration here will override the `$NBNET_DDEV_HOSTS_JSON` settings.
+The configuration here will override the `$NB_DDEV_HOSTS_JSON` settings.
 
 # The second way is to use the custom expressions(contents directly, not a path!),
 FORMAT:
@@ -78,4 +78,4 @@ All whitespace characters(\n,\t, etc.) will be removed before parsing the value;
 The `host_weight` should be a positive number(1~255),
 if not set, the number of CPU threads on the host will be used,
 the larger the number, the more nodes the host will carry;
-The configuration here will override the `$NBNET_DDEV_HOSTS` settings.
+The configuration here will override the `$NB_DDEV_HOSTS` settings.

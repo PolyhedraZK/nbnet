@@ -116,7 +116,7 @@ impl From<DDevCfg> for EnvCfg {
                     .or_else(env_hosts);
                 let hosts = pnk!(
                     hosts,
-                    "No hosts registered! Use `--hosts` or $NBNET_DDEV_HOSTS to set."
+                    "No hosts registered! Use `--hosts` or $NB_DDEV_HOSTS to set."
                 );
 
                 let (genesis_tgz_path, genesis_vkeys_tgz_path) =
@@ -804,12 +804,12 @@ nohup {lighthouse} validator_client \
 //////////////////////////////////////////////////
 
 fn env_hosts() -> Option<Hosts> {
-    if let Ok(json) = env::var("NBNET_DDEV_HOSTS_JSON") {
+    if let Ok(json) = env::var("NB_DDEV_HOSTS_JSON") {
         let r = fs::read(json)
             .c(d!())
             .and_then(|b| Hosts::from_json_cfg(&b).c(d!()));
         Some(pnk!(r))
-    } else if let Ok(expr) = env::var("NBNET_DDEV_HOSTS") {
+    } else if let Ok(expr) = env::var("NB_DDEV_HOSTS") {
         Some(Hosts::from(&expr))
     } else {
         None

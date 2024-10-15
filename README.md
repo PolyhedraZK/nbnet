@@ -2,54 +2,163 @@
 [![Rust](https://github.com/nbnet/nbnet/actions/workflows/rust.yml/badge.svg)](https://github.com/nbnet/nbnet/actions/workflows/rust.yml)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.81+-lightgray.svg)
 
-# nbnet
+# NBnet
 
-### Known issues
+> **Yes! This is the right weapon for you 'ETH Grandmaster' !!**
 
-Reth related:
-- The `fullnode` mode of `reth` can not be used, it is unstable in practice
-- `reth` can not be used as the genesis node, it will hang at the next restarting
-- `reth` will fail to restart without a final block(before the first final block)
+**The `nb` kit is a powerful presence for creating and managing custom ETH2 networks.**
 
-### Cmdline completions
+- You can deploy as many networks as needed
+    - Each network can easily extend to hundreds of nodes
+- You can flexibly add or kick out nodes
+- You can flexibly start and stop nodes
+    - Specify explicit IDs or filter by client type
+- You can choose local deployment or multi-machine distributed deployment
+- Many other practical functions...
 
-For zsh:
+**Clients supported list:**
+- CL, consensus layer
+    - `lighthouse`
+- EL, execution layer
+    - `geth`
+    - `reth`
+        - Limited support
+        - Check [**Known Issues**](#-known-issues-) for details
+
+## == Quick Start ==
+
+> **NOTE: all demos here are based on Linux !!**
+
+#### Prepare Binaries
+
+Use `make bin_all` to build the necessary binaries:
+- geth
+- reth
+- lighthouse
+- nb
+
+If you do not want to spend the compiling time, feel free to use your own binaries:
+- Downloading them from the offical sites of these projects
+- Or use your own pre-compiled binaries
+
+For the `nb` binary, download the statically compiled(linked) package from [**this link**](https://github.com/NBnet/nbnet), and put it in your `$PATH`.
+
+If you want to compile a `nb` binary from source, use `make install`. It will be located at `~/.cargo/bin/`, so you should make sure that this directory is under your `$PATH`. We assume you have already been familiar with the configuration of the rust development environment, so we won't introduce this aspect.
+
+#### Command Line Usage
+
 ```shell
-nbnet -z > ~/.cargo/bin/zsh.nbnet
-echo -e "\n source ~/.cargo/bin/zsh.nbnet" >> ~/.zshrc
-source ~/.zshrc
-```
-
-For bash:
-```shell
-nbnet -b > ~/.cargo/bin/bash.nbnet
-echo -e "\n source ~/.cargo/bin/bash.nbnet" >> ~/.bashrc
-source ~/.bashrc
-```
-
-### Cmdline usage
-
-```shell
-# nbnet -h
-Usage: nbnet <COMMAND>
+# nb -h
+Usage: nb <COMMAND>
 
 Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
-  help                      Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help     Print help
-  -V, --version  Print version
 ```
 
-### ENV VARs
+For more detailed information, you can get it through the `nb <SUBCOMMAND> -h`.
 
-- `${NBNET_DDEV_HOSTS_JSON}`
+For example:
+```shell
+# nb dev destroy -h
+Destroy an existing ENV
+
+Usage: nb dev destroy [OPTIONS]
+
+Options:
+  -e, --env-name <ENV_NAME>
+      --force                Destroy the target ENV even if it is protected
+```
+
+#### Shell Completion
+
+Before any real `nb` operation, let's config the shell completion to improve command line efficiency.
+
+For zsh:
+```shell
+mkdir -p ~/.cargo/bin
+nb -z > ~/.cargo/bin/zsh_nb.completion
+echo -e "\n source ~/.cargo/bin/zsh_nb.completion" >> ~/.zshrc
+source ~/.zshrc
+```
+
+For bash:
+```shell
+mkdir -p ~/.cargo/bin
+nb -b > ~/.cargo/bin/bash_nb.completion
+echo -e "\n source ~/.cargo/bin/bash_nb.completion" >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### A simple workflow
+
+For `nb dev`:
+
+1. `nb dev create`: create a new ENV
+    - 4 nodes, the first one own all the initial validators
+    - the el client is geth
+    - the cl client is lighthouse
+2. `nb dev show`: show the information of the ENV
+3. `nb dev stop`: stop all nodes of the ENV
+4. `nb dev start`: restart all nodes of the ENV
+5. `nb dev push-node`: add a new node to the ENV
+6. `nb dev kick-node`: remove a node from the ENV
+    - the first node can never be removed
+7. `nb dev destroy`: destroy the entire ENV
+
+For `nb ddev`:
+
+1. Declare the remote hosts
+    - `export NB_DDEV_HOSTS="10.0.0.2#bob,10.0.0.3#bob"`
+    - This means: you can log in to these two hosts through ssh protocol with username bob without password
+2. `nb ddev create`: create a new ENV
+    - 4 nodes, the first one own all the initial validators
+    - the el client is geth
+    - the cl client is lighthouse
+3. `nb ddev show`: show the information of the ENV
+4. `nb ddev stop`: stop all nodes of the ENV
+5. `nb ddev start`: restart all nodes of the ENV
+6. `nb ddev push-node`: add a new node to the ENV
+7. `nb ddev kick-node`: remove a node from the ENV
+    - the first node can never be removed
+8. `nb ddev destroy`: destroy the entire ENV
+
+## == More Detailed Tutorials ==
+
+- Check [**this page**](src/dev) for `nb dev`
+- Check [**this page**](src/ddev) for `nb ddev`
+
+## == ENV VARs ==
+- `$NB_DDEV_HOSTS_JSON`
     - Specify hosts infomations in the json file path style
     - Check [**the help info**](src/cfg/hosts.format) for details
-- `${NBNET_DDEV_HOSTS}`
+- `$NB_DDEV_HOSTS`
     - Specify hosts infomations in the custom expressions style
     - Check [**the help info**](src/cfg/hosts.format) for details
+    - The priority is lower than `$NB_DDEV_HOSTS_JSON`
+- `$RUNTIME_CHAIN_DEV_BASE_DIR`
+    - All runtime data will be mgmt under the path declared by this VAR
+    - Default: `/tmp/__CHAIN_DEV__`
+- `$CHAIN_DEV_EGG_REPO`
+    - Where to clone the EGG package for generating the genesis data
+    - Default: [**rust-util-collections/EGG**](https://github.com/rust-util-collections/EGG)
+- `$RUC_SSH_TIMEOUT`
+    - `ssh` connection timeout, default to 20s
+    - 300s at most, any value larger than this will be truncated
+    - Probably only useful if you want to transfer large files to or from hosts
+
+## == Known Issues ==
+
+Reth related:
+- `reth` can not be used as the genesis node
+    - It will hang at the next restarting
+- `reth`'s `fullnode` mode is unstable in practice
+    - This mode is currently banned in `nb`
+- `reth` will fail to restart without a finalized block
+    - That is, reth nodes should be added after the first finalized block
+
+![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
+![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
+![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
