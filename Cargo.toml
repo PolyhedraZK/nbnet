@@ -43,5 +43,5 @@ default = []
 # chaindev = { path = "../chaindev" }
 
 [profile.release]
-lto = "thin"
+# lto = "thin"
 overflow-checks = true
