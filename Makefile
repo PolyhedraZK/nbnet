@@ -29,11 +29,6 @@ fmt:
 fmtall:
 	bash tools/fmt.sh
 
-ddev_docker_runtime: install
-	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
-	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
-	nb ddev host-exec -c 'cd /tmp && bash -x /tmp/ddr.sh'
-
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_geth: bin_geth
@@ -66,10 +61,6 @@ start_filter_geth:
 start_all:
 	nb ddev start
 
-git_pull_force:
-	git fetch
-	git reset --hard origin/master
-
 bin_all: install bin_geth bin_reth bin_lighthouse
 
 bin_geth:
@@ -86,6 +77,18 @@ bin_lighthouse:
 	mkdir -p ~/.cargo/bin
 	cd submodules/lighthouse && make
 	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
+
+docker_runtime:
+	bash -x tools/ddev_docker_runtime.sh
+
+ddev_docker_runtime: install
+	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
+	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
+	nb ddev host-exec -c 'cd /tmp && bash -x /tmp/ddr.sh'
+
+git_pull_force:
+	git fetch
+	git reset --hard origin/master
 
 update_submods:
 	git submodule update --init --recursive
