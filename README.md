@@ -164,6 +164,95 @@ Reth related:
 - `reth` will fail to restart without a finalized block
     - That is, reth nodes should be added after the first finalized block
 
+## Q&A
+
+##### 1. How to set a custom chain id?
+
+```shell
+echo 'export CHAIN_ID="1234"' > custom.env
+nb dev create -g custom.env
+# nb ddev create -g custom.env
+```
+
+##### 2. How to set a custom block time?
+
+Method 1:
+```shell
+BLOCK_TIME=2 # 2 seconds
+nb dev create -t $BLOCK_TIME
+# nb ddev create -t $BLOCK_TIME
+```
+
+Method 2:
+```shell
+echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
+nb dev create -g custom.env
+# nb ddev create -g custom.env
+```
+
+'Method 1' has higher priority.
+
+##### 3. Too slow when `nb dev/ddev create`
+
+This is most likely a network problem.
+
+During the `nb dev/ddev create` process, we need to clone the
+[**EGG**](https://github.com/rust-util-collections/EGG)
+repository from GitHub. If you live in a restricted country, such as North Korea, you can use a mirror source from your own country or a friendly country.
+
+For example:
+```shell
+export CHAIN_DEV_EGG_REPO="https://gitee.com/kt10/EGG"
+```
+
+If you want to further shorten the startup time, you can build the
+[**EGG**](https://github.com/rust-util-collections/EGG) manually and assign it to `nb`.
+It should be noted that this method will cause all the custom settings of genesis from the command line to become invalid. All your customizations need to be configured directly in the
+[**EGG**](https://github.com/rust-util-collections/EGG).
+
+For example:
+```shell
+cd EGG
+make build
+nb dev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
+# nb ddev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
+```
+
+##### 4. How to set multiple genesis parameters at the same time
+
+```shell
+echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
+echo 'export CHAIN_ID="1234"' >> custom.env
+
+# Many other VAR declarations ...
+
+nb dev create -g custom.env
+# nb ddev create -g custom.env
+```
+
+For all VARs that can be declared, please check the [**defaults.env**](config/defaults.env) file.
+
+##### 5. I don't want to store `nb` data under `/tmp`, how should I do?
+
+There are two recommended methods.
+
+Assume your target path is declared by `$P`.
+
+Method 1:
+```shell
+mkdir -p $P
+export RUNTIME_CHAIN_DEV_BASE_DIR="$P"
+```
+
+Method 2:
+```shell
+mkdir -p $P
+ln -sv /tmp/__CHAIN_DEV__ $P
+
+# Needed by `ddev` only!
+nb ddev host-exec -c "mkdir -p $P && ln -sv /tmp/__CHAIN_DEV__ $P"
+```
+
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
