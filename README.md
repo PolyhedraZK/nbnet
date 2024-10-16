@@ -150,6 +150,7 @@ For `nb ddev`:
 
 - CL clients:
   - `lighthouse`
+  - `prysm`, not implemented yet, but in the plan
 - EL clients:
   - `geth`
   - `reth`, limited support
