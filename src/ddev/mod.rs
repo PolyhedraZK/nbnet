@@ -848,10 +848,11 @@ impl CustomOps for ExtraOp {
                     .as_ref()
                     .map(|h| pnk!(parse_cfg(h)))
                     .or_else(env_hosts));
-                let s = if *json {
-                    serde_json::to_string_pretty(&hosts).unwrap()
+                if *json {
+                    let s = serde_json::to_string_pretty(&hosts).unwrap();
+                    println!("{s}");
                 } else {
-                    hosts
+                    let s = hosts
                         .as_ref()
                         .values()
                         .map(|h| {
@@ -868,9 +869,9 @@ impl CustomOps for ExtraOp {
                             )
                         })
                         .collect::<Vec<_>>()
-                        .join(",\n")
+                        .join(",\n");
+                    println!("\"\n{s}\n\"");
                 };
-                println!("\"\n{s}\n\"");
                 Ok(())
             }
             Self::ListWeb3Rpcs => {

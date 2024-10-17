@@ -34,6 +34,7 @@ Commands:
   push-hosts          Add some new hosts to the cluster
   kick-hosts          Remove some hosts from the cluster
   show                Default operation, show the information of an existing ENV
+  show-hosts          Show the remote host configations in JSON or the `nb` native format
   show-all            Show informations of all existing ENVs
   list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
   list                Show names of all existing ENVs
@@ -69,10 +70,54 @@ You can use `nb ddev list-web3-rpcs` to get all Web3 endpoints.
 
 If your remote hosts has different OSs with your localhost, your local compiled binaries may not run correctly on the remote hosts. For this situation, there is a `make ddev_docker_runtime` that can solve this problem.
 
-The premise is that `docker` has already been installed on your remote hosts.
-You can use the `nb ddev host-exec` to batch install docker or any other apps, for example: `nb ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.
+> The premise is that `docker` has already been installed on your remote hosts.
+> You can use the `nb ddev host-exec` to batch install docker or any other apps, for example: `nb ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.
 
-After a successful `make ddev_docker_runtime`, you should reset the `$NB_DDEV_HOSTS`(change all the ssh user name to 'nb', change all the ssh port to '2222').
+After a successful `make ddev_docker_runtime`, you should reset the `$NB_DDEV_HOSTS`(change all the ssh user name to 'nb', change all the ssh port to '2222'). The command itself will output suggested new values, usually without the need for you to edit them manually.
+
+Sample outputs of the `make ddev_docker_runtime`:
+```
+The new contents of the ${NB_DDEV_HOSTS_JSON} file should be:
+{
+  "10.0.0.35|3.15.10.61": {
+    "local_ip": "10.0.0.35",
+    "local_network_id": "",
+    "ext_ip": "3.15.10.61",
+    "ssh_user": "nb",
+    "ssh_port": 2222,
+    "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
+    "weight": 16,
+    "node_cnt": 0
+  },
+  "10.0.0.56|3.19.7.209": {
+    "local_ip": "10.0.0.56",
+    "local_network_id": "",
+    "ext_ip": "3.19.7.209",
+    "ssh_user": "nb",
+    "ssh_port": 2222,
+    "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
+    "weight": 16,
+    "node_cnt": 0
+  },
+  "10.0.0.58|3.17.11.90": {
+    "local_ip": "10.0.0.58",
+    "local_network_id": "",
+    "ext_ip": "3.17.11.90",
+    "ssh_user": "nb",
+    "ssh_port": 2222,
+    "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
+    "weight": 16,
+    "node_cnt": 0
+  }
+}
+
+The new value of the ${NB_DDEV_HOSTS} should be:
+"
+  10.0.0.35|3.15.10.61#nb#22#16#/home/bob/.ssh/id_ed25519,
+  10.0.0.56|3.19.7.209#nb#22#16#/home/bob/.ssh/id_ed25519,
+  10.0.0.58|3.17.11.90#nb#22#16#/home/bob/.ssh/id_ed25519
+"
+```
 
 #### Management of 'a single cluster/multiple clusters'
 
@@ -110,20 +155,16 @@ Also, there are additional 4 options:
 A json file path can also be passed to the `--hosts` option or as the value of `$NB_DDEV_HOSTS_JSON`, the json contents should be like:
 ```json
 {
-  "fallback_ssh_local_seckeys": [
-    "/home/bob/.ssh/id_ed25519"
-  ],
   "fallback_ssh_port": 22,
+  "fallback_ssh_sk_path": "/home/bob/.ssh/id_ed25519",
   "fallback_ssh_user": "bob",
   "fallback_weight": 32,
   "hosts": [
     {
       "ext_ip": "8.8.8.8",
       "local_ip": "10.0.0.2",
-      "ssh_local_seckeys": [
-        "/home/fh/alice/.ssh/id_rsa"
-      ],
       "ssh_port": 2222,
+      "ssh_private_key_path": "/home/fh/alice/.ssh/id_rsa",
       "ssh_user": "alice",
       "weight": 8
     },
@@ -134,10 +175,7 @@ A json file path can also be passed to the `--hosts` option or as the value of `
     {
       "ext_ip": "8.8.4.4",
       "local_ip": "10.0.0.4",
-      "ssh_local_seckeys": [
-        "/home/jack/.ssh/id_rsa",
-        "/home/jack/.ssh/id_ed25519"
-      ],
+      "ssh_private_key_path": "/home/jack/.ssh/id_ed25519",
       "ssh_user": "jack"
     }
   ]
