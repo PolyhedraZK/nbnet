@@ -63,17 +63,17 @@ start_all:
 
 bin_all: install bin_geth bin_reth bin_lighthouse
 
-bin_geth:
+bin_geth: update_submods
 	mkdir -p ~/.cargo/bin
 	cd submodules/go-ethereum && make geth
 	cp -f submodules/go-ethereum/build/bin/geth ~/.cargo/bin/
 
-bin_reth:
+bin_reth: update_submods
 	mkdir -p ~/.cargo/bin
 	cd submodules/reth && make build
 	cp -f submodules/reth/target/release/reth ~/.cargo/bin/
 
-bin_lighthouse:
+bin_lighthouse: update_submods
 	mkdir -p ~/.cargo/bin
 	cd submodules/lighthouse && make
 	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
@@ -91,4 +91,5 @@ git_pull_force:
 	git reset --hard origin/master
 
 update_submods:
-	git submodule update --init --recursive
+	git submodule update --init
+	# git submodule update --init --recursive
