@@ -857,13 +857,12 @@ impl CustomOps for ExtraOp {
                         .values()
                         .map(|h| {
                             format!(
-                                "  {}{}{}{}{}#nb#{}#{}#{}",
+                                "  {}{}{}{}{}#nb#2222#{}#{}",
                                 h.meta.addr.local_network_id,
                                 alt!(h.meta.addr.local_network_id.is_empty(), "", "%"),
                                 h.meta.addr.local_ip,
                                 alt!(h.meta.addr.ext_ip.is_none(), "", "|"),
                                 h.meta.addr.ext_ip.as_deref().unwrap_or_default(),
-                                h.meta.ssh_port,
                                 h.weight,
                                 h.meta.ssh_sk_path.to_str().unwrap_or_default()
                             )
