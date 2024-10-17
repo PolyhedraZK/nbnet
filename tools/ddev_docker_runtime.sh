@@ -6,7 +6,7 @@ docker_file=$1
 dir="/tmp/NB_DOCKER_RUNTIME_BUILD_DIR_${RANDOM}_$(date +%s)"
 
 mkdir -p ${HOME}/__NB_DATA__/usr_local_bin || exit 1
-chmod -R 1777 ${HOME}/__NB_DATA__ || exit 1
+chmod -R 1777 ${HOME}/__NB_DATA__ # allow some unknown files, `|| exit 1`
 
 mkdir $dir || exit 1
 cd $dir || exit 1
