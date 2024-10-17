@@ -14,9 +14,9 @@ use chaindev::{
             collect_files_from_nodes as env_collect_files,
             collect_tgz_from_nodes as env_collect_tgz, Remote,
         },
-        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, HostAddr, Hosts,
-        Node, NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST,
-        NODE_HOME_VCDATA_DST,
+        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, HostAddr,
+        HostExpression, Hosts, Node, NodeCmdGenerator, NodeKind, Op,
+        NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
     },
     CustomOps, EnvName, NodeID,
 };
@@ -282,6 +282,9 @@ impl From<DDevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::Show
+            }
+            DDevOp::ShowHosts { hosts, json } => {
+                Op::Custom(ExtraOp::ShowHosts((hosts, json)))
             }
             DDevOp::ListWeb3Rpcs { env_name } => {
                 if let Some(n) = env_name {
@@ -829,6 +832,7 @@ fn parse_cfg(json_path_or_expr: &str) -> Result<Hosts> {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
+    ShowHosts((Option<HostExpression>, bool /*in JSON format or not*/)),
     ListWeb3Rpcs,
     GetLogs(Option<String>),
     DumpVcData(Option<String>),
@@ -838,10 +842,40 @@ enum ExtraOp {
 
 impl CustomOps for ExtraOp {
     fn exec(&self, en: &EnvName) -> Result<()> {
-        let mut env = load_sysenv(en).c(d!())?;
-
         match self {
+            Self::ShowHosts((hosts, json)) => {
+                let hosts = pnk!(hosts
+                    .as_ref()
+                    .map(|h| pnk!(parse_cfg(h)))
+                    .or_else(env_hosts));
+                let s = if *json {
+                    serde_json::to_string_pretty(&hosts).unwrap()
+                } else {
+                    hosts
+                        .as_ref()
+                        .values()
+                        .map(|h| {
+                            format!(
+                                "  {}{}{}{}{}#{}#{}#{}#{}",
+                                h.meta.addr.local_network_id,
+                                alt!(h.meta.addr.local_network_id.is_empty(), "", "%"),
+                                h.meta.addr.local_ip,
+                                alt!(h.meta.addr.ext_ip.is_none(), "", "|"),
+                                h.meta.addr.ext_ip.as_deref().unwrap_or_default(),
+                                h.meta.ssh_user,
+                                h.meta.ssh_port,
+                                h.weight,
+                                h.meta.ssh_sk_path.to_str().unwrap_or_default()
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(",\n")
+                };
+                println!("\"\n{s}\n\"");
+                Ok(())
+            }
             Self::ListWeb3Rpcs => {
+                let env = load_sysenv(en).c(d!())?;
                 env.meta
                     .fuhrers
                     .values()
@@ -856,7 +890,7 @@ impl CustomOps for ExtraOp {
                 Ok(())
             }
             Self::GetLogs(ldir) => env_collect_files(
-                &env,
+                &load_sysenv(en).c(d!())?,
                 &[
                     &format!("{EL_DIR}/{EL_LOG_NAME}"),
                     &format!("{CL_BN_DIR}/{CL_BN_LOG_NAME}"),
@@ -866,10 +900,12 @@ impl CustomOps for ExtraOp {
                 ldir.as_deref(),
             )
             .c(d!()),
-            Self::DumpVcData(ldir) => {
+            Self::DumpVcData(ldir) => load_sysenv(en).c(d!()).and_then(|env| {
                 env_collect_tgz(&env, &[CL_VC_DIR], ldir.as_deref()).c(d!())
-            }
+            }),
             Self::SwitchELToGeth(ids) => {
+                let mut env = load_sysenv(en).c(d!())?;
+
                 let mut nodes = vec![];
                 for id in ids.iter() {
                     let n = env
@@ -923,6 +959,8 @@ impl CustomOps for ExtraOp {
                 env.write_cfg().c(d!())
             }
             Self::SwitchELToReth(ids) => {
+                let mut env = load_sysenv(en).c(d!())?;
+
                 let mut nodes = vec![];
                 for id in ids.iter() {
                     let n = env

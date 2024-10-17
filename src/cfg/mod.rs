@@ -455,6 +455,17 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
+    #[clap(about = "Show the remote host configations in JSON")]
+    ShowHosts {
+        #[clap(
+            short = 'H',
+            long,
+            help = include_str!("hosts.format")
+        )]
+        hosts: Option<HostExpression>,
+        #[clap(long, help = "Show results in the JSON format")]
+        json: bool,
+    },
     #[clap(about = "Show informations of all existing ENVs")]
     ShowAll,
     #[clap(

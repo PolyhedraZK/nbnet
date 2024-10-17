@@ -85,6 +85,12 @@ ddev_docker_runtime: install
 	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
 	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
 	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile'
+	@ printf '\n\x1b[0;33mThe new contents of the $${NB_DDEV_HOSTS_JSON} file should be:\x1b[0m\n'
+	@ nb ddev show-hosts --json \
+		| sed -r 's/("ssh_port": )[0-9]+/\12222/g' \
+		| sed -r 's/("ssh_user": ")\w*/\1nb/g'
+	@ printf '\n\x1b[0;33mThe new value of the $${NB_DDEV_HOSTS} should be:\x1b[0m\n'
+	@ nb ddev show-hosts
 
 git_pull_force:
 	git fetch
