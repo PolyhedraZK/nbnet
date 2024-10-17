@@ -96,6 +96,6 @@ git_pull_force:
 	git fetch
 	git reset --hard origin/master
 
-update_submods:
+submodules:
 	git submodule update --init
 	# git submodule update --init --recursive
