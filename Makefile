@@ -79,12 +79,12 @@ bin_lighthouse: update_submods
 	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
 
 docker_runtime:
-	bash -x tools/ddev_docker_runtime.sh
+	bash -x tools/ddev_docker_runtime.sh $(shell pwd)/Dockerfile
 
 ddev_docker_runtime: install
 	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
 	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
-	nb ddev host-exec -c 'cd /tmp && bash -x /tmp/ddr.sh'
+	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile'
 
 git_pull_force:
 	git fetch
