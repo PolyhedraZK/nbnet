@@ -27,7 +27,7 @@ docker build -t ubuntu:nbnet_runtime_v0 . || exit 1
 
 docker rm -f nbnet_runtime
 
-docker run --rm -d --network=host \
+docker run --restart always --rm -d --network=host \
     -v ${HOME}/__NB_DATA__:/tmp \
     --name nbnet_runtime \
     ubuntu:nbnet_runtime_v0 || exit 1
