@@ -32,21 +32,18 @@ fmtall:
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_geth: bin_geth
-	cd submodules/go-ethereum && make geth
 	@- nb ddev stop --geth 2>/dev/null
 	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/geth /usr/local/bin/geth"'
 	nb ddev host-put-file --local-path=submodules/go-ethereum/build/bin/geth --remote-path=/tmp/geth
 	nb ddev host-exec -c 'sudo su -c "mv /tmp/geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
 
 deploy_bin_reth: bin_reth
-	cd submodules/reth && make build
 	@- nb ddev stop --reth 2>/dev/null
 	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/reth /usr/local/bin/reth"'
 	nb ddev host-put-file --local-path=submodules/reth/target/release/reth --remote-path=/tmp/reth
 	nb ddev host-exec -c 'sudo su -c "mv /tmp/reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
 
 deploy_bin_lighthouse: bin_lighthouse
-	cd submodules/lighthouse && make
 	@- nb ddev stop 2>/dev/null
 	nb ddev host-exec -c 'sudo su -c "rm -f /tmp/lighthouse /usr/local/bin/lighthouse"'
 	nb ddev host-put-file --local-path=submodules/lighthouse/target/release/lighthouse --remote-path=/tmp/lighthouse
