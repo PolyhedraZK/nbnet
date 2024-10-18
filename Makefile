@@ -10,10 +10,10 @@ release:
 
 install:
 	cargo install --force --path .
-	-@ nb -z > ~/.cargo/bin/zsh_nb.completion
-	-@ sed -i '/zsh_nb.completion/d' ~/.zshrc
-	-@ echo '. ~/.cargo/bin/zsh_nb.completion' >> ~/.zshrc
-	-@ zsh ~/.zshrc
+	- nb -z > ~/.cargo/bin/zsh_nb.completion
+	- sed -i '/zsh_nb.completion/d' ~/.zshrc
+	- echo '. ~/.cargo/bin/zsh_nb.completion' >> ~/.zshrc
+	- zsh ~/.zshrc 2>/dev/null
 
 lint:
 	cargo clippy
@@ -96,6 +96,6 @@ git_pull_force:
 	git fetch
 	git reset --hard origin/master
 
-submodules:
+submods:
 	git submodule update --init
 	# git submodule update --init --recursive
