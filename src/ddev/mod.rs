@@ -249,7 +249,7 @@ impl From<DDevCfg> for EnvCfg {
                     |ids| {
                         let num = num as usize;
                         if ids.len() > num {
-                            ids.into_iter().take(num).collect()
+                            ids.into_iter().rev().take(num).collect()
                         } else {
                             ids
                         }
