@@ -509,7 +509,7 @@ fi "#
         let el_dir = format!("{home}/{EL_DIR}");
         let el_genesis = format!("{genesis_dir}/genesis.json");
         let el_discovery_port = n.ports.el_discovery;
-        let el_discovery_v5_port = n.ports.el_discovery_v5;
+        // let el_discovery_v5_port = n.ports.el_discovery_v5;
         let el_rpc_port = n.ports.el_rpc;
         let el_rpc_ws_port = n.ports.el_rpc_ws;
         let el_engine_port = n.ports.el_engine_api;
@@ -547,7 +547,6 @@ nohup {geth} \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
-    --discovery.v5 \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.vhosts='*' --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
     --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
@@ -592,8 +591,6 @@ nohup {reth} node \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
-    --enable-discv5-discovery \
-    --discovery.v5.port={el_discovery_v5_port} \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
     --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
