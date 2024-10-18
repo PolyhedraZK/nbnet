@@ -53,7 +53,7 @@ for file in $(find .. -path "../target" -a -prune \
     perl -pi -e 's/\. +/. /g' $file
 
     perl -pi -e 's/\t/    /g' $file
-    perl -pi -e 's/ +$//g' $file
+    # perl -pi -e 's/ +$//g' $file
 done
 
 cargo +nightly fmt

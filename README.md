@@ -242,16 +242,20 @@ Assume your target path is declared by `$P`.
 Method 1:
 ```shell
 mkdir -p $P
+
+# `ddev` is also mgmt under this path
 export RUNTIME_CHAIN_DEV_BASE_DIR="$P"
 ```
 
 Method 2:
+> The `make ddev_docker_tuntime` may be a better choice for `ddev`,
+> check [**here**](src/ddev/README.md) for more infomation.
 ```shell
 mkdir -p $P
-ln -sv /tmp/__CHAIN_DEV__ $P
+ln -svf $P /tmp/__CHAIN_DEV__
 
 # Needed by `ddev` only!
-nb ddev host-exec -c "mkdir -p $P && ln -sv /tmp/__CHAIN_DEV__ $P"
+nb ddev host-exec -c "mkdir -p $P && ln -svf $P /tmp/__CHAIN_DEV__"
 ```
 
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)

@@ -70,8 +70,9 @@ You can use `nb ddev list-web3-rpcs` to get all Web3 endpoints.
 
 If your remote hosts has different OSs with your localhost, your local compiled binaries may not run correctly on the remote hosts. For this situation, there is a `make ddev_docker_runtime` that can solve this problem.
 
-> The premise is that `docker` has already been installed on your remote hosts.
-> You can use the `nb ddev host-exec` to batch install docker or any other apps, for example: `nb ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.    
+> The premise is that `docker` has already been installed on your remote hosts.    
+> You can use the `nb ddev host-exec` to batch install docker or any other apps,    
+> for example: `nb ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.    
 > Of course, it is also OK to use podman instead of docker.
 
 After a successful `make ddev_docker_runtime`, you should reset the `$NB_DDEV_HOSTS`(change all the ssh user name to 'nb', change all the ssh port to '2222'). The command itself will output suggested new values, usually without the need for you to edit them manually.
