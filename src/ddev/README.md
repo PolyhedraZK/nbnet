@@ -190,4 +190,4 @@ The layout is almost the same as `nb dev`, the only difference is that the node 
 
 #### OS compatibility
 
-In theory, it can run well on most linux distributions.
+In theory, it can run well on most linux distributions and macOS.

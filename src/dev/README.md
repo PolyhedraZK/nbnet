@@ -397,4 +397,4 @@ The `nb` management operations of `nb dev` will be logged in the `mgmt.log` file
 
 #### OS compatibility
 
-In theory, it can run well on most linux distributions.
+In theory, it can run well on most linux distributions and macOS.

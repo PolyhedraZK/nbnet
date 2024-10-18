@@ -258,6 +258,22 @@ ln -svf $P /tmp/__CHAIN_DEV__
 nb ddev host-exec -c "mkdir -p $P && ln -svf $P /tmp/__CHAIN_DEV__"
 ```
 
+##### 6. How to check the host information separately
+
+Static configrations:
+```shell
+nb ddev show-hosts --json
+```
+
+Runtime load:
+```shell
+nb ddev | jq '.meta.remote_hosts'
+```
+
+##### 7. What systems can it run on?
+
+`nb` can run on Linux and macOS. We recommend Linux more.
+
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
