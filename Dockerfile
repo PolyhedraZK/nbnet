@@ -14,9 +14,7 @@ RUN chown nb /home/nb/.ssh/authorized_keys \
     && sed -ri 's/^#*Port\s*22.*$/Port 2222/' /etc/ssh/sshd_config \
     && sed -ri 's/^[# ]*MaxStartups +[0-9]+.*$/MaxStartups 100/' /etc/ssh/sshd_config \
     && sed -ri 's/^[# ]*MaxSessions +[0-9]+.*$/MaxSessions 30/' /etc/ssh/sshd_config \
-    && echo 'nb ALL=NOPASSWD:ALL' >>/etc/sudoers \
-    && rm -rf /usr/local/bin \
-    && ln -sv /tmp/usr_local_bin /usr/local/bin
+    && echo 'nb ALL=NOPASSWD:ALL' >>/etc/sudoers
 
 RUN service ssh start
 

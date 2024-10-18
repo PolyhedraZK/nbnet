@@ -92,10 +92,10 @@ ddev_docker_runtime: install
 	@ printf '\n\x1b[0;33mThe new value of the $${NB_DDEV_HOSTS} should be:\x1b[0m\n'
 	@ nb ddev show-hosts
 
-git_pull_force:
-	git fetch
-	git reset --hard origin/master
-
-submods:
+git_submods:
 	git submodule update --init
 	# git submodule update --init --recursive
+
+git_fetch_reset:
+	git fetch
+	git reset --hard origin/master
