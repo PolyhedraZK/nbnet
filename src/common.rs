@@ -49,7 +49,7 @@ pub struct Ports {
     pub el_engine_api: u16,
     pub el_rpc: u16,
     pub el_rpc_ws: u16,
-    pub el_metric: u16, // geth only
+    pub el_metric: u16,
 
     pub cl_discovery: u16,
     pub cl_discovery_quic: u16,
@@ -94,7 +94,7 @@ impl NodePorts for Ports {
             el_engine_api: ports[2],
             el_rpc: ports[3],
             el_rpc_ws: ports[4],
-            el_metric: ports[5], // geth only
+            el_metric: ports[5],
 
             cl_discovery: ports[6],
             cl_discovery_quic: ports[7],

@@ -49,11 +49,11 @@ for file in $(find .. -path "../target" -a -prune \
     perl -pi -e 's/。 */. /g' $file
     perl -pi -e 's/、 +/、/g' $file
 
-    perl -pi -e 's/, +/, /g' $file
-    perl -pi -e 's/\. +/. /g' $file
+    perl -pi -e 's/, +(\S)/, $1/g' $file
+    perl -pi -e 's/\. +(\S)/. $1/g' $file
 
     perl -pi -e 's/\t/    /g' $file
-    # perl -pi -e 's/ +$//g' $file
+    echo $file | grep -c '\.md$'>/dev/null || perl -pi -e 's/ +$//g' $file
 done
 
 cargo +nightly fmt

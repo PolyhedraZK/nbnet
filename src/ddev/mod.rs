@@ -181,11 +181,15 @@ impl From<DDevCfg> for EnvCfg {
                 node_ids,
                 geth,
                 reth,
+                ignore_failed,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Start(select_nodes_by_el_kind!(node_ids, geth, reth, en))
+                Op::Start((
+                    select_nodes_by_el_kind!(node_ids, geth, reth, en),
+                    ignore_failed,
+                ))
             }
             DDevOp::StartAll => Op::StartAll,
             DDevOp::Stop {
@@ -395,9 +399,10 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         e: &EnvMeta<CustomInfo, Node<Ports>>,
     ) -> String {
         format!(
-            "ps ax -o pid,args | grep -E '({0}.*{3})|({1}.*{3})|({2}.*{3})' | grep -v 'grep' | wc -l",
+            "ps ax -o pid,args | grep -E '({0}.*{3}/)|({1}.*{3}/)|({2}.*{3}/)' | grep -v 'grep' | wc -l",
             e.custom_data.el_geth_bin, e.custom_data.el_reth_bin, e.custom_data.cl_bin, n.home
         )
+        .replace('+', r"\+")
     }
 
     fn cmd_for_start(

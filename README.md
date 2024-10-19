@@ -167,6 +167,10 @@ Reth related:
 
 ## Q&A
 
+##### 0. What systems can it run on?
+
+Linux and macOS, Linux is more recommended.
+
 ##### 1. How to set a custom chain id?
 
 ```shell
@@ -270,9 +274,16 @@ Runtime load:
 nb ddev | jq '.meta.remote_hosts'
 ```
 
-##### 7. What systems can it run on?
+##### 7. Issues like "Address/Port already in use...", etc.
 
-`nb` can run on Linux and macOS. We recommend Linux more.
+When a large number of nodes are deployed on one or a small number of physical machines, there may be conflicts between `nb` allocated ports and ports dynamically binded by other processes.
+
+The following commands can migigate this problem. If there are still nodes with this problem, run it a few more times and it will finally work.
+
+```shell
+nb dev start --ignore-failed
+# nb ddev start --ignore-failed
+```
 
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)

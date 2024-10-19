@@ -78,6 +78,8 @@ pub enum DevOp {
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+        #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
+        ignore_failed: bool,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,
@@ -317,6 +319,8 @@ pub enum DDevOp {
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+        #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
+        ignore_failed: bool,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,

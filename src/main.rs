@@ -27,7 +27,7 @@ fn main() {
         let e = e.to_string();
         let err = e.trim_start().trim_end();
         if 24 < err.lines().count() {
-            let p = format!("/tmp/nbnet.{mark}.{}", datetime!().replace(" ", "_"));
+            let p = format!("/tmp/err.nbnet.{mark}.{}", datetime!().replace(" ", "_"));
             pnk!(fs::write(&p, err));
             eprintln!(
                 "\x1b[0;31mWARNING\x1b[0m: err occur!\nThe err log is located at: {}",
