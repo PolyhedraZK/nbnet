@@ -47,11 +47,13 @@ if [[ 0 -eq ${docker_image_cnt} && 0 -eq ${podman_image_cnt} ]]; then
 fi
 
 which docker
-docker build -t ubuntu:nbnet_runtime_v0 . || die
+docker build --build-arg UID=$(id -u) -t ubuntu:nbnet_runtime_v0 . || die
 
 docker rm -f nbnet_runtime
 
-docker run --restart always -d --network=host \
+docker run -d \
+    --user $(id -u) \
+    --network=host \
     -v ${HOME}/__NB_DATA__/tmp:/tmp \
     -v ${HOME}/__NB_DATA__/usr_local_bin:/usr/local/bin \
     --name nbnet_runtime \
