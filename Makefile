@@ -8,6 +8,15 @@ build:
 release:
 	cargo build --release --bins
 
+musl_release:
+	OPENSSL_DIR=/usr/local/musl cargo build --release --target=x86_64-unknown-linux-musl
+	cp target/x86_64-unknown-linux-musl/release/nb ~/.cargo/bin/musl_nb
+	mkdir -p /tmp/musl_binaries
+	cp target/x86_64-unknown-linux-musl/release/nb /tmp/musl_binaries/
+
+musl_build_openssl:
+	sudo bash -x tools/build_openssl_musl.sh
+
 install:
 	cargo install --force --path .
 	- nb -z > ~/.cargo/bin/zsh_nb.completion
