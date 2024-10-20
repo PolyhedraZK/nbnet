@@ -194,6 +194,12 @@ impl From<DevCfg> for EnvCfg {
                 Op::Custom(ExtraOp::ListWeb3Rpcs)
             }
             DevOp::ShowAll => Op::ShowAll,
+            DevOp::DebugFailedNodes { env_name } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::DebugFailedNodes
+            }
             DevOp::List => Op::List,
         };
 

@@ -180,6 +180,11 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     },
     #[clap(about = "Show informations of all existing ENVs")]
     ShowAll,
+    #[clap(about = "Show failed nodes in a list")]
+    DebugFailedNodes {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+    },
     #[clap(
         short_flag = 'w',
         about = "List all web3 RPC endpoints of the entire ENV"
@@ -474,6 +479,11 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     },
     #[clap(about = "Show informations of all existing ENVs")]
     ShowAll,
+    #[clap(about = "Show failed nodes in a list")]
+    DebugFailedNodes {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+    },
     #[clap(
         short_flag = 'w',
         about = "List all web3 RPC endpoints of the entire ENV"

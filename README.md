@@ -223,7 +223,7 @@ nb dev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 # nb ddev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 ```
 
-##### 4. How to set multiple genesis parameters at the same time
+##### 4. How to set multiple genesis parameters at the same time?
 
 ```shell
 echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
@@ -262,7 +262,7 @@ ln -svf $P /tmp/__CHAIN_DEV__
 nb ddev host-exec -c "mkdir -p $P && ln -svf $P /tmp/__CHAIN_DEV__"
 ```
 
-##### 6. How to check the host information separately
+##### 6. How to check the host information separately?
 
 Static configrations:
 ```shell
@@ -274,7 +274,37 @@ Runtime load:
 nb ddev | jq '.meta.remote_hosts'
 ```
 
-##### 7. Issues like "Address/Port already in use...", etc.
+##### 7. How to troubleshoot failed nodes?
+
+Try the `nb ddev debug-failed-nodes` command, it will show all failed nodes.
+
+Sample outputs in `dev`:
+```json
+[
+  352,
+  364,
+  392,
+  400
+]
+```
+
+Sample outputs in `ddev`:
+```json
+{
+  "10.0.0.2": [
+    383,
+    387
+  ],
+  "10.0.0.3": [
+    352,
+    364,
+    392,
+    400
+  ]
+}
+```
+
+##### 8. Issues like "Address/Port already in use...", etc.
 
 When a large number of nodes are deployed on one or a small number of physical machines, there may be conflicts between `nb` allocated ports and ports dynamically binded by other processes.
 

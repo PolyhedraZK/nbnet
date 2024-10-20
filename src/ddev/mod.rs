@@ -297,6 +297,12 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Custom(ExtraOp::ListWeb3Rpcs)
             }
             DDevOp::ShowAll => Op::ShowAll,
+            DDevOp::DebugFailedNodes { env_name } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::DebugFailedNodes
+            }
             DDevOp::List => Op::List,
             DDevOp::HostPutFile {
                 env_name,
