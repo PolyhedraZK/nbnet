@@ -650,11 +650,12 @@ nohup {reth} node \
         let cl_bn_metric_port = n.ports.cl_bn_metric;
         let cl_vc_metric_port = n.ports.cl_vc_metric;
 
-        let cl_slots_per_rp = if matches!(n.kind, NodeKind::FullNode) {
-            2048
-        } else {
-            32
-        };
+        let (cl_slots_per_rp, epochs_per_migration) =
+            if matches!(n.kind, NodeKind::FullNode) {
+                (2048, 256)
+            } else {
+                (32, u64::MAX)
+            };
 
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
@@ -668,6 +669,8 @@ nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
     --staking \
+    --subscribe-all-subnets \
+    --epochs-per-migration {epochs_per_migration }\
     --slots-per-restore-point={cl_slots_per_rp} \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
