@@ -326,6 +326,8 @@ pub enum DDevOp {
         reth: bool,
         #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
         ignore_failed: bool,
+        #[clap(short = 'R', long, help = "Try to realloc ports when necessary")]
+        realloc_ports: bool,
     },
     #[clap(about = "Start all existing ENVs")]
     StartAll,

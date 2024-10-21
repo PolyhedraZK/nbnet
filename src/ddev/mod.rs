@@ -182,6 +182,7 @@ impl From<DDevCfg> for EnvCfg {
                 geth,
                 reth,
                 ignore_failed,
+                realloc_ports,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -189,6 +190,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Start((
                     select_nodes_by_el_kind!(node_ids, geth, reth, en),
                     ignore_failed,
+                    realloc_ports,
                 ))
             }
             DDevOp::StartAll => Op::StartAll,

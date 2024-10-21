@@ -174,9 +174,9 @@ Linux and macOS, Linux is more recommended.
 ##### 1. How to set a custom chain id?
 
 ```shell
-echo 'export CHAIN_ID="1234"' > custom.env
-nb dev create -g custom.env
-# nb ddev create -g custom.env
+export CHAIN_ID="1234"
+nb dev create
+# nb ddev create
 ```
 
 ##### 2. How to set a custom block time?
@@ -190,14 +190,34 @@ nb dev create -t $BLOCK_TIME
 
 Method 2:
 ```shell
-echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
-nb dev create -g custom.env
-# nb ddev create -g custom.env
+export SLOT_DURATION_IN_SECONDS="2"
+nb dev create
+# nb ddev create
 ```
 
 'Method 1' has higher priority.
 
-##### 3. Too slow when `nb dev/ddev create`
+##### 3. How to set multiple genesis parameters at the same time?
+
+```shell
+echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
+echo 'export CHAIN_ID="1234"' >> custom.env
+
+# Many other VAR declarations ...
+
+nb dev create -g custom.env
+# nb ddev create -g custom.env
+```
+
+For all VARs that can be declared, please check the [**defaults.env**](config/defaults.env) file.
+
+The are two ready-made examples:
+- [**mainnet.env**](config/mainnet.env)
+    - Similar to the ETH mainnet configuration
+- [**minimal.env**](config/minimal.env)
+    - A minimal configuration, for quick testing
+
+##### 4. Too slow when `nb dev/ddev create`
 
 This is most likely a network problem.
 
@@ -222,20 +242,6 @@ make build
 nb dev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 # nb ddev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 ```
-
-##### 4. How to set multiple genesis parameters at the same time?
-
-```shell
-echo 'export SLOT_DURATION_IN_SECONDS="2"' > custom.env
-echo 'export CHAIN_ID="1234"' >> custom.env
-
-# Many other VAR declarations ...
-
-nb dev create -g custom.env
-# nb ddev create -g custom.env
-```
-
-For all VARs that can be declared, please check the [**defaults.env**](config/defaults.env) file.
 
 ##### 5. I don't want to store `nb` data under `/tmp`, how should I do?
 
@@ -308,11 +314,18 @@ Sample outputs in `ddev`:
 
 When a large number of nodes are deployed on one or a small number of physical machines, there may be conflicts between `nb` allocated ports and ports dynamically binded by other processes.
 
-The following commands can migigate this problem. If there are still nodes with this problem, run it a few more times and it will finally work.
-
+The following commands can migigate this problem:
 ```shell
-nb dev start --ignore-failed
-# nb ddev start --ignore-failed
+nb dev start -I
+# nb ddev start -I
+```
+
+If there are still nodes with this problem:
+```shell
+# run it a few more times and it will finally clean up all failed nodes
+# NOTE: the `-R` option will cause the failed node ports to be reallocated!
+nb dev start -I -R
+# nb ddev start -I -R
 ```
 
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
