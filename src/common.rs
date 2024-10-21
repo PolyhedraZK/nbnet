@@ -3,6 +3,7 @@ use rayon::prelude::*;
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::env;
 
 pub const GETH_MARK: NodeMark = 0;
 pub const RETH_MARK: NodeMark = 1;
@@ -234,4 +235,8 @@ pub fn cl_get_boot_nodes(
     }
 
     Ok((ret.0, ret.1 .0.join(","), ret.1 .1.join(",")))
+}
+
+pub fn node_sync_from_genesis() -> bool {
+    env::var("NBNET_NODE_SYNC_FROM_GENESIS").is_ok()
 }

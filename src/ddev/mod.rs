@@ -699,7 +699,7 @@ nohup {lighthouse} beacon_node \
                 format!(" --boot-nodes='{cl_bn_bootnodes}' --trusted-peers='{cl_bn_trusted_peers}'")
             };
 
-            if checkpoint_sync_url.is_empty() {
+            if node_sync_from_genesis() || checkpoint_sync_url.is_empty() {
                 cmd_run_part_1.push_str(" --allow-insecure-genesis-sync");
             } else {
                 cmd_run_part_1

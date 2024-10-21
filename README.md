@@ -328,6 +328,14 @@ nb dev start -I -R
 # nb ddev start -I -R
 ```
 
+##### 9. How to sync from the genesis instead of a checkpoint?
+
+```shell
+export NBNET_NODE_SYNC_FROM_GENESIS=1
+nb dev push-nodes
+# nb ddev push-nodes
+```
+
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
 ![](https://avatars.githubusercontent.com/u/181968946?s=400&u=e6cd742236bfe7c80a2bcced70d05fe9f05ae260&v=4)
