@@ -219,18 +219,17 @@ pub struct DevCreationOptions {
     #[clap(
         short = 'n',
         long,
-        default_value_t = 3,
-        help = "How many initial nodes(exclude the fuhrer node) should be created,
+        default_value_t = 0,
+        help = "How many extra nodes(exclude the fuhrer node) should be created,
 the actual node number will be `1 + this_value`"
     )]
-    pub initial_node_num: u8,
+    pub extra_node_num: u8,
 
     #[clap(
-        short = 'a',
         long,
-        help = "Set the initial nodes in FullNode(opposite to ArchiveNode) mode?"
+        help = "Set extra nodes in FullNode(opposite to ArchiveNode) mode?"
     )]
-    pub initial_nodes_fullnode: bool,
+    pub fullnode: bool,
 
     #[clap(
         short = 't',
@@ -602,18 +601,17 @@ pub struct DDevCreationOptions {
     #[clap(
         short = 'n',
         long,
-        default_value_t = 3,
-        help = "How many initial nodes(exclude the fuhrer node) should be created,
+        default_value_t = 0,
+        help = "How many extra nodes(exclude the fuhrer node) should be created,
 the actual node number will be `1 + this_value`"
     )]
-    pub initial_node_num: u8,
+    pub extra_node_num: u8,
 
     #[clap(
-        short = 'a',
         long,
-        help = "Set the initial nodes in FullNode(opposite to ArchiveNode) mode?"
+        help = "Set extra nodes in FullNode(opposite to ArchiveNode) mode?"
     )]
-    pub initial_nodes_fullnode: bool,
+    pub fullnode: bool,
 
     #[clap(
         short = 't',

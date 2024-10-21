@@ -27,6 +27,7 @@ Commands:
                       NOTE: the node will be left stopped, a `start` operation may be needed
   show                Default operation, show the information of an existing ENV
   show-all            Show informations of all existing ENVs
+  debug-failed-nodes  Show failed nodes in a list
   list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
   list                Show names of all existing ENVs
   help                Print this message or the help of the given subcommand(s)
@@ -183,11 +184,11 @@ Options:
 
   -H, --host-ip <HOST_IP>
           Usually need not to specify [default: 127.0.0.1]
-  -n, --initial-node-num <INITIAL_NODE_NUM>
-          How many initial nodes(exclude the fuhrer node) should be created,
-          the actual node number will be `1 + this_value` [default: 3]
-  -a, --initial-nodes-fullnode
-          Set the initial nodes in FullNode(opposite to ArchiveNode) mode?
+  -n, --extra-node-num <EXTRA_NODE_NUM>
+          How many extra nodes(exclude the fuhrer node) should be created,
+          the actual node number will be `1 + this_value` [default: 0]
+      --fullnode
+          Set extra nodes in FullNode(opposite to ArchiveNode) mode?
   -t, --block-time-secs <BLOCK_TIME_SECS>
           If not set, use the default value in the genesis,
           has no effect when the `--genesis-data-pre-created` option is specified

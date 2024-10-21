@@ -36,6 +36,7 @@ Commands:
   show                Default operation, show the information of an existing ENV
   show-hosts          Show the remote host configations in JSON or the `nb` native format
   show-all            Show informations of all existing ENVs
+  debug-failed-nodes  Show failed nodes in a list
   list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
   list                Show names of all existing ENVs
   host-put-file       Put a local file to all remote hosts
@@ -54,6 +55,125 @@ and you have set the ssh public key of your local machine on each of them:
 - `10.0.0.2#alice`
 - `10.0.0.3#bob`
 - `10.0.0.4#jack`
+
+Let's check the help information of `nb dev create`:
+```
+Create a new ENV
+
+Usage: nb ddev create [OPTIONS]
+
+Options:
+  -e, --env-name <ENV_NAME>
+
+      --hosts <HOSTS>
+          Define the remote hosts for creating a new ENV,
+          or perform some batch operations on these hosts directly,
+          there are two alterntive ways to specify the contents.
+
+          # The first(recommand) way is providing a json file,
+          EXAMPLE:
+          ```json
+          {
+            "fallback_ssh_local_seckeys": [
+              "/home/bob/.ssh/id_ed25519"
+            ],
+            "fallback_ssh_port": 22,
+            "fallback_ssh_user": "bob",
+            "fallback_weight": 32,
+            "hosts": [
+              {
+                "ext_ip": "8.8.8.8",
+                "local_ip": "10.0.0.2",
+                "ssh_local_seckeys": [
+                  "/home/fh/alice/.ssh/id_rsa"
+                ],
+                "ssh_port": 2222,
+                "ssh_user": "alice",
+                "weight": 8
+              },
+              {
+                "local_ip": "10.0.0.3",
+                "weight": 4
+              },
+              {
+                "ext_ip": "8.8.4.4",
+                "local_ip": "10.0.0.4",
+                "ssh_local_seckeys": [
+                  "/home/jack/.ssh/id_rsa",
+                  "/home/jack/.ssh/id_ed25519"
+                ],
+                "ssh_user": "jack"
+              }
+            ]
+          }
+          ```
+          Only the `local_ip` field is mandatory, the others are optional;
+          The `fallback_` prefixed fields can be used to avoid duplicate entries;
+          If the `ext_ip` is missing, will fallback to the `local_ip` for external connections;
+          The `weight` should be a positive number(1~255),
+          if not set, the number of CPU threads on the host will be used,
+          the larger the number, the more nodes the host will carry;
+          The configuration here will override the `$NB_DDEV_HOSTS_JSON` settings.
+
+          # The second way is to use the custom expressions(contents directly, not a path!),
+          FORMAT:
+          "
+              host_ip,
+              host_ip | external_ip,
+              host_ip | external_ip # ssh_user,
+              host_ip | external_ip # ssh_user # ssh_remote_port,
+              host_ip | external_ip # ssh_user # ssh_remote_port # host_weight,
+              host_ip | external_ip # ssh_user # ssh_remote_port # host_weight # ssh_seckey_path,
+              ... lines one by one ...
+          "
+
+          Example A:
+          "
+              10.0.0.2,
+              10.0.0.3 | 8.8.8.1,
+              10.0.0.4 | 8.8.8.2 # bob,
+              10.0.0.5 | 8.8.8.3 # bob # 22,
+              10.0.0.6 | 8.8.8.4 # bob # 22 # 5,
+              10.0.0.7 | 8.8.8.5 # bob # 22 # 10 # /usr/bob/.ssh/id_rsa,
+          "
+          Example B:
+          "
+              10.0.0.2, 10.0.0.3 | 8.8.8.1, 10.0.0.4 | 8.8.8.2 # bob,
+          "
+          Only the `host_ip` field is mandatory, the others are optional;
+          If the `external_ip` is missing, will fallback to the `host_ip` for external connections;
+          All whitespace characters(\n,\t, etc.) will be removed before parsing the value;
+          The `host_weight` should be a positive number(1~255),
+          if not set, the number of CPU threads on the host will be used,
+          the larger the number, the more nodes the host will carry;
+          The configuration here will override the `$NB_DDEV_HOSTS` settings.
+
+  -n, --extra-node-num <EXTRA_NODE_NUM>
+          How many extra nodes(exclude the fuhrer node) should be created,
+          the actual node number will be `1 + this_value` [default: 0]
+      --fullnode
+          Set extra nodes in FullNode(opposite to ArchiveNode) mode?
+  -t, --block-time-secs <BLOCK_TIME_SECS>
+          If not set, use the default value in the genesis,
+          has no effect when the `--genesis-data-pre-created` option is specified
+  -g, --genesis-custom-settings-path <GENESIS_CUSTOM_SETTINGS_PATH>
+          The path of a cfg file in the form of
+          'https://github.com/rust-util-collections/EGG/blob/master/defaults.env',
+          has no effect when the `--genesis-data-pre-created` option is specified
+  -G, --genesis-data-pre-created <GENESIS_DATA_PRE_CREATED>
+          Concated paths for specifying the pre-created genesis.tar.gz and vcdata.tar.gz,
+          they are usally created by the `make build` of 'https://github.com/rust-util-collections/EGG',
+          value format: '/PATH/TO/genesis.tar.gz+/PATH/TO/vcdata.tar.gz',
+          the `+` is the delimiter between them two
+      --el-geth-bin <EL_GETH_BIN>
+          The path of your custom geth binary
+      --el-reth-bin <EL_RETH_BIN>
+          The path of your custom reth binary
+      --cl-bin <CL_BIN>
+          The path of your custom consensus layer binary
+      --force
+          Try to destroy the target ENV and then recreate it
+```
 
 Create and start a distributed cluster:
 ```shell

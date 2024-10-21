@@ -73,8 +73,8 @@ impl From<DevCfg> for EnvCfg {
                         .unwrap_or_default(),
                     genesis_tgz_path,
                     genesis_vkeys_tgz_path,
-                    initial_node_num: copts.initial_node_num,
-                    initial_nodes_fullnode: copts.initial_nodes_fullnode,
+                    initial_node_num: copts.extra_node_num,
+                    initial_nodes_fullnode: copts.fullnode,
                     custom_data,
                     force_create: copts.force_create,
                 };
