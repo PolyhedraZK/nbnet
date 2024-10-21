@@ -652,11 +652,11 @@ nohup {reth} node \
         let cl_bn_metric_port = n.ports.cl_bn_metric;
         let cl_vc_metric_port = n.ports.cl_vc_metric;
 
-        let (cl_slots_per_rp, epochs_per_migration) =
+        let (cl_slots_per_rp, epochs_per_migration, reconstruct_states) =
             if matches!(n.kind, NodeKind::FullNode) {
-                (2048, 256)
+                (2048, 256, "")
             } else {
-                (32, u64::MAX)
+                (32, u64::MAX, "--reconstruct-historic-states")
             };
 
         let cl_bn_cmd = {
@@ -673,8 +673,9 @@ nohup {lighthouse} beacon_node \
     --logfile-max-size=12 \
     --logfile-max-number=20 \
     --staking \
+    {reconstruct_states} \
     --subscribe-all-subnets \
-    --epochs-per-migration {epochs_per_migration }\
+    --epochs-per-migration={epochs_per_migration} \
     --slots-per-restore-point={cl_slots_per_rp} \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
