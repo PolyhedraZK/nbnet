@@ -540,22 +540,24 @@ fi "#
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
-    mkdir -p {el_dir} || exit 1
-    (which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+    mkdir -p {el_dir}/logs || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
-        {el_genesis} >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
+        {el_genesis} >>{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
             );
 
             let cmd_run_part_0 = format!(
                 r#"
-(which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
-
 nohup {geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
     --datadir={el_dir} \
+    --log.file={el_dir}/logs/{EL_LOG_NAME} \
+    --log.compress \
+    --log.rotate \
+    --log.maxsize=12 \
+    --log.maxbackups=20 \
     --state.scheme=hash \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
@@ -576,30 +578,30 @@ nohup {geth} \
                 format!(" --bootnodes='{el_bootnodes}'")
             };
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else if RETH_MARK == mark {
             let reth = &e.custom_data.el_reth_bin;
 
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
-    mkdir -p {el_dir} || exit 1
-    (which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+    mkdir -p {el_dir}/logs || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
-        --log.file.directory={el_dir}/logs >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
+        --log.file.directory={el_dir}/logs >>/dev/null 2>&1 || exit 1
+    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null || exit 1
 fi "#
             );
 
             let cmd_run_part_0 = format!(
                 r#"
-(which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
-
 nohup {reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
+    --log.file.max-size=12 \
+    --log.file.max-files=20 \
     --ipcdisable \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
@@ -627,9 +629,9 @@ nohup {reth} node \
             //     cmd_run_part_1.push_str(" --full");
             // }
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else {
             pnk!(Err(eg!("The fuhrering world is over!")))
         };
@@ -663,11 +665,13 @@ nohup {reth} node \
 mkdir -p {cl_bn_dir} || exit 1
 sleep 0.5
 
-(which lighthouse; {lighthouse} --version; echo) >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1
-
 nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
+    --logfile={cl_bn_dir}/logs/{CL_BN_LOG_NAME} \
+    --logfile-compress \
+    --logfile-max-size=12 \
+    --logfile-max-number=20 \
     --staking \
     --subscribe-all-subnets \
     --epochs-per-migration {epochs_per_migration }\
@@ -701,9 +705,9 @@ nohup {lighthouse} beacon_node \
                     .push_str(&format!(" --checkpoint-sync-url={checkpoint_sync_url}"));
             }
 
-            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         };
 
         let cl_vc_cmd = {
@@ -717,7 +721,7 @@ nohup {lighthouse} beacon_node \
                     r#"
 if [[ -f '{home}/{NODE_HOME_VCDATA_DST}' ]]; then
     vcdata_dir_name=$(tar -tf {home}/{NODE_HOME_VCDATA_DST} | head -1 | tr -d '/')
-    if [[ (! -d '{cl_vc_dir}/validators') && ("" != $vcdata_dir_name) ]]; then
+    if [[ (! -d '{cl_vc_dir}/validators') && ("" != ${{vcdata_dir_name}}) ]]; then
         rm -rf /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
         mkdir -p {cl_vc_dir} /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
         tar -C /tmp/{cl_vc_dir}_{id}_{ts} -xpf {home}/{NODE_HOME_VCDATA_DST} || exit 1
@@ -736,7 +740,11 @@ sleep 1
 
 nohup {lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
-    --datadir={cl_vc_dir}\
+    --datadir={cl_vc_dir} \
+    --logfile={cl_vc_dir}/logs/{CL_VC_LOG_NAME} \
+    --logfile-compress \
+    --logfile-max-size=12 \
+    --logfile-max-number=20 \
     --beacon-nodes='{beacon_nodes}' \
     --init-slashing-protection \
     --suggested-fee-recipient={FEE_RECIPIENT} \
@@ -745,7 +753,7 @@ nohup {lighthouse} validator_client \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1 &
+    >>/dev/null 2>&1 &
      "#
             );
 
@@ -904,9 +912,9 @@ impl CustomOps for ExtraOp {
             Self::GetLogs(ldir) => env_collect_files(
                 &load_sysenv(en).c(d!())?,
                 &[
-                    &format!("{EL_DIR}/{EL_LOG_NAME}"),
-                    &format!("{CL_BN_DIR}/{CL_BN_LOG_NAME}"),
-                    &format!("{CL_VC_DIR}/{CL_VC_LOG_NAME}"),
+                    &format!("{EL_DIR}/logs/{EL_LOG_NAME}"),
+                    &format!("{CL_BN_DIR}/logs/{CL_BN_LOG_NAME}"),
+                    &format!("{CL_VC_DIR}/logs/{CL_VC_LOG_NAME}"),
                     "mgmt.log",
                 ],
                 ldir.as_deref(),

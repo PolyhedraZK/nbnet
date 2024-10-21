@@ -350,22 +350,24 @@ fi "#
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
-    mkdir -p {el_dir} || exit 1
-    (which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+    mkdir -p {el_dir}/logs || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
-        {el_genesis} >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
+        {el_genesis} >>{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
             );
 
             let cmd_run_part_0 = format!(
                 r#"
-(which geth; {geth} version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
-
 nohup {geth} \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
     --datadir={el_dir} \
+    --log.file={el_dir}/logs/{EL_LOG_NAME} \
+    --log.compress \
+    --log.rotate \
+    --log.maxsize=12 \
+    --log.maxbackups=20 \
     --state.scheme=hash \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
@@ -387,30 +389,30 @@ nohup {geth} \
                 format!(" --bootnodes='{el_bootnodes}'")
             };
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else if RETH_MARK == mark {
             let reth = &e.custom_data.el_reth_bin;
 
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
-    mkdir -p {el_dir} || exit 1
-    (which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
+    mkdir -p {el_dir}/logs || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
-        --log.file.directory={el_dir}/logs >>{el_dir}/{EL_LOG_NAME} 2>&1 || exit 1
+        --log.file.directory={el_dir}/logs >>/dev/null 2>&1 || exit 1
+    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null || exit 1
 fi "#
             );
 
             let cmd_run_part_0 = format!(
                 r#"
-(which reth; {reth} --version; echo) >>{el_dir}/{EL_LOG_NAME} 2>&1
-
 nohup {reth} node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
+    --log.file.max-size=12 \
+    --log.file.max-files=20 \
     --ipcdisable \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
@@ -440,9 +442,9 @@ nohup {reth} node \
             //     cmd_run_part_1.push_str(" --full");
             // }
 
-            let cmd_run_part_2 = format!(" >>{el_dir}/{EL_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else {
             pnk!(Err(eg!("The fuhrering world is over!")))
         };
@@ -463,11 +465,12 @@ nohup {reth} node \
         let cl_bn_metric_port = n.ports.cl_bn_metric;
         let cl_vc_metric_port = n.ports.cl_vc_metric;
 
-        let cl_slots_per_rp = if matches!(n.kind, NodeKind::FullNode) {
-            2048
-        } else {
-            32
-        };
+        let (cl_slots_per_rp, epochs_per_migration) =
+            if matches!(n.kind, NodeKind::FullNode) {
+                (2048, 256)
+            } else {
+                (32, u64::MAX)
+            };
 
         let cl_bn_cmd = {
             let cmd_run_part_0 = format!(
@@ -475,12 +478,16 @@ nohup {reth} node \
 mkdir -p {cl_bn_dir} || exit 1
 sleep 0.5
 
-(which lighthouse; {lighthouse} --version; echo) >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1
-
 nohup {lighthouse} beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
+    --logfile={cl_bn_dir}/logs/{CL_BN_LOG_NAME} \
+    --logfile-compress \
+    --logfile-max-size=12 \
+    --logfile-max-number=20 \
     --staking \
+    --subscribe-all-subnets \
+    --epochs-per-migration {epochs_per_migration }\
     --slots-per-restore-point={cl_slots_per_rp} \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
@@ -514,9 +521,9 @@ nohup {lighthouse} beacon_node \
             // Disable this line in the `ddev` mod
             cmd_run_part_1.push_str(" --enable-private-discovery");
 
-            let cmd_run_part_2 = format!(" >>{cl_bn_dir}/{CL_BN_LOG_NAME} 2>&1 &");
+            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
-            cmd_run_part_0 + &cmd_run_part_1 + &cmd_run_part_2
+            cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         };
 
         let cl_vc_cmd = {
@@ -550,6 +557,10 @@ sleep 1
 nohup {lighthouse} validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir}\
+    --logfile={cl_vc_dir}/logs/{CL_VC_LOG_NAME} \
+    --logfile-compress \
+    --logfile-max-size=12 \
+    --logfile-max-number=20 \
     --beacon-nodes='{beacon_nodes}' \
     --init-slashing-protection \
     --suggested-fee-recipient={FEE_RECIPIENT} \
@@ -558,7 +569,7 @@ nohup {lighthouse} validator_client \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-     >>{cl_vc_dir}/{CL_VC_LOG_NAME} 2>&1 &
+    >>/dev/null 2>&1 &
      "#
             );
 
