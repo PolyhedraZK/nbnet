@@ -13,9 +13,10 @@ use crate::{
 };
 use chaindev::{
     beacon_dev::{
-        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node,
-        NodeCmdGenerator, NodeKind, Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
+        Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node, NodeKind,
+        Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
     },
+    common::NodeCmdGenerator,
     CustomOps, EnvName, NodeID,
 };
 use ruc::*;

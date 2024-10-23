@@ -1,4 +1,4 @@
-use chaindev::beacon_ddev::HostExpression;
+use chaindev::common::hosts::HostExpression;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
