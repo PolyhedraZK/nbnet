@@ -564,9 +564,24 @@ will be ignored if the 'cmd' field has value"
         #[clap(
             short = 'l',
             long,
-            help = "optional, will use '/tmp' if missing, all remote files will be collected into this directory, <local file name> will be <remote file name> prefixed with its <host address> and <node id>"
+            help = "optional, will use '/tmp' if missing,
+all remote files will be collected into this directory,
+<local file name> will be <remote file name> prefixed with its <host address> and <node id>"
         )]
         local_base_dir: Option<String>,
+        #[clap(
+            conflicts_with = "failed",
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
+        #[clap(
+            conflicts_with = "node_ids",
+            long,
+            help = "Get logs of the failed nodes only"
+        )]
+        failed: bool,
     },
     #[clap(about = "Dump the validator client data from all nodes of the ENV")]
     DumpVcData {
@@ -575,9 +590,17 @@ will be ignored if the 'cmd' field has value"
         #[clap(
             short = 'l',
             long,
-            help = "optional, will use '/tmp' if missing, all remote files will be collected into this directory, <local file name> will be <remote file name> prefixed with its <host address> and <node id>"
+            help = "optional, will use '/tmp' if missing,
+all remote files will be collected into this directory,
+<local file name> will be <remote file name> prefixed with its <host address> and <node id>"
         )]
         local_base_dir: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+        )]
+        node_ids: Option<String>,
     },
 }
 

@@ -354,20 +354,23 @@ impl From<DDevCfg> for EnvCfg {
             DDevOp::GetLogs {
                 env_name,
                 local_base_dir,
+                node_ids,
+                failed,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::GetLogs(local_base_dir))
+                Op::Custom(ExtraOp::GetLogs((local_base_dir, node_ids, failed)))
             }
             DDevOp::DumpVcData {
                 env_name,
                 local_base_dir,
+                node_ids,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::DumpVcData(local_base_dir))
+                Op::Custom(ExtraOp::DumpVcData((local_base_dir, node_ids)))
             }
             DDevOp::SwitchELToGeth { env_name, node_ids } => {
                 if let Some(n) = env_name {
@@ -856,8 +859,19 @@ fn parse_cfg(json_path_or_expr: &str) -> Result<Hosts> {
 enum ExtraOp {
     ShowHosts((Option<HostExpression>, bool /*in JSON format or not*/)),
     ListWeb3Rpcs,
-    GetLogs(Option<String>),
-    DumpVcData(Option<String>),
+    GetLogs(
+        (
+            Option<String>, /*local dir*/
+            Option<String>, /*specified nodes only, comma separated*/
+            bool,           /*failed node only*/
+        ),
+    ),
+    DumpVcData(
+        (
+            Option<String>, /*local dir*/
+            Option<String>, /*specified nodes only, comma separated*/
+        ),
+    ),
     SwitchELToGeth(BTreeSet<NodeID>),
     SwitchELToReth(BTreeSet<NodeID>),
 }
@@ -910,20 +924,69 @@ impl CustomOps for ExtraOp {
                     });
                 Ok(())
             }
-            Self::GetLogs(ldir) => env_collect_files(
-                &load_sysenv(en).c(d!())?,
-                &[
-                    &format!("{EL_DIR}/logs/{EL_LOG_NAME}"),
-                    &format!("{CL_BN_DIR}/logs/{CL_BN_LOG_NAME}"),
-                    &format!("{CL_VC_DIR}/logs/{CL_VC_LOG_NAME}"),
-                    "mgmt.log",
-                ],
-                ldir.as_deref(),
-            )
-            .c(d!()),
-            Self::DumpVcData(ldir) => load_sysenv(en).c(d!()).and_then(|env| {
-                env_collect_tgz(&env, &[CL_VC_DIR], ldir.as_deref()).c(d!())
-            }),
+            Self::GetLogs((ldir, nodes, failed)) => {
+                let env = load_sysenv(en).c(d!())?;
+
+                let mut ids = if let Some(s) = nodes {
+                    s.split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<Vec<_>>>()
+                        .map(Some)?
+                } else {
+                    None
+                };
+
+                let errlist = if ids.is_none() && *failed {
+                    let (failed_cases, errlist) = env.collect_failed_nodes();
+                    if failed_cases.is_empty() {
+                        ids = Some(vec![]);
+                    } else {
+                        ids = Some(
+                            failed_cases.values().flatten().copied().collect::<Vec<_>>(),
+                        );
+                    }
+                    errlist
+                } else {
+                    vec![]
+                };
+
+                env_collect_files(
+                    &env,
+                    ids.as_deref(),
+                    &[
+                        &format!("{EL_DIR}/logs/{EL_LOG_NAME}"),
+                        &format!("{CL_BN_DIR}/logs/{CL_BN_LOG_NAME}"),
+                        &format!("{CL_VC_DIR}/logs/{CL_VC_LOG_NAME}"),
+                        "mgmt.log",
+                    ],
+                    ldir.as_deref(),
+                )
+                .c(d!())?;
+
+                if errlist.is_empty() {
+                    Ok(())
+                } else {
+                    Err(eg!(errlist
+                        .iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<_>>()
+                        .join("\n")))
+                }
+            }
+            Self::DumpVcData((ldir, nodes)) => {
+                let ids = if let Some(s) = nodes {
+                    s.split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<Vec<_>>>()
+                        .map(Some)?
+                } else {
+                    None
+                };
+                load_sysenv(en).c(d!()).and_then(|env| {
+                    env_collect_tgz(&env, ids.as_deref(), &[CL_VC_DIR], ldir.as_deref())
+                        .c(d!())
+                })
+            }
             Self::SwitchELToGeth(ids) => {
                 let mut env = load_sysenv(en).c(d!())?;
 
