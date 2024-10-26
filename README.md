@@ -51,8 +51,14 @@ Usage: nb <COMMAND>
 Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
+  deposit                   Manage deposit operations
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
+  help                      Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 For more detailed information, you can get it through the `nb <SUBCOMMAND> -h`.
@@ -209,12 +215,12 @@ nb dev create -g custom.env
 # nb ddev create -g custom.env
 ```
 
-For all VARs that can be declared, please check the [**defaults.env**](config/defaults.env) file.
+For all VARs that can be declared, please check the [**defaults.env**](config/genesis/defaults.env) file.
 
 The are two ready-made examples:
-- [**mainnet.env**](config/mainnet.env)
+- [**mainnet.env**](config/genesis/mainnet.env)
     - Similar to the ETH mainnet configuration
-- [**minimal.env**](config/minimal.env)
+- [**minimal.env**](config/genesis/minimal.env)
     - A minimal configuration, for quick testing
 
 ##### 4. Too slow when `nb dev/ddev create`

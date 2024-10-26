@@ -757,6 +757,7 @@ nohup {lighthouse} validator_client \
     --init-slashing-protection \
     --suggested-fee-recipient={FEE_RECIPIENT} \
     --unencrypted-http-transport \
+    --enable-doppelganger-protection \
     --http --http-address={local_ip} \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \

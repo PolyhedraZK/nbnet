@@ -17,11 +17,22 @@ clap_complete = "4.5"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 
-rayon = "1.10.0"
-# parking_lot = "0.12"
+alloy = { version = "0.5.4", features = [
+    "network",
+    "providers",
+    "rpc",
+    "rpc-types",
+    "signers",
+    "signer-local",
+    "contract",
+    "transports",
+    "transport-http",
+    "reqwest"
+] }
+sb = { package = "tokio", version = "1.41.0", features = [ "rt" ] }
 
 # self-maintained crates
-ruc = { version = "7.5", features = [ "http", "algo_rand" ] }
+ruc = { version = "7.7.3", features = [ "http", "algo_rand" ] }
 
 chaindev = "0.45.0"
 vsdb = { version = "3.0", default-features = false }

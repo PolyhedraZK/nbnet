@@ -14,6 +14,7 @@ mod cfg;
 mod common;
 mod ddev;
 mod dev;
+mod pos;
 
 fn main() {
     let config = Cfg::parse();
@@ -47,6 +48,23 @@ fn main() {
         Commands::DDev(cfg) => {
             if let Err(e) = ddev::EnvCfg::from(cfg).exec() {
                 err_mgmt(e, "d_dev");
+            }
+        }
+        Commands::Deposit(cfg) => {
+            let future = pos::deposit::deposit(
+                &cfg.rpc_endpoint,
+                &cfg.deposit_contract_addr,
+                &cfg.deposit_data_json_path,
+                &cfg.wallet_signkey_path,
+            );
+            if let Err(e) = sb::runtime::Builder::new_current_thread()
+                .enable_time()
+                .enable_io()
+                .build()
+                .unwrap()
+                .block_on(future)
+            {
+                err_mgmt(e, "deposit");
             }
         }
         Commands::GenZshCompletions => {

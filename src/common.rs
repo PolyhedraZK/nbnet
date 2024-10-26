@@ -1,9 +1,8 @@
 use chaindev::beacon_based::common::{NodeMark, NodePorts};
-use rayon::prelude::*;
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::env;
+use std::{env, thread};
 
 pub const GETH_MARK: NodeMark = 0;
 pub const RETH_MARK: NodeMark = 1;
@@ -177,24 +176,31 @@ impl NodePorts for Ports {
 
 /// Return: "enode,enode,enode"
 pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
-    let ret = rpc_endpoints
-        .par_iter()
-        .map(|addr| {
-            let body =
-                r#"{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}"#;
+    let ret = thread::scope(|s| {
+        rpc_endpoints
+            .iter()
+            .map(|addr| {
+                s.spawn(move || {
+                    let body =
+                        r#"{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}"#;
 
-            ruc::http::post(
-                addr,
-                body.as_bytes(),
-                Some(&[("Content-Type", "application/json")]),
-            )
-            .c(d!())
-            .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
-            .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned())
-        })
-        .filter(|i| i.is_ok())
-        .collect::<Result<Vec<_>>>()
-        .unwrap();
+                    ruc::http::post(
+                        addr,
+                        body.as_bytes(),
+                        Some(&[("Content-Type", "application/json")]),
+                    )
+                    .c(d!())
+                    .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
+                    .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned())
+                    })
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|hdr| hdr.join())
+            .filter_map(|i| i.ok())
+            .flat_map(|i| i.ok())
+            .collect::<Vec<_>>()
+    });
 
     if ret.is_empty() {
         return Err(eg!("No valid data return"));
@@ -207,28 +213,37 @@ pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
 pub fn cl_get_boot_nodes(
     rpc_endpoints: &[&str],
 ) -> Result<(Vec<String>, String, String)> {
-    let ret: (Vec<_>, (Vec<_>, Vec<_>)) = rpc_endpoints
-        .par_iter()
-        .map(|url| {
-            ruc::http::get(
-                &format!("{url}/eth/v1/node/identity"),
-                Some(&[("Content-Type", "application/json")]),
-            )
-            .c(d!())
-            .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
-            .map(|v| {
-                (
-                    url.to_string(),
-                    (
-                        pnk!(v["data"]["enr"].as_str()).to_owned(),
-                        pnk!(v["data"]["peer_id"].as_str()).to_owned(),
-                    ),
-                )
+    let ret: (Vec<_>, (Vec<_>, Vec<_>)) = thread::scope(|s| {
+        rpc_endpoints
+            .iter()
+            .map(|url| {
+                s.spawn(move || {
+                    ruc::http::get(
+                        &format!("{url}/eth/v1/node/identity"),
+                        Some(&[("Content-Type", "application/json")]),
+                    )
+                    .c(d!())
+                    .and_then(|(_code, resp)| {
+                        serde_json::from_slice::<Value>(&resp).c(d!())
+                    })
+                    .map(|v| {
+                        (
+                            url.to_string(),
+                            (
+                                pnk!(v["data"]["enr"].as_str()).to_owned(),
+                                pnk!(v["data"]["peer_id"].as_str()).to_owned(),
+                            ),
+                        )
+                    })
+                })
             })
-        })
-        .filter(|i| i.is_ok())
-        .map(|i| i.unwrap())
-        .unzip();
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(|hdr| hdr.join())
+            .filter_map(|i| i.ok())
+            .flat_map(|i| i.ok())
+            .unzip()
+    });
 
     if ret.0.is_empty() {
         return Err(eg!("No valid data return"));

@@ -17,6 +17,8 @@ pub enum Commands {
         about = "Manage development clusters on various distributed hosts"
     )]
     DDev(DDevCfg),
+    #[clap(about = "Manage deposit operations")]
+    Deposit(DepositCfg),
     #[clap(
         short_flag = 'z',
         about = "Generate the cmdline completion script for zsh"
@@ -677,4 +679,37 @@ the `+` is the delimiter between them two"
         help = "Try to destroy the target ENV and then recreate it"
     )]
     pub force_create: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct DepositCfg {
+    #[clap(
+        short = 'R',
+        long,
+        help = "EL rpc endpoint, e.g., 'http://localhost:8545'"
+    )]
+    pub rpc_endpoint: String,
+
+    #[clap(
+        short = 'C',
+        long,
+        help = "Deposit contract address on the EL side,
+e.g., '0x4242424242424242424242424242424242424242'"
+    )]
+    pub deposit_contract_addr: String,
+
+    #[clap(
+        short = 'D',
+        long,
+        help = "Deposit data in the standard JSON format,
+produced by the ETH official 'staking-deposit-cli' tool"
+    )]
+    pub deposit_data_json_path: String,
+
+    #[clap(
+        short = 'W',
+        long,
+        help = "The deposit principal will be deducted from this wallet"
+    )]
+    pub wallet_signkey_path: String,
 }

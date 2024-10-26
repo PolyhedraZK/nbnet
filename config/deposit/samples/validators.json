@@ -1,0 +1,24 @@
+[
+  {
+    "voting_keystore": "{\"crypto\":{\"kdf\":{\"function\":\"scrypt\",\"params\":{\"dklen\":32,\"n\":262144,\"r\":8,\"p\":1,\"salt\":\"0008fc1c92dc66324fa67558ac5421c9d632c0ed04fd7587a9b142f126d7c773\"},\"message\":\"\"},\"checksum\":{\"function\":\"sha256\",\"params\":{},\"message\":\"1c559b0f1f4d9214376ede40b0177d4323753d5e04c13271409ea7d9b19fcc2d\"},\"cipher\":{\"function\":\"aes-128-ctr\",\"params\":{\"iv\":\"4b7ba51884edf576491d360edd152e17\"},\"message\":\"caf3a4db6ae3d948e3705683c857d9e4034d90ebc6f061cc42ce592189aaa018\"}},\"uuid\":\"0b6e1f44-47a8-418b-b24d-35c6bfbb033a\",\"path\":\"m/12381/3600/0/0/0\",\"pubkey\":\"aaf6c1251e73fb600624937760fef218aace5b253bf068ed45398aeb29d821e4d2899343ddcbbe37cb3f6cf500dff26c\",\"version\":4,\"description\":\"\",\"name\":null}",
+    "voting_keystore_password": "7NRongCuTcs9MrnqS8ya60JGyvrdtHxvnqtG0IZwTzVV8scQ",
+    "slashing_protection": null,
+    "fee_recipient": null,
+    "gas_limit": null,
+    "builder_proposals": null,
+    "builder_boost_factor": null,
+    "prefer_builder_proposals": null,
+    "enabled": null
+  },
+  {
+    "voting_keystore": "{\"crypto\":{\"kdf\":{\"function\":\"scrypt\",\"params\":{\"dklen\":32,\"n\":262144,\"r\":8,\"p\":1,\"salt\":\"d6f5c840b53875775372794cb5e96e3a577b931315d85a2f6091e9b04bb3bf84\"},\"message\":\"\"},\"checksum\":{\"function\":\"sha256\",\"params\":{},\"message\":\"d63cb7c8aaef74fd3b9839e07bab4d614ed363dcf56f4b3c297f0e7a5c6a4aac\"},\"cipher\":{\"function\":\"aes-128-ctr\",\"params\":{\"iv\":\"5d5bb32879312ecf5053ff55df80cbe3\"},\"message\":\"4b9547daeb4dc95d16a0fd4020aedad44bcf12f226d7680a5772c3cbf88a2bd4\"}},\"uuid\":\"4687382a-cd89-4965-9497-4ce168c60d23\",\"path\":\"m/12381/3600/1/0/0\",\"pubkey\":\"8aa5bbee21e98c7b9e7a4c8ea45aa99f89e22992fa4fc2d73869d77da4cc8a05b25b61931ff521986677dd7f7159e8e6\",\"version\":4,\"description\":\"\",\"name\":null}",
+    "voting_keystore_password": "27dOoMgwTusv7JfREO6UQNkIcv8mEdqVigCJW2Q2XlD9SGjT",
+    "slashing_protection": null,
+    "fee_recipient": null,
+    "gas_limit": null,
+    "builder_proposals": null,
+    "builder_boost_factor": null,
+    "prefer_builder_proposals": null,
+    "enabled": null
+  }
+]
