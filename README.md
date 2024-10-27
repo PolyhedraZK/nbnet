@@ -38,7 +38,7 @@ If you do not want to spend the compiling time, feel free to use your own binari
 - Downloading them from the offical sites of these projects
 - Or use your own pre-compiled binaries
 
-For the `nb` binary, download the statically compiled(linked) package from [**this link**](https://github.com/NBnet/nbnet/releases/download/v0.3.0/nb.linux.amd64.tar.gz), and put it in your `$PATH`.
+For the `nb` binary, download the statically compiled(linked) package from [**this link**](https://github.com/NBnet/nbnet/releases/download/v0.4.0/nb.linux.amd64.tar.gz), and put it in your `$PATH`.
 
 If you want to compile a `nb` binary from source, use `make install`. It will be located at `~/.cargo/bin/`, so you should make sure that this directory is under your `$PATH`. We assume you have already been familiar with the configuration of the rust development environment, so we won't introduce this aspect.
 
@@ -52,7 +52,7 @@ Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
   deposit                   Manage deposit operations
-  mnemonic                  Generate a 24-words bip39 mnemonic
+  mnemonic                  Create a 24-words bip39 mnemonic
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
   help                      Print this message or the help of the given subcommand(s)

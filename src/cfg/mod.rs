@@ -19,7 +19,7 @@ pub enum Commands {
     DDev(DDevCfg),
     #[clap(about = "Manage deposit operations")]
     Deposit(DepositCfg),
-    #[clap(about = "Generate a 24-words bip39 mnemonic")]
+    #[clap(about = "Create a 24-words bip39 mnemonic")]
     Mnemonic,
     #[clap(
         short_flag = 'z',
