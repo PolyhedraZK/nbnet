@@ -34,7 +34,8 @@ Workflow Example:
         - Used by the `lighthouse validator-manager import`
     - Another way is to use the `lighthouse validator-manager create`
         - So there is no need to prepare an extra tool
-        - You need to prepare an existing mnemonic in advance
+        - You need to prepare a mnemonic in advance
+            - E.g., create a new one with `nb mnemonic`
 2. `CONTRACT='0x4242424242424242424242424242424242424242'`
 3. `KEY='/PATH/TO/YOUR/PRIVATE/KEY'`
 4. `RPC='http://localhost:8545'`

@@ -67,6 +67,9 @@ fn main() {
                 err_mgmt(e, "deposit");
             }
         }
+        Commands::Mnemonic => {
+            println!("\n{}\n", pos::mnemonic::create_mnemonic_words())
+        }
         Commands::GenZshCompletions => {
             generate(Zsh, &mut Cfg::command(), crate_name!(), &mut io::stdout());
         }

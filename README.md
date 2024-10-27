@@ -52,6 +52,7 @@ Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
   deposit                   Manage deposit operations
+  mnemonic                  Generate a 24-words bip39 mnemonic
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
   help                      Print this message or the help of the given subcommand(s)
