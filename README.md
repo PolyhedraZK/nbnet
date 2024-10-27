@@ -44,7 +44,7 @@ If you want to compile a `nb` binary from source, use `make install`. It will be
 
 #### Command Line Usage
 
-```shell
+```
 # nb -h
 Usage: nb <COMMAND>
 
@@ -52,7 +52,7 @@ Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
   deposit                   Manage deposit operations
-  mnemonic                  Create a 24-words bip39 mnemonic
+  new-mnemonic              Create a 24-words bip39 mnemonic
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
   help                      Print this message or the help of the given subcommand(s)
@@ -65,7 +65,7 @@ Options:
 For more detailed information, you can get it through the `nb <SUBCOMMAND> -h`.
 
 For example:
-```shell
+```
 # nb dev destroy -h
 Destroy an existing ENV
 

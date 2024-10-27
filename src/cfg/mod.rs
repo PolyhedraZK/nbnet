@@ -20,7 +20,7 @@ pub enum Commands {
     #[clap(about = "Manage deposit operations")]
     Deposit(DepositCfg),
     #[clap(about = "Create a 24-words bip39 mnemonic")]
-    Mnemonic,
+    NewMnemonic,
     #[clap(
         short_flag = 'z',
         about = "Generate the cmdline completion script for zsh"

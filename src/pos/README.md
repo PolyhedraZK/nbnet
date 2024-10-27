@@ -27,7 +27,7 @@ Options:
 ```
 
 Workflow Example:
-1. Get the 'staking-deposit-cli' tool, and then [`deposit new-mnemonic`](https://github.com/ethereum/staking-deposit-cli)
+1. Get the [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) tool, and then `deposit new-mnemonic`
     - The 'deposit_data-xxx.json' file
         - Send it to the on-chain deposit contract
     - The 'keystore-m_xxx.json' file
@@ -35,7 +35,7 @@ Workflow Example:
     - Another way is to use the `lighthouse validator-manager create`
         - So there is no need to prepare an extra tool
         - You need to prepare a mnemonic in advance
-            - E.g., create a new one with `nb mnemonic`
+            - E.g., create a new one with `nb new-mnemonic`
 2. `CONTRACT='0x4242424242424242424242424242424242424242'`
 3. `KEY='/PATH/TO/YOUR/PRIVATE/KEY'`
 4. `RPC='http://localhost:8545'`
