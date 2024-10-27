@@ -4,7 +4,7 @@
 
 Usage:
 
-```shell
+```
 # nb deposit
 Manage deposit operations
 
@@ -26,7 +26,7 @@ Options:
           The deposit principal will be deducted from this wallet
 ```
 
-Workflow Example:
+Workflow:
 1. Get the [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) tool, and then `deposit new-mnemonic`
     - The 'deposit_data-xxx.json' file
         - Send it to the on-chain deposit contract
@@ -41,26 +41,72 @@ Workflow Example:
 4. `RPC='http://localhost:8545'`
 5. `nb deposit -C $CONTRACT -D deposit_data-xxx.json -W $KEY -R $RPC`
 
-Cmdline Example:
+Example:
+
 ```shell
+# Create a devnet with 2 nodes
+nb dev create -n 1 -g config/genesis/minimal.env
+
+NODE_HOME=$(nb dev | jq '.meta.nodes."1".node_home' | tr -d '"')
+
+TESTNET_DIR="${NODE_HOME}/genesis"
+
+CFG_PATH="${TESTNET_DIR}/config.yaml"
+CONTRACT=$(grep -Po '(?<=DEPOSIT_CONTRACT_ADDRESS:)\s*[\w]+' ${CFG_PATH})
+
+VC_DATA_DIR="${NODE_HOME}/cl/vc"
+VC_API_TOKEN="${VC_DATA_DIR}/validators/api-token.txt"
+
+EL_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.el_rpc')
+EL_RPC_ENDPOINT="http://localhost:${EL_RPC_PORT}"
+
+BN_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.cl_bn_rpc')
+BN_RPC_ENDPOINT="http://localhost:${BN_RPC_PORT}"
+
+VC_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.cl_vc_rpc')
+VC_RPC_ENDPOINT="http://localhost:${VC_RPC_PORT}"
+
+wallet=$(nb dev | jq '[.meta.premined_accounts][0]')
+WALLET_ADDR=$(echo ${wallet} | jq 'keys[0]' | tr -d '"')
+WALLET_KEY=$(echo ${wallet} | jq '[.[]][0].secretKey' | tr -d '"')
+WALLET_KEY_PATH="wallet_key"
+printf "${WALLET_KEY}" >${WALLET_KEY_PATH}
+
+nb new-mnemonic | sed '/^$/d' >mnemonic
+
 lighthouse validator-manager create \
+    --testnet-dir ${TESTNET_DIR} \
+    --datadir ${VC_DATA_DIR} \
     --mnemonic-path ./mnemonic \
-    --testnet-dir genesis_dir \
     --first-index 0 \
     --count 2 \
-    --eth1-withdrawal-address 0x8943545177806ED17B9F23F0a21ee5948eCaa776 \
+    --eth1-withdrawal-address ${WALLET_ADDR} \
+    --suggested-fee-recipient ${WALLET_ADDR} \
     --output-path .
 
 lighthouse validator-manager import \
-    --datadir cl/vc \
-    --testnet-dir genesis_dir \
-    --validators-file ./validators.json \
-    --vc-url http://localhost:5062 \
-    --vc-token cl/vc/validators/api-token.txt
+    --testnet-dir ${TESTNET_DIR} \
+    --datadir ${VC_DATA_DIR} \
+    --validators-file validators.json \
+    --vc-url ${VC_RPC_ENDPOINT} \
+    --vc-token ${VC_API_TOKEN}
+
+nb deposit -C ${CONTRACT} -D deposits.json -W ${WALLET_KEY_PATH} -R ${EL_RPC_ENDPOINT}
+
+# check status
+curl "${BN_RPC_ENDPOINT}/lighthouse/eth1/deposit_cache" -H "accept: application/json" | jq
+
+# check status
+for pubkey in $(cat deposits.json | jq '.[].pubkey' | tr -d '"'); do
+    curl "${BN_RPC_ENDPOINT}/eth/v1/beacon/states/head/validators/${pubkey}" \
+        -H "accept: application/json" | jq
+done
 ```
 
 ### Refs
 
 - https://lighthouse-book.sigmaprime.io/validator-management.html
 - https://github.com/ethereum/staking-deposit-cli
+- https://github.com/ethereum/staking-launchpad
+- https://github.com/ChorusOne/eth-staking-smith
 - https://ethereum.github.io/beacon-APIs
