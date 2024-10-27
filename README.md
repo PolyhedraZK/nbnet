@@ -132,6 +132,7 @@ For `nb ddev`:
 
 - Check [**this page**](src/dev/README.md) for `nb dev`
 - Check [**this page**](src/ddev/README.md) for `nb ddev`
+- Check [**this page**](src/pos/README.md) for `nb deposit`
 
 ## == ENV VARs ==
 - `$NB_DDEV_HOSTS_JSON`
