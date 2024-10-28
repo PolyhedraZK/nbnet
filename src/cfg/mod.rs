@@ -283,21 +283,6 @@ pub struct DevCreationOptions {
     pub host_ip: String,
 
     #[clap(
-        short = 'n',
-        long,
-        default_value_t = 0,
-        help = "How many extra nodes(exclude the fuhrer node) should be created,
-the actual node number will be `1 + this_value`"
-    )]
-    pub extra_node_num: u8,
-
-    #[clap(
-        long,
-        help = "Set extra nodes in FullNode(opposite to ArchiveNode) mode?"
-    )]
-    pub fullnode: bool,
-
-    #[clap(
         short = 't',
         long,
         help = "If not set, use the default value in the genesis,
@@ -748,21 +733,6 @@ pub struct DDevCreationOptions {
         help = include_str!("hosts.format")
     )]
     pub hosts: Option<HostExpression>,
-
-    #[clap(
-        short = 'n',
-        long,
-        default_value_t = 0,
-        help = "How many extra nodes(exclude the fuhrer node) should be created,
-the actual node number will be `1 + this_value`"
-    )]
-    pub extra_node_num: u8,
-
-    #[clap(
-        long,
-        help = "Set extra nodes in FullNode(opposite to ArchiveNode) mode?"
-    )]
-    pub fullnode: bool,
 
     #[clap(
         short = 't',
