@@ -147,11 +147,6 @@ Options:
           the larger the number, the more nodes the host will carry;
           The configuration here will override the `$NB_DDEV_HOSTS` settings.
 
-  -n, --extra-node-num <EXTRA_NODE_NUM>
-          How many extra nodes(exclude the fuhrer node) should be created,
-          the actual node number will be `1 + this_value` [default: 0]
-      --fullnode
-          Set extra nodes in FullNode(opposite to ArchiveNode) mode?
   -t, --block-time-secs <BLOCK_TIME_SECS>
           If not set, use the default value in the genesis,
           has no effect when the `--genesis-data-pre-created` option is specified

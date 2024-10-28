@@ -67,7 +67,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
 `nb dev`:
 ```json
 {
-  "is_protected": true,
+  "is_protected": false,
   "meta": {
     "block_time_in_seconds": 2,
     "custom_data": {
@@ -79,70 +79,57 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
     "env_name": "DEFAULT",
     "fuhrer_nodes": {
       "0": {
-        "cl_type": "lighthouse",
-        "el_type": "geth",
+        "custom_data": {
+          "deposits": {
+            "giant issue aisle success illegal bike spike question tent bar rely arctic volcano long crawl hungry vocal artwork sniff fantasy very lucky have athlete": 64
+          },
+          "el_kind": "Geth"
+        },
         "id": 0,
         "kind": "Fuhrer",
         "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/0",
         "ports": {
-          "cl_bn_metric": 27560,
-          "cl_bn_rpc": 45384,
-          "cl_discovery": 53255,
-          "cl_discovery_quic": 58082,
-          "cl_vc_metric": 64934,
-          "cl_vc_rpc": 36114,
-          "el_discovery": 58860,
-          "el_discovery_v5": 21181,
-          "el_engine_api": 56375,
-          "el_metric": 30123,
-          "el_rpc": 45052,
-          "el_rpc_ws": 42566
+          "cl_bn_metric": 5054,
+          "cl_bn_rpc": 5052,
+          "cl_discovery": 9000,
+          "cl_discovery_quic": 9001,
+          "cl_vc_metric": 5064,
+          "cl_vc_rpc": 5062,
+          "el_discovery": 30303,
+          "el_discovery_v5": 9200,
+          "el_engine_api": 8551,
+          "el_metric": 6060,
+          "el_rpc": 8545,
+          "el_rpc_ws": 8546
         }
       }
     },
     "genesis_pre_settings": "",
     "host_ip": "127.0.0.1",
     "nodes": {
-      "1": {
-        "cl_type": "lighthouse",
-        "el_type": "geth",
-        "id": 1,
+      "4": {
+        "custom_data": {
+          "deposits": {
+            "doctor same predict nominee modify race twenty busy more glad nasty siren private weekend urge memory remind fatigue use ancient invest size shove wolf": 1
+          },
+          "el_kind": "Reth"
+        },
+        "id": 4,
         "kind": "ArchiveNode",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/1",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/4",
         "ports": {
-          "cl_bn_metric": 30200,
-          "cl_bn_rpc": 50099,
-          "cl_discovery": 28533,
-          "cl_discovery_quic": 57376,
-          "cl_vc_metric": 53530,
-          "cl_vc_rpc": 42459,
-          "el_discovery": 22584,
-          "el_discovery_v5": 38132,
-          "el_engine_api": 48725,
-          "el_metric": 29691,
-          "el_rpc": 37919,
-          "el_rpc_ws": 37795
-        }
-      },
-      "2": {
-        "cl_type": "lighthouse",
-        "el_type": "geth",
-        "id": 2,
-        "kind": "ArchiveNode",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/2",
-        "ports": {
-          "cl_bn_metric": 32359,
-          "cl_bn_rpc": 37050,
-          "cl_discovery": 58473,
-          "cl_discovery_quic": 56182,
-          "cl_vc_metric": 57629,
-          "cl_vc_rpc": 40933,
-          "el_discovery": 57691,
-          "el_discovery_v5": 30880,
-          "el_engine_api": 62103,
-          "el_metric": 37648,
-          "el_rpc": 54474,
-          "el_rpc_ws": 41960
+          "cl_bn_metric": 26618,
+          "cl_bn_rpc": 43816,
+          "cl_discovery": 58403,
+          "cl_discovery_quic": 27605,
+          "cl_vc_metric": 51430,
+          "cl_vc_rpc": 48815,
+          "el_discovery": 44081,
+          "el_discovery_v5": 22668,
+          "el_engine_api": 25244,
+          "el_metric": 30756,
+          "el_rpc": 56521,
+          "el_rpc_ws": 61063
         }
       }
     },
@@ -183,11 +170,6 @@ Options:
 
   -H, --host-ip <HOST_IP>
           Usually need not to specify [default: 127.0.0.1]
-  -n, --extra-node-num <EXTRA_NODE_NUM>
-          How many extra nodes(exclude the fuhrer node) should be created,
-          the actual node number will be `1 + this_value` [default: 0]
-      --fullnode
-          Set extra nodes in FullNode(opposite to ArchiveNode) mode?
   -t, --block-time-secs <BLOCK_TIME_SECS>
           If not set, use the default value in the genesis,
           has no effect when the `--genesis-data-pre-created` option is specified
