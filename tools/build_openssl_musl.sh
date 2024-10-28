@@ -29,7 +29,7 @@ mkdir -p /usr/local/musl || die
 
 cd /tmp || die
 
-if [ !-f /tmp/OpenSSL_1_1_1f.tar.gz ]; then
+if [ ! -f '/tmp/OpenSSL_1_1_1f.tar.gz' ]; then
     wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_1f.tar.gz || die
 fi
 
