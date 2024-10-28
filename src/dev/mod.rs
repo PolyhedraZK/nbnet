@@ -9,12 +9,17 @@
 use crate::{
     cfg::{DevCfg, DevOp},
     common::*,
+    pos::{create_mnemonic_words, deposit::do_deposit},
     select_nodes_by_el_kind,
+};
+use alloy::{
+    primitives::{hex, Address},
+    signers::k256::ecdsa::SigningKey,
 };
 use chaindev::{
     beacon_dev::{
         Env as SysEnv, EnvCfg as SysCfg, EnvMeta, EnvOpts as SysOpts, Node, NodeKind,
-        Op, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
+        Op, NODE_HOME_GENESIS_DIR_DST, NODE_HOME_GENESIS_DST, NODE_HOME_VCDATA_DST,
     },
     common::NodeCmdGenerator,
     CustomOps, EnvName, NodeID,
@@ -82,6 +87,23 @@ impl From<DevCfg> for EnvCfg {
 
                 Op::Create { opts: envopts }
             }
+            DevOp::Deposit {
+                env_name,
+                nodes,
+                num_per_node,
+                wallet_seckey_path,
+                withdraw_0x01_addr,
+            } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::Deposit {
+                    nodes,
+                    num_per_node,
+                    wallet_seckey_path,
+                    withdraw_0x01_addr,
+                })
+            }
             DevOp::Destroy { env_name, force } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -103,7 +125,7 @@ impl From<DevCfg> for EnvCfg {
             }
             DevOp::Start {
                 env_name,
-                node_ids,
+                nodes,
                 geth,
                 reth,
                 ignore_failed,
@@ -112,14 +134,14 @@ impl From<DevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::Start {
-                    nodes: select_nodes_by_el_kind!(node_ids, geth, reth, en),
+                    nodes: select_nodes_by_el_kind!(nodes, geth, reth, en),
                     ignore_failed,
                 }
             }
             DevOp::StartAll => Op::StartAll,
             DevOp::Stop {
                 env_name,
-                node_ids,
+                nodes,
                 geth,
                 reth,
             } => {
@@ -127,7 +149,7 @@ impl From<DevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::Stop {
-                    nodes: select_nodes_by_el_kind!(node_ids, geth, reth, en),
+                    nodes: select_nodes_by_el_kind!(nodes, geth, reth, en),
                     force: false,
                 }
             }
@@ -142,14 +164,18 @@ impl From<DevCfg> for EnvCfg {
                     en = n.into();
                 }
                 Op::PushNodes {
-                    node_mark: alt!(reth, RETH_MARK, GETH_MARK),
+                    custom_data: alt!(
+                        reth,
+                        NodeCustomData::new_with_reth().to_json_value(),
+                        NodeCustomData::new_with_geth().to_json_value()
+                    ),
                     fullnode,
                     num,
                 }
             }
             DevOp::KickNodes {
                 env_name,
-                node_ids,
+                nodes,
                 num,
                 geth,
                 reth,
@@ -157,47 +183,42 @@ impl From<DevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let ids = select_nodes_by_el_kind!(node_ids, geth, reth, en, false).map(
-                    |ids| {
+                let ids =
+                    select_nodes_by_el_kind!(nodes, geth, reth, en, false).map(|ids| {
                         let num = num as usize;
                         if ids.len() > num {
                             ids.into_iter().take(num).collect()
                         } else {
                             ids
                         }
-                    },
-                );
+                    });
                 Op::KickNodes { nodes: ids, num }
             }
-            DevOp::SwitchELToGeth { env_name, node_ids } => {
+            DevOp::SwitchELToGeth { env_name, nodes } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids
+                let nodes = nodes
                     .split(',')
                     .map(|s| s.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToGeth {
-                    nodes: pnk!(node_ids),
-                })
+                Op::Custom(ExtraOp::SwitchELToGeth { nodes: pnk!(nodes) })
             }
-            DevOp::SwitchELToReth { env_name, node_ids } => {
+            DevOp::SwitchELToReth { env_name, nodes } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let node_ids = node_ids
+                let nodes = nodes
                     .split(',')
                     .map(|s| s.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToReth {
-                    nodes: pnk!(node_ids),
-                })
+                Op::Custom(ExtraOp::SwitchELToReth { nodes: pnk!(nodes) })
             }
             DevOp::Show { env_name } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Show
+                Op::Custom(ExtraOp::Show)
             }
             DevOp::ListRpcs {
                 env_name,
@@ -222,7 +243,6 @@ impl From<DevCfg> for EnvCfg {
                     cl_vc_metric,
                 })
             }
-            DevOp::ShowAll => Op::ShowAll,
             DevOp::DebugFailedNodes { env_name } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -240,7 +260,19 @@ impl From<DevCfg> for EnvCfg {
 
 impl EnvCfg {
     pub fn exec(&self) -> Result<()> {
-        self.sys_cfg.exec(CmdGenerator).c(d!()).map(|_| ())
+        self.sys_cfg.exec(CmdGenerator).c(d!())
+            .and_then(|_| match &self.sys_cfg.op {
+                Op::Create { opts: _ } => {
+                    let mut env = load_sysenv(&self.sys_cfg.name).c(d!())?;
+                    let fuhrer = env.meta.fuhrers.values_mut().next().unwrap();
+                    let map = map!{B
+                        env.meta.genesis_mnemonic_words.clone() => env.meta.genesis_validator_num
+                    };
+                    json_append_deposits(&mut fuhrer.custom_data, map);
+                    env.write_cfg().c(d!())
+                }
+                _ => Ok(()),
+            })
     }
 }
 
@@ -283,7 +315,7 @@ if [ ! -d {genesis_dir} ]; then
 fi "#
         );
 
-        let mark = n.mark.unwrap_or(GETH_MARK);
+        let el_kind = json_el_kind(&n.custom_data);
 
         let local_ip = &e.host_ip;
         let ext_ip = local_ip; // for `ddev` it should be e.external_ip
@@ -367,7 +399,7 @@ fi "#
         let el_engine_port = n.ports.el_engine_api;
         let el_metric_port = n.ports.el_metric;
 
-        let el_cmd = if GETH_MARK == mark {
+        let el_cmd = if Eth1Kind::Geth == el_kind {
             let geth = &e.custom_data.el_geth_bin;
 
             let el_gc_mode = if matches!(n.kind, NodeKind::FullNode) {
@@ -421,7 +453,7 @@ nohup {geth} \
             let cmd_run_part_2 = " >>/dev/null 2>&1 &";
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
-        } else if RETH_MARK == mark {
+        } else if Eth1Kind::Reth == el_kind {
             let reth = &e.custom_data.el_reth_bin;
 
             let cmd_init_part = format!(
@@ -647,6 +679,13 @@ nohup {lighthouse} validator_client \
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
+    Deposit {
+        nodes: String, /*comma separated node IDs*/
+        num_per_node: u8,
+        wallet_seckey_path: Option<String>,
+        withdraw_0x01_addr: Option<String>,
+    },
+    Show,
     ListRpcs {
         el_web3: bool,
         el_web3_ws: bool,
@@ -669,6 +708,170 @@ impl CustomOps for ExtraOp {
         let mut env = load_sysenv(en).c(d!())?;
 
         match self {
+            Self::Deposit {
+                nodes,
+                num_per_node,
+                wallet_seckey_path,
+                withdraw_0x01_addr,
+            } => {
+                let nodes = nodes.trim();
+                let withdraw_addr = withdraw_0x01_addr.as_ref().map(|addr| addr.trim());
+                let mut env = load_sysenv(en).c(d!())?;
+
+                // All non-fuhrer nodes
+                let nodes = if "all" == nodes {
+                    env.meta.nodes.values().cloned().collect::<Vec<_>>()
+                } else {
+                    let ids = nodes
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<Vec<_>>>()?;
+                    let mut nodes = vec![];
+                    for id in ids.iter() {
+                        if env.meta.fuhrers.contains_key(id) {
+                            return Err(eg!(
+                                "Fuhrer node(id: {}) does not accept deposits",
+                                id
+                            ));
+                        }
+                        if let Some(n) = env.meta.nodes.get(id).cloned() {
+                            nodes.push(n);
+                        } else {
+                            return Err(eg!("The node(id: {}) does not exist", id));
+                        }
+                    }
+                    nodes
+                };
+
+                let (wallet_addr, wallet_key) = if let Some(path) = wallet_seckey_path {
+                    let key = fs::read_to_string(path).c(d!())?.trim().to_owned();
+                    let addr = if let Some(addr) = withdraw_addr.map(|s| s.to_owned()) {
+                        addr
+                    } else {
+                        let k = hex::decode(&key)
+                            .c(d!())
+                            .and_then(|k| SigningKey::from_slice(&k).c(d!()))?;
+                        Address::from_private_key(&k).to_string()
+                    };
+                    (addr, key)
+                } else {
+                    let (addr, obj) = env
+                        .meta
+                        .premined_accounts
+                        .as_object()
+                        .unwrap()
+                        .iter()
+                        .next()
+                        .c(d!())?;
+                    let addr = withdraw_addr.unwrap_or(addr).to_owned();
+                    let key = obj.as_object().unwrap()["secretKey"]
+                        .as_str()
+                        .unwrap()
+                        .to_owned();
+                    (addr, key)
+                };
+
+                let testnet_dir =
+                    format!("{}/{NODE_HOME_GENESIS_DIR_DST}", env.meta.home);
+                let config_yml = format!("{}/config.yaml", testnet_dir);
+                let cfg = fs::read_to_string(config_yml)
+                    .c(d!())
+                    .and_then(|s| serde_yml::from_str::<serde_yml::Value>(&s).c(d!()))?;
+                let deposit_contract =
+                    cfg["DEPOSIT_CONTRACT_ADDRESS"].as_str().unwrap().to_owned();
+
+                let runtime = crate::common::new_sb_runtime();
+
+                for n in nodes.into_iter() {
+                    let tmp_dir =
+                        format!("/tmp/{}_{}", ts!(), ruc::algo::rand::rand_jwt());
+                    omit!(fs::remove_dir_all(&tmp_dir));
+                    fs::create_dir_all(&tmp_dir).c(d!())?;
+
+                    let mnemonic_path = format!("{tmp_dir}/mnemonic.txt");
+
+                    let deposits_json = format!("{tmp_dir}/deposits.json");
+                    let validators_json = format!("{tmp_dir}/validators.json");
+
+                    let mnemonic = create_mnemonic_words();
+                    fs::write(&mnemonic_path, &mnemonic).c(d!())?;
+
+                    let node_vc_data_dir = format!("{}/{CL_VC_DIR}", n.home);
+                    let node_vc_api_token =
+                        format!("{}/validators/api-token.txt", node_vc_data_dir);
+                    let node_el_rpc_endpoint =
+                        format!("http://{}:{}", env.meta.host_ip, n.ports.el_rpc);
+                    let node_vc_rpc_endpoint =
+                        format!("http://localhost:{}", n.ports.cl_vc_rpc);
+
+                    let cmd = format!(
+                        r#"
+                        lighthouse validator-manager create \
+                            --testnet-dir {testnet_dir} \
+                            --mnemonic-path {mnemonic_path} \
+                            --first-index 0 \
+                            --count {num_per_node} \
+                            --eth1-withdrawal-address {wallet_addr} \
+                            --suggested-fee-recipient {wallet_addr} \
+                            --output-path {tmp_dir}
+                        "#
+                    );
+                    ruc::cmd::exec_output(&cmd).c(d!())?;
+
+                    let node_cmd = format!(
+                        r#"
+                        lighthouse validator-manager import \
+                            --testnet-dir {testnet_dir} \
+                            --datadir {node_vc_data_dir} \
+                            --validators-file {validators_json} \
+                            --vc-url {node_vc_rpc_endpoint} \
+                            --vc-token {node_vc_api_token}
+                        "#
+                    );
+                    ruc::cmd::exec_output(&node_cmd).c(d!())?;
+
+                    let deposits_json = fs::read_to_string(deposits_json).c(d!())?;
+                    runtime
+                        .block_on(do_deposit(
+                            &node_el_rpc_endpoint,
+                            &deposit_contract,
+                            &deposits_json,
+                            &wallet_key,
+                        ))
+                        .c(d!())?;
+
+                    json_append_deposits(
+                        &mut env.meta.nodes.get_mut(&n.id).unwrap().custom_data,
+                        map! {B mnemonic => *num_per_node as u16 },
+                    );
+
+                    env.write_cfg()
+                        .c(d!())
+                        .and_then(|_| fs::remove_dir_all(tmp_dir).c(d!()))?;
+                }
+
+                Ok(())
+            }
+            Self::Show => {
+                let mut ret = pnk!(serde_json::to_value(&env));
+
+                ret.as_object_mut()
+                    .unwrap()
+                    .remove("node_cmdline_generator");
+
+                let meta = ret["meta"].as_object_mut().unwrap();
+
+                meta.remove("genesis");
+                meta.remove("genesis_vkeys");
+                meta.remove("genesis_mnemonic_words");
+                meta.remove("genesis_validator_num");
+                meta.remove("nodes_should_be_online");
+                meta.remove("next_node_id");
+
+                println!("{}", pnk!(serde_json::to_string_pretty(&ret)));
+
+                Ok(())
+            }
             Self::ListRpcs {
                 el_web3,
                 el_web3_ws,
@@ -679,6 +882,7 @@ impl CustomOps for ExtraOp {
                 cl_vc_metric,
             } => {
                 let env = load_sysenv(en).c(d!())?;
+
                 let mut buf_el_web3 = vec![];
                 let mut buf_el_web3_ws = vec![];
                 let mut buf_el_metric = vec![];
@@ -686,6 +890,7 @@ impl CustomOps for ExtraOp {
                 let mut buf_cl_bn_metric = vec![];
                 let mut buf_cl_vc = vec![];
                 let mut buf_cl_vc_metric = vec![];
+
                 env.meta
                     .fuhrers
                     .values()
@@ -796,7 +1001,10 @@ impl CustomOps for ExtraOp {
                         .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
-                    alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, ns.push(n));
+                    alt!(
+                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Geth),
+                        ns.push(n)
+                    );
                 }
 
                 SysCfg {
@@ -825,12 +1033,16 @@ impl CustomOps for ExtraOp {
                 }
 
                 for id in ns.iter().map(|n| n.id) {
-                    env.meta
-                        .nodes
-                        .get_mut(&id)
-                        .or_else(|| env.meta.fuhrers.get_mut(&id))
-                        .unwrap()
-                        .mark = Some(GETH_MARK);
+                    json_set_el_kind(
+                        &mut env
+                            .meta
+                            .nodes
+                            .get_mut(&id)
+                            .or_else(|| env.meta.fuhrers.get_mut(&id))
+                            .unwrap()
+                            .custom_data,
+                        Eth1Kind::Geth,
+                    );
                 }
 
                 env.write_cfg().c(d!())
@@ -845,7 +1057,10 @@ impl CustomOps for ExtraOp {
                         .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
-                    alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, ns.push(n));
+                    alt!(
+                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Reth),
+                        ns.push(n)
+                    );
                 }
 
                 SysCfg {
@@ -874,12 +1089,16 @@ impl CustomOps for ExtraOp {
                 }
 
                 for id in ns.iter().map(|n| n.id) {
-                    env.meta
-                        .nodes
-                        .get_mut(&id)
-                        .or_else(|| env.meta.fuhrers.get_mut(&id))
-                        .unwrap()
-                        .mark = Some(RETH_MARK);
+                    json_set_el_kind(
+                        &mut env
+                            .meta
+                            .nodes
+                            .get_mut(&id)
+                            .or_else(|| env.meta.fuhrers.get_mut(&id))
+                            .unwrap()
+                            .custom_data,
+                        Eth1Kind::Reth,
+                    );
                 }
 
                 env.write_cfg().c(d!())

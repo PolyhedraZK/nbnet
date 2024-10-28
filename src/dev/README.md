@@ -4,13 +4,14 @@ A powerful and convenient development tool for managing local clusters of ETH2-b
 
 Through a `nb dev -h` we can see:
 
-```shell
+```
 Manage development clusters on a local host
 
 Usage: nb dev [OPTIONS] [COMMAND]
 
 Commands:
   create              Create a new ENV
+  deposit             Proof-of-Stake, deposit, exit, etc.
   destroy             Destroy an existing ENV
   destroy-all         Destroy all existing ENVs
   protect             Protect an existing ENV
@@ -26,9 +27,8 @@ Commands:
   switch-EL-to-reth   Switch the EL client to `reth`,
                       NOTE: the node will be left stopped, a `start` operation may be needed
   show                Default operation, show the information of an existing ENV
-  show-all            Show informations of all existing ENVs
   debug-failed-nodes  Show failed nodes in a list
-  list-rpcs           List all web3 RPC endpoints of the entire ENV
+  list-rpcs           List various RPC endpoints of the ENV
   list                Show names of all existing ENVs
 ```
 

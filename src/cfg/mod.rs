@@ -46,6 +46,39 @@ pub struct DevCfg {
 pub enum DevOp {
     #[clap(about = "Create a new ENV")]
     Create(Box<DevCreationOptions>),
+    #[clap(about = "Proof-of-Stake, deposit, exit, etc.")]
+    Deposit {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then deposit on all non-fuhrer nodes"
+        )]
+        nodes: String,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many validators to deposit on each node"
+        )]
+        num_per_node: u8,
+        #[clap(
+            short = 'K',
+            long,
+            help = "The path of your private key(for gas and the deposit principal),
+the first premint account will be used if not provided"
+        )]
+        wallet_seckey_path: Option<String>,
+        #[clap(
+            short = 'A',
+            long,
+            help = "An account used to receive the funds after validators exit,
+the address coresponding to `wallet-seckey` will be used if not provided"
+        )]
+        withdraw_0x01_addr: Option<String>,
+    },
     #[clap(about = "Destroy an existing ENV")]
     Destroy {
         #[clap(short = 'e', long)]
@@ -77,7 +110,7 @@ pub enum DevOp {
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -96,7 +129,7 @@ pub enum DevOp {
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -134,7 +167,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(
             short = 'n',
             long,
@@ -160,7 +193,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
             long,
             help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
         )]
-        node_ids: String,
+        nodes: String,
     },
     #[clap(
         name = "switch-EL-to-reth",
@@ -175,15 +208,13 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
             long,
             help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
         )]
-        node_ids: String,
+        nodes: String,
     },
     #[clap(about = "Default operation, show the information of an existing ENV")]
     Show {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
-    #[clap(about = "Show informations of all existing ENVs")]
-    ShowAll,
     #[clap(about = "Show failed nodes in a list")]
     DebugFailedNodes {
         #[clap(short = 'e', long)]
@@ -322,6 +353,39 @@ pub struct DDevCfg {
 pub enum DDevOp {
     #[clap(about = "Create a new ENV")]
     Create(Box<DDevCreationOptions>),
+    #[clap(about = "Proof-of-Stake, deposit, exit, etc.")]
+    Deposit {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then deposit on all non-fuhrer nodes"
+        )]
+        nodes: String,
+        #[clap(
+            short = 'n',
+            long,
+            default_value_t = 1,
+            help = "How many validators to deposit on each node"
+        )]
+        num_per_node: u8,
+        #[clap(
+            short = 'K',
+            long,
+            help = "The path of your private key(for gas and the deposit principal),
+the first premint account will be used if not provided"
+        )]
+        wallet_seckey_path: Option<String>,
+        #[clap(
+            short = 'A',
+            long,
+            help = "An account used to receive the funds after validators exit,
+the address coresponding to `wallet-seckey` will be used if not provided"
+        )]
+        withdraw_0x01_addr: Option<String>,
+    },
     #[clap(about = "Destroy an existing ENV")]
     Destroy {
         #[clap(short = 'e', long)]
@@ -353,7 +417,7 @@ pub enum DDevOp {
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -374,7 +438,7 @@ pub enum DDevOp {
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -415,7 +479,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: String,
+        nodes: String,
         #[clap(short = 'H', long)]
         host_addr: Option<String>,
     },
@@ -428,7 +492,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(
             short = 'n',
             long,
@@ -454,7 +518,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
             long,
             help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
         )]
-        node_ids: String,
+        nodes: String,
     },
     #[clap(
         name = "switch-EL-to-reth",
@@ -469,7 +533,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
             long,
             help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
         )]
-        node_ids: String,
+        nodes: String,
     },
     #[clap(about = "Add some new hosts to the cluster")]
     PushHosts {
@@ -513,8 +577,6 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(long, help = "Show results in the JSON format")]
         json: bool,
     },
-    #[clap(about = "Show informations of all existing ENVs")]
-    ShowAll,
     #[clap(about = "Show failed nodes in a list")]
     DebugFailedNodes {
         #[clap(short = 'e', long)]
@@ -641,9 +703,9 @@ all remote files will be collected into this directory,
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
         #[clap(
-            conflicts_with = "node_ids",
+            conflicts_with = "nodes",
             long,
             help = "Get logs of the failed nodes only"
         )]
@@ -666,7 +728,7 @@ all remote files will be collected into this directory,
             long,
             help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        node_ids: Option<String>,
+        nodes: Option<String>,
     },
 }
 

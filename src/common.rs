@@ -1,11 +1,8 @@
-use chaindev::beacon_based::common::{NodeMark, NodePorts};
+use chaindev::beacon_based::common::NodePorts;
 use ruc::*;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{env, thread};
-
-pub const GETH_MARK: NodeMark = 0;
-pub const RETH_MARK: NodeMark = 1;
+use serde_json::Value as JsonValue;
+use std::{collections::BTreeMap, env, thread};
 
 pub const EL_DIR: &str = "el";
 pub const CL_BN_DIR: &str = "cl/bn";
@@ -15,8 +12,111 @@ pub const EL_LOG_NAME: &str = "el.log";
 pub const CL_BN_LOG_NAME: &str = "cl.bn.log";
 pub const CL_VC_LOG_NAME: &str = "cl.vc.log";
 
-// TODO: fix me
-pub const FEE_RECIPIENT: &str = "0x47102e476Bb96e616756ea7701C227547080Ea48";
+pub type MnemonicWords = String;
+
+#[inline(always)]
+pub fn json_el_kind(v: &Option<JsonValue>) -> Eth1Kind {
+    if let Some(v) = v {
+        serde_json::from_value::<NodeCustomData>(v.clone())
+            .unwrap()
+            .el_kind
+    } else {
+        Eth1Kind::default()
+    }
+}
+
+#[inline(always)]
+pub fn json_set_el_kind(jv: &mut Option<JsonValue>, k: Eth1Kind) {
+    let v = if let Some(v) = jv {
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        v.el_kind = k;
+        v
+    } else {
+        NodeCustomData {
+            el_kind: k,
+            ..Default::default()
+        }
+    };
+
+    jv.replace(serde_json::to_value(&v).unwrap());
+}
+
+#[inline(always)]
+pub fn json_append_deposits(
+    jv: &mut Option<JsonValue>,
+    mut deposits: BTreeMap<MnemonicWords, u16>,
+) {
+    let v = if let Some(v) = jv {
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        if let Some(i) = v.deposits.as_mut() {
+            i.append(&mut deposits)
+        } else {
+            v.deposits = Some(deposits);
+        };
+        v
+    } else {
+        NodeCustomData {
+            el_kind: Eth1Kind::default(),
+            deposits: Some(deposits),
+        }
+    };
+
+    jv.replace(serde_json::to_value(&v).unwrap());
+}
+
+#[inline(always)]
+pub fn json_el_kind_matched(v: &Option<JsonValue>, k: Eth1Kind) -> bool {
+    json_el_kind(v) == k
+}
+
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct NodeCustomData {
+    pub el_kind: Eth1Kind,
+
+    /// Mnemonic => deposited validator number
+    pub deposits: Option<BTreeMap<MnemonicWords, u16>>,
+}
+
+impl NodeCustomData {
+    #[inline(always)]
+    pub fn new_with_geth() -> Self {
+        Self {
+            el_kind: Eth1Kind::Geth,
+            deposits: None,
+        }
+    }
+
+    #[inline(always)]
+    pub fn new_with_reth() -> Self {
+        Self {
+            el_kind: Eth1Kind::Reth,
+            deposits: None,
+        }
+    }
+
+    #[inline(always)]
+    pub fn to_json_value(&self) -> JsonValue {
+        serde_json::to_value(self).c(d!()).unwrap()
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Eth1Kind {
+    Geth = 0,
+    Reth = 1,
+}
+
+impl Default for Eth1Kind {
+    fn default() -> Self {
+        Self::Geth
+    }
+}
+
+// **FIX ME**
+//
+// Secret Key:
+//     - '0xbcdf20249abf0ed6d944c0288fad489e33f66b3960d9e6229c1cd214ed3bbe31'
+pub const FEE_RECIPIENT: &str = "0x8943545177806ED17B9F23F0a21ee5948eCaa776";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomInfo {
@@ -190,7 +290,7 @@ pub fn el_get_boot_nodes(rpc_endpoints: &[&str]) -> Result<String> {
                         Some(&[("Content-Type", "application/json")]),
                     )
                     .c(d!())
-                    .and_then(|(_code, resp)| serde_json::from_slice::<Value>(&resp).c(d!()))
+                    .and_then(|(_code, resp)| serde_json::from_slice::<JsonValue>(&resp).c(d!()))
                     .map(|v| pnk!(v["result"]["enode"].as_str()).to_owned())
                     })
             })
@@ -224,7 +324,7 @@ pub fn cl_get_boot_nodes(
                     )
                     .c(d!())
                     .and_then(|(_code, resp)| {
-                        serde_json::from_slice::<Value>(&resp).c(d!())
+                        serde_json::from_slice::<JsonValue>(&resp).c(d!())
                     })
                     .map(|v| {
                         (
@@ -254,4 +354,12 @@ pub fn cl_get_boot_nodes(
 
 pub fn node_sync_from_genesis() -> bool {
     env::var("NBNET_NODE_SYNC_FROM_GENESIS").is_ok()
+}
+
+pub fn new_sb_runtime() -> sb::runtime::Runtime {
+    sb::runtime::Builder::new_current_thread()
+        .enable_time()
+        .enable_io()
+        .build()
+        .unwrap()
 }

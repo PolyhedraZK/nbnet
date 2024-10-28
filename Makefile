@@ -22,7 +22,6 @@ install:
 	- nb -z > ~/.cargo/bin/zsh_nb.completion
 	- sed -i '/zsh_nb.completion/d' ~/.zshrc
 	- echo '. ~/.cargo/bin/zsh_nb.completion' >> ~/.zshrc
-	- zsh ~/.zshrc 2>/dev/null
 
 lint:
 	cargo clippy

@@ -51,24 +51,18 @@ fn main() {
             }
         }
         Commands::Deposit(cfg) => {
-            let future = pos::deposit::deposit(
+            let future = pos::deposit(
                 &cfg.rpc_endpoint,
                 &cfg.deposit_contract_addr,
                 &cfg.deposit_data_json_path,
                 &cfg.wallet_signkey_path,
             );
-            if let Err(e) = sb::runtime::Builder::new_current_thread()
-                .enable_time()
-                .enable_io()
-                .build()
-                .unwrap()
-                .block_on(future)
-            {
+            if let Err(e) = common::new_sb_runtime().block_on(future) {
                 err_mgmt(e, "deposit");
             }
         }
         Commands::NewMnemonic => {
-            println!("\n{}\n", pos::mnemonic::create_mnemonic_words())
+            println!("\n{}\n", pos::create_mnemonic_words())
         }
         Commands::GenZshCompletions => {
             generate(Zsh, &mut Cfg::command(), crate_name!(), &mut io::stdout());

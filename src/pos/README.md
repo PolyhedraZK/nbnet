@@ -5,7 +5,7 @@
 Usage:
 
 ```
-# nb deposit
+# `nb deposit`
 Manage deposit operations
 
 Usage: nb deposit --rpc-endpoint <RPC_ENDPOINT> \
@@ -26,6 +26,28 @@ Options:
           The deposit principal will be deducted from this wallet
 ```
 
+```
+# `nb dev deposit` and `nb ddev deposit`
+Proof-of-Stake, deposit, exit, etc.
+
+Usage: nb dev/ddev deposit [OPTIONS] --nodes <NODES>
+
+Options:
+  -e, --env-name <ENV_NAME>
+
+  -N, --nodes <NODES>
+          Comma separated NodeID[s], '3', '3,2,1', etc.
+          if set to '*', then deposit on all non-fuhrer nodes
+  -n, --num-per-node <NUM_PER_NODE>
+          How many validators to deposit on each node [default: 1]
+  -K, --wallet-seckey-path <WALLET_SECKEY_PATH>
+          The path of your private key(for gas and the deposit principal),
+          the first premint account will be used if not provided
+  -A, --withdraw-0x01-addr <WITHDRAW_0X01_ADDR>
+          An account used to receive the funds after validators exit,
+          the address coresponding to `wallet-seckey` will be used if not provided
+```
+
 Workflow:
 1. Get the [staking-deposit-cli](https://github.com/ethereum/staking-deposit-cli) tool, and then `deposit new-mnemonic`
     - The 'deposit_data-xxx.json' file
@@ -44,7 +66,7 @@ Workflow:
 Example:
 
 ```shell
-# Create a devnet with 2 nodes
+# Create a devnet with 1 non-fuhrer node
 nb dev create -n 1 -g config/genesis/minimal.env
 
 NODE_HOME=$(nb dev | jq '.meta.nodes."1".node_home' | tr -d '"')
@@ -101,6 +123,17 @@ for pubkey in $(cat deposits.json | jq '.[].pubkey' | tr -d '"'); do
     curl "${BN_RPC_ENDPOINT}/eth/v1/beacon/states/head/validators/${pubkey}" \
         -H "accept: application/json" | jq
 done
+```
+
+Embed Example:
+
+```shell
+# Create a devnet with 2 non-fuhrer nodes
+nb dev create -n 2 -g config/genesis/minimal.env
+
+# Deposit to all the non-fuhrer nodes
+# Check `nb dev/ddev deposit -h` for detail
+nb dev deposit -N all
 ```
 
 ### Refs

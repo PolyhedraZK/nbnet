@@ -54,7 +54,20 @@ pub async fn deposit(
     wallet_signkey_path: &str,
 ) -> Result<()> {
     let signkey = fs::read_to_string(wallet_signkey_path).c(d!())?;
-    let signkey = hex::decode(signkey.trim()).c(d!())?;
+    let deposit_data = fs::read_to_string(deposit_data_json_path).c(d!())?;
+    do_deposit(rpc_endpoint, deposit_contract_addr, &signkey, &deposit_data)
+        .await
+        .c(d!())
+}
+
+// For inner usage
+pub async fn do_deposit(
+    rpc_endpoint: &str,
+    deposit_contract_addr: &str,
+    deposit_data_json: &str,
+    wallet_signkey: &str,
+) -> Result<()> {
+    let signkey = hex::decode(wallet_signkey.trim()).c(d!())?;
     let signkey = SigningKey::from_slice(&signkey).c(d!())?;
 
     let wallet_addr = Address::from_private_key(&signkey);
@@ -68,9 +81,8 @@ pub async fn deposit(
         .with_recommended_fillers()
         .on_http(url);
 
-    let mut deposit_data = fs::read(deposit_data_json_path)
-        .c(d!())
-        .and_then(|d| serde_json::from_slice::<DepositData>(&d).c(d!()))?;
+    let mut deposit_data =
+        serde_json::from_str::<DepositData>(deposit_data_json).c(d!())?;
 
     for dd in deposit_data.iter_mut() {
         // convert 'Gwei' to 'wei'

@@ -15,6 +15,7 @@ Usage: nb ddev [OPTIONS] [COMMAND]
 
 Commands:
   create              Create a new ENV
+  deposit             Proof-of-Stake, deposit, exit, etc.
   destroy             Destroy an existing ENV
   destroy-all         Destroy all existing ENVs
   protect             Protect an existing ENV
@@ -35,7 +36,6 @@ Commands:
   kick-hosts          Remove some hosts from the cluster
   show                Default operation, show the information of an existing ENV
   show-hosts          Show the remote host configations in JSON or the `nb` native format
-  show-all            Show informations of all existing ENVs
   debug-failed-nodes  Show failed nodes in a list
   list-rpcs           List various RPC endpoints of the ENV
   list                Show names of all existing ENVs
