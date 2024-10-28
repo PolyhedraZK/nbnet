@@ -37,14 +37,13 @@ Commands:
   show-hosts          Show the remote host configations in JSON or the `nb` native format
   show-all            Show informations of all existing ENVs
   debug-failed-nodes  Show failed nodes in a list
-  list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
+  list-rpcs           List various RPC endpoints of the ENV
   list                Show names of all existing ENVs
   host-put-file       Put a local file to all remote hosts
   host-get-file       Get a remote file from all remote hosts
   host-exec           Execute commands on all remote hosts
   get-logs            Get the remote logs from all nodes of the ENV
   dump-vc-data        Dump the validator client data from all nodes of the ENV
-  help                Print this message or the help of the given subcommand(s)
 ```
 
 Set the ssh public key(eg `~/.ssh/id_rsa.pub`) of your localhost to the correct path(eg `~/.ssh/authorized_keys`) on every remote host,
@@ -186,7 +185,7 @@ If all the user names are same as the user name of your local machine, the above
 nb ddev create --hosts '10.0.0.2,10.0.0.3,10.0.0.4'
 ```
 
-You can use `nb ddev list-web3-rpcs` to get all Web3 endpoints.
+You can use `nb ddev list-rpcs -w` to get all Web3 endpoints.
 
 If your remote hosts has different OSs with your localhost, your local compiled binaries may not run correctly on the remote hosts. For this situation, there is a `make ddev_docker_runtime` that can solve this problem.
 

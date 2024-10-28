@@ -28,9 +28,8 @@ Commands:
   show                Default operation, show the information of an existing ENV
   show-all            Show informations of all existing ENVs
   debug-failed-nodes  Show failed nodes in a list
-  list-web3-rpcs, -w  List all web3 RPC endpoints of the entire ENV
+  list-rpcs           List all web3 RPC endpoints of the entire ENV
   list                Show names of all existing ENVs
-  help                Print this message or the help of the given subcommand(s)
 ```
 
 #### Management of a single cluster
@@ -161,7 +160,7 @@ As you see in the outputs of `nb dev show`, the nodes in the `fuhrer_nodes` list
 
 The `premined_accounts` fild hold all test tokens for you.
 
-You can use `nb dev list-web3-rpcs` to get all Web3 endpoints.
+You can use `nb dev list-rpcs -w` to get all Web3 endpoints.
 
 The initial validators are managed by the first fuhrer node, so all the keys are stored in its home directory. In the above example, it is `/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/0/cl/vc/`.
 

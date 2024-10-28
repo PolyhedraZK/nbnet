@@ -303,8 +303,11 @@ impl From<DDevCfg> for EnvCfg {
                 env_name,
                 el_web3,
                 el_web3_ws,
+                el_metric,
                 cl_bn,
+                cl_bn_metric,
                 cl_vc,
+                cl_vc_metric,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -312,8 +315,11 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Custom(ExtraOp::ListRpcs {
                     el_web3,
                     el_web3_ws,
+                    el_metric,
                     cl_bn,
+                    cl_bn_metric,
                     cl_vc,
+                    cl_vc_metric,
                 })
             }
             DDevOp::ShowAll => Op::ShowAll,
@@ -894,8 +900,11 @@ enum ExtraOp {
     ListRpcs {
         el_web3: bool,
         el_web3_ws: bool,
+        el_metric: bool,
         cl_bn: bool,
+        cl_bn_metric: bool,
         cl_vc: bool,
+        cl_vc_metric: bool,
     },
     GetLogs {
         local_dir: Option<String>,
@@ -950,14 +959,20 @@ impl CustomOps for ExtraOp {
             Self::ListRpcs {
                 el_web3,
                 el_web3_ws,
+                el_metric,
                 cl_bn,
+                cl_bn_metric,
                 cl_vc,
+                cl_vc_metric,
             } => {
                 let env = load_sysenv(en).c(d!())?;
                 let mut buf_el_web3 = vec![];
                 let mut buf_el_web3_ws = vec![];
+                let mut buf_el_metric = vec![];
                 let mut buf_cl_bn = vec![];
+                let mut buf_cl_bn_metric = vec![];
                 let mut buf_cl_vc = vec![];
+                let mut buf_cl_vc_metric = vec![];
                 env.meta
                     .fuhrers
                     .values()
@@ -974,21 +989,42 @@ impl CustomOps for ExtraOp {
                             buf_el_web3_ws.push(format!(
                                 "    http://{}:{}",
                                 n.host.addr.connection_addr(),
-                                n.ports.el_rpc
+                                n.ports.el_rpc_ws
+                            ));
+                        }
+                        if *el_metric {
+                            buf_el_metric.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.el_metric
                             ));
                         }
                         if *cl_bn {
                             buf_cl_bn.push(format!(
                                 "    http://{}:{}",
                                 n.host.addr.connection_addr(),
-                                n.ports.el_rpc
+                                n.ports.cl_bn_rpc
+                            ));
+                        }
+                        if *cl_bn_metric {
+                            buf_cl_bn_metric.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.cl_bn_metric
                             ));
                         }
                         if *cl_vc {
                             buf_cl_vc.push(format!(
                                 "    http://{}:{}",
                                 n.host.addr.connection_addr(),
-                                n.ports.el_rpc
+                                n.ports.cl_vc_rpc
+                            ));
+                        }
+                        if *cl_vc_metric {
+                            buf_cl_vc_metric.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.cl_vc_metric
                             ));
                         }
                     });
@@ -1007,6 +1043,13 @@ impl CustomOps for ExtraOp {
                     });
                 }
 
+                if !buf_el_metric.is_empty() {
+                    println!("\x1b[33;1mEL METRIC RPCs:\x1b[0m");
+                    buf_el_metric.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
                 if !buf_cl_bn.is_empty() {
                     println!("\x1b[33;1mCL BEACON RPCs:\x1b[0m");
                     buf_cl_bn.iter().for_each(|l| {
@@ -1014,9 +1057,23 @@ impl CustomOps for ExtraOp {
                     });
                 }
 
+                if !buf_cl_bn_metric.is_empty() {
+                    println!("\x1b[33;1mCL BEACON METRIC RPCs:\x1b[0m");
+                    buf_cl_bn_metric.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
                 if !buf_cl_vc.is_empty() {
                     println!("\x1b[33;1mCL VALIDATOR RPCs:\x1b[0m");
                     buf_cl_vc.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
+                if !buf_cl_vc_metric.is_empty() {
+                    println!("\x1b[33;1mCL VALIDATOR METRIC RPCs:\x1b[0m");
+                    buf_cl_vc_metric.iter().for_each(|l| {
                         println!("{l}");
                     });
                 }

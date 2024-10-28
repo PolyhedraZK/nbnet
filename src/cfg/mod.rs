@@ -189,10 +189,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
-    #[clap(
-        short_flag = 'R',
-        about = "List all web3 RPC endpoints of the entire ENV"
-    )]
+    #[clap(about = "List various RPC endpoints of the ENV")]
     ListRpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -203,19 +200,33 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         )]
         el_web3: bool,
         #[clap(
-            short = 'W',
+            short = 'x',
             long,
             help = "Web3 websocket RPCs, e.g., 'http://localhost:8546'"
         )]
         el_web3_ws: bool,
+        #[clap(
+            short = 'W',
+            long,
+            help = "Web3 http RPCs, e.g., 'http://localhost:6060'"
+        )]
+        el_metric: bool,
         #[clap(short = 'b', long, help = "Beacon RPCs, e.g., 'http://localhost:5052'")]
         cl_bn: bool,
+        #[clap(short = 'B', long, help = "Beacon RPCs, e.g., 'http://localhost:5054'")]
+        cl_bn_metric: bool,
         #[clap(
             short = 'v',
             long,
             help = "Validator RPCs, e.g., 'http://localhost:5062'"
         )]
         cl_vc: bool,
+        #[clap(
+            short = 'V',
+            long,
+            help = "Validator RPCs, e.g., 'http://localhost:5064'"
+        )]
+        cl_vc_metric: bool,
     },
     #[clap(about = "Show names of all existing ENVs")]
     List,
@@ -509,10 +520,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
-    #[clap(
-        short_flag = 'R',
-        about = "List all web3 RPC endpoints of the entire ENV"
-    )]
+    #[clap(about = "List various RPC endpoints of the ENV")]
     ListRpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -523,19 +531,33 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         )]
         el_web3: bool,
         #[clap(
-            short = 'W',
+            short = 'x',
             long,
             help = "Web3 websocket RPCs, e.g., 'http://localhost:8546'"
         )]
         el_web3_ws: bool,
+        #[clap(
+            short = 'W',
+            long,
+            help = "Web3 http RPCs, e.g., 'http://localhost:6060'"
+        )]
+        el_metric: bool,
         #[clap(short = 'b', long, help = "Beacon RPCs, e.g., 'http://localhost:5052'")]
         cl_bn: bool,
+        #[clap(short = 'B', long, help = "Beacon RPCs, e.g., 'http://localhost:5054'")]
+        cl_bn_metric: bool,
         #[clap(
             short = 'v',
             long,
             help = "Validator RPCs, e.g., 'http://localhost:5062'"
         )]
         cl_vc: bool,
+        #[clap(
+            short = 'V',
+            long,
+            help = "Validator RPCs, e.g., 'http://localhost:5064'"
+        )]
+        cl_vc_metric: bool,
     },
     #[clap(about = "Show names of all existing ENVs")]
     List,
