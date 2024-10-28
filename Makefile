@@ -17,8 +17,9 @@ musl_release:
 musl_build_openssl:
 	sudo bash -x tools/build_openssl_musl.sh
 
-install:
-	cargo install --force --path .
+install: release
+	rm -f ~/.cargo/bin/nb
+	cp target/release/nb ~/.cargo/bin/
 	- nb -z > ~/.cargo/bin/zsh_nb.completion
 	- sed -i '/zsh_nb.completion/d' ~/.zshrc
 	- echo '. ~/.cargo/bin/zsh_nb.completion' >> ~/.zshrc
