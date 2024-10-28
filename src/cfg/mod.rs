@@ -190,12 +190,32 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         env_name: Option<String>,
     },
     #[clap(
-        short_flag = 'w',
+        short_flag = 'R',
         about = "List all web3 RPC endpoints of the entire ENV"
     )]
-    ListWeb3Rpcs {
+    ListRpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
+        #[clap(
+            short = 'w',
+            long,
+            help = "Web3 http RPCs, e.g., 'http://localhost:8545'"
+        )]
+        el_web3: bool,
+        #[clap(
+            short = 'W',
+            long,
+            help = "Web3 websocket RPCs, e.g., 'http://localhost:8546'"
+        )]
+        el_web3_ws: bool,
+        #[clap(short = 'b', long, help = "Beacon RPCs, e.g., 'http://localhost:5052'")]
+        cl_bn: bool,
+        #[clap(
+            short = 'v',
+            long,
+            help = "Validator RPCs, e.g., 'http://localhost:5062'"
+        )]
+        cl_vc: bool,
     },
     #[clap(about = "Show names of all existing ENVs")]
     List,
@@ -207,7 +227,7 @@ impl Default for DevOp {
     }
 }
 
-#[derive(Debug, Args)]
+#[derive(Clone, Debug, Args)]
 pub struct DevCreationOptions {
     #[clap(short = 'e', long)]
     pub env_name: Option<String>,
@@ -490,12 +510,32 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         env_name: Option<String>,
     },
     #[clap(
-        short_flag = 'w',
+        short_flag = 'R',
         about = "List all web3 RPC endpoints of the entire ENV"
     )]
-    ListWeb3Rpcs {
+    ListRpcs {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
+        #[clap(
+            short = 'w',
+            long,
+            help = "Web3 http RPCs, e.g., 'http://localhost:8545'"
+        )]
+        el_web3: bool,
+        #[clap(
+            short = 'W',
+            long,
+            help = "Web3 websocket RPCs, e.g., 'http://localhost:8546'"
+        )]
+        el_web3_ws: bool,
+        #[clap(short = 'b', long, help = "Beacon RPCs, e.g., 'http://localhost:5052'")]
+        cl_bn: bool,
+        #[clap(
+            short = 'v',
+            long,
+            help = "Validator RPCs, e.g., 'http://localhost:5062'"
+        )]
+        cl_vc: bool,
     },
     #[clap(about = "Show names of all existing ENVs")]
     List,
@@ -614,7 +654,7 @@ impl Default for DDevOp {
     }
 }
 
-#[derive(Debug, Args)]
+#[derive(Clone, Debug, Args)]
 pub struct DDevCreationOptions {
     #[clap(short = 'e', long)]
     pub env_name: Option<String>,

@@ -159,15 +159,15 @@ impl From<DDevCfg> for EnvCfg {
                     force_create: copts.force_create,
                 };
 
-                Op::Create(envopts)
+                Op::Create { opts: envopts }
             }
             DDevOp::Destroy { env_name, force } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Destroy(force)
+                Op::Destroy { force }
             }
-            DDevOp::DestroyAll { force } => Op::DestroyAll(force),
+            DDevOp::DestroyAll { force } => Op::DestroyAll { force },
             DDevOp::Protect { env_name } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -191,11 +191,11 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Start((
-                    select_nodes_by_el_kind!(node_ids, geth, reth, en),
+                Op::Start {
+                    nodes: select_nodes_by_el_kind!(node_ids, geth, reth, en),
                     ignore_failed,
                     realloc_ports,
-                ))
+                }
             }
             DDevOp::StartAll => Op::StartAll,
             DDevOp::Stop {
@@ -207,9 +207,12 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Stop((select_nodes_by_el_kind!(node_ids, geth, reth, en), false))
+                Op::Stop {
+                    nodes: select_nodes_by_el_kind!(node_ids, geth, reth, en),
+                    force: false,
+                }
             }
-            DDevOp::StopAll => Op::StopAll(false),
+            DDevOp::StopAll => Op::StopAll { force: false },
             DDevOp::PushNodes {
                 env_name,
                 host_addr,
@@ -220,12 +223,12 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::PushNodes((
-                    host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
-                    alt!(reth, RETH_MARK, GETH_MARK),
+                Op::PushNodes {
+                    host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
+                    node_mark: alt!(reth, RETH_MARK, GETH_MARK),
                     fullnode,
                     num,
-                ))
+                }
             }
             DDevOp::MigrateNodes {
                 env_name,
@@ -240,10 +243,10 @@ impl From<DDevCfg> for EnvCfg {
                     .map(|id| id.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
                 let node_ids = pnk!(parsed, "Invalid ID[s], parse failed");
-                Op::MigrateNodes((
-                    node_ids,
-                    host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
-                ))
+                Op::MigrateNodes {
+                    nodes: node_ids,
+                    host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
+                }
             }
             DDevOp::KickNodes {
                 env_name,
@@ -265,14 +268,14 @@ impl From<DDevCfg> for EnvCfg {
                         }
                     },
                 );
-                Op::KickNodes((ids, num))
+                Op::KickNodes { nodes: ids, num }
             }
             DDevOp::PushHosts { env_name, hosts } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
                 let hosts = pnk!(hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts));
-                Op::PushHosts(hosts)
+                Op::PushHosts { hosts }
             }
             DDevOp::KickHosts {
                 env_name,
@@ -282,10 +285,10 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::KickHosts((
-                    host_ids.split(",").map(|h| h.to_owned()).collect(),
+                Op::KickHosts {
+                    hosts: host_ids.split(",").map(|h| h.to_owned()).collect(),
                     force,
-                ))
+                }
             }
             DDevOp::Show { env_name } => {
                 if let Some(n) = env_name {
@@ -294,13 +297,24 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Show
             }
             DDevOp::ShowHosts { hosts, json } => {
-                Op::Custom(ExtraOp::ShowHosts((hosts, json)))
+                Op::Custom(ExtraOp::ShowHosts { hosts, json })
             }
-            DDevOp::ListWeb3Rpcs { env_name } => {
+            DDevOp::ListRpcs {
+                env_name,
+                el_web3,
+                el_web3_ws,
+                cl_bn,
+                cl_vc,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::ListWeb3Rpcs)
+                Op::Custom(ExtraOp::ListRpcs {
+                    el_web3,
+                    el_web3_ws,
+                    cl_bn,
+                    cl_vc,
+                })
             }
             DDevOp::ShowAll => Op::ShowAll,
             DDevOp::DebugFailedNodes { env_name } => {
@@ -364,7 +378,11 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::GetLogs((local_base_dir, node_ids, failed)))
+                Op::Custom(ExtraOp::GetLogs {
+                    local_dir: local_base_dir,
+                    nodes: node_ids,
+                    failed,
+                })
             }
             DDevOp::DumpVcData {
                 env_name,
@@ -374,7 +392,10 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::DumpVcData((local_base_dir, node_ids)))
+                Op::Custom(ExtraOp::DumpVcData {
+                    local_dir: local_base_dir,
+                    nodes: node_ids,
+                })
             }
             DDevOp::SwitchELToGeth { env_name, node_ids } => {
                 if let Some(n) = env_name {
@@ -384,7 +405,9 @@ impl From<DDevCfg> for EnvCfg {
                     .split(',')
                     .map(|s| s.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToGeth(pnk!(node_ids)))
+                Op::Custom(ExtraOp::SwitchELToGeth {
+                    nodes: pnk!(node_ids),
+                })
             }
             DDevOp::SwitchELToReth { env_name, node_ids } => {
                 if let Some(n) = env_name {
@@ -394,7 +417,9 @@ impl From<DDevCfg> for EnvCfg {
                     .split(',')
                     .map(|s| s.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToReth(pnk!(node_ids)))
+                Op::Custom(ExtraOp::SwitchELToReth {
+                    nodes: pnk!(node_ids),
+                })
             }
         };
 
@@ -862,29 +887,37 @@ fn parse_cfg(json_path_or_expr: &str) -> Result<Hosts> {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 enum ExtraOp {
-    ShowHosts((Option<HostExpression>, bool /*in JSON format or not*/)),
-    ListWeb3Rpcs,
-    GetLogs(
-        (
-            Option<String>, /*local dir*/
-            Option<String>, /*specified nodes only, comma separated*/
-            bool,           /*failed node only*/
-        ),
-    ),
-    DumpVcData(
-        (
-            Option<String>, /*local dir*/
-            Option<String>, /*specified nodes only, comma separated*/
-        ),
-    ),
-    SwitchELToGeth(BTreeSet<NodeID>),
-    SwitchELToReth(BTreeSet<NodeID>),
+    ShowHosts {
+        hosts: Option<HostExpression>,
+        json: bool, /*in JSON format or not*/
+    },
+    ListRpcs {
+        el_web3: bool,
+        el_web3_ws: bool,
+        cl_bn: bool,
+        cl_vc: bool,
+    },
+    GetLogs {
+        local_dir: Option<String>,
+        nodes: Option<String>, /*specified nodes only, comma separated*/
+        failed: bool,          /*failed node only*/
+    },
+    DumpVcData {
+        local_dir: Option<String>,
+        nodes: Option<String>, /*specified nodes only, comma separated*/
+    },
+    SwitchELToGeth {
+        nodes: BTreeSet<NodeID>,
+    },
+    SwitchELToReth {
+        nodes: BTreeSet<NodeID>,
+    },
 }
 
 impl CustomOps for ExtraOp {
     fn exec(&self, en: &EnvName) -> Result<()> {
         match self {
-            Self::ShowHosts((hosts, json)) => {
+            Self::ShowHosts { hosts, json } => {
                 let hosts = pnk!(hosts
                     .as_ref()
                     .map(|h| pnk!(parse_cfg(h)))
@@ -914,22 +947,87 @@ impl CustomOps for ExtraOp {
                 };
                 Ok(())
             }
-            Self::ListWeb3Rpcs => {
+            Self::ListRpcs {
+                el_web3,
+                el_web3_ws,
+                cl_bn,
+                cl_vc,
+            } => {
                 let env = load_sysenv(en).c(d!())?;
+                let mut buf_el_web3 = vec![];
+                let mut buf_el_web3_ws = vec![];
+                let mut buf_cl_bn = vec![];
+                let mut buf_cl_vc = vec![];
                 env.meta
                     .fuhrers
                     .values()
                     .chain(env.meta.nodes.values())
                     .for_each(|n| {
-                        println!(
-                            " http://{}:{}",
-                            n.host.addr.connection_addr(),
-                            n.ports.el_rpc
-                        );
+                        if *el_web3 || !*el_web3_ws && !*cl_bn && !*cl_vc {
+                            buf_el_web3.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.el_rpc
+                            ));
+                        }
+                        if *el_web3_ws {
+                            buf_el_web3_ws.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.el_rpc
+                            ));
+                        }
+                        if *cl_bn {
+                            buf_cl_bn.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.el_rpc
+                            ));
+                        }
+                        if *cl_vc {
+                            buf_cl_vc.push(format!(
+                                "    http://{}:{}",
+                                n.host.addr.connection_addr(),
+                                n.ports.el_rpc
+                            ));
+                        }
                     });
+
+                if !buf_el_web3.is_empty() {
+                    println!("\x1b[33;1mEL WEB3 RPCs:\x1b[0m");
+                    buf_el_web3.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
+                if !buf_el_web3_ws.is_empty() {
+                    println!("\x1b[33;1mEL WEB3 WS RPCs:\x1b[0m");
+                    buf_el_web3_ws.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
+                if !buf_cl_bn.is_empty() {
+                    println!("\x1b[33;1mCL BEACON RPCs:\x1b[0m");
+                    buf_cl_bn.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
+                if !buf_cl_vc.is_empty() {
+                    println!("\x1b[33;1mCL VALIDATOR RPCs:\x1b[0m");
+                    buf_cl_vc.iter().for_each(|l| {
+                        println!("{l}");
+                    });
+                }
+
                 Ok(())
             }
-            Self::GetLogs((ldir, nodes, failed)) => {
+            Self::GetLogs {
+                local_dir,
+                nodes,
+                failed,
+            } => {
                 let env = load_sysenv(en).c(d!())?;
 
                 let mut ids = if let Some(s) = nodes {
@@ -964,7 +1062,7 @@ impl CustomOps for ExtraOp {
                         &format!("{CL_VC_DIR}/logs/{CL_VC_LOG_NAME}"),
                         "mgmt.log",
                     ],
-                    ldir.as_deref(),
+                    local_dir.as_deref(),
                 )
                 .c(d!())?;
 
@@ -978,7 +1076,7 @@ impl CustomOps for ExtraOp {
                         .join("\n")))
                 }
             }
-            Self::DumpVcData((ldir, nodes)) => {
+            Self::DumpVcData { local_dir, nodes } => {
                 let ids = if let Some(s) = nodes {
                     s.split(',')
                         .map(|id| id.parse::<NodeID>().c(d!()))
@@ -988,15 +1086,20 @@ impl CustomOps for ExtraOp {
                     None
                 };
                 load_sysenv(en).c(d!()).and_then(|env| {
-                    env_collect_tgz(&env, ids.as_deref(), &[CL_VC_DIR], ldir.as_deref())
-                        .c(d!())
+                    env_collect_tgz(
+                        &env,
+                        ids.as_deref(),
+                        &[CL_VC_DIR],
+                        local_dir.as_deref(),
+                    )
+                    .c(d!())
                 })
             }
-            Self::SwitchELToGeth(ids) => {
+            Self::SwitchELToGeth { nodes } => {
                 let mut env = load_sysenv(en).c(d!())?;
 
-                let mut nodes = vec![];
-                for id in ids.iter() {
+                let mut ns = vec![];
+                for id in nodes.iter() {
                     let n = env
                         .meta
                         .nodes
@@ -1004,22 +1107,22 @@ impl CustomOps for ExtraOp {
                         .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
-                    alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, nodes.push(n));
+                    alt!(n.mark.unwrap_or(GETH_MARK) != GETH_MARK, ns.push(n));
                 }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
-                        Some(nodes.iter().map(|n| n.id).collect()),
-                        false,
-                    )),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop {
+                        nodes: Some(ns.iter().map(|n| n.id).collect()),
+                        force: false,
+                    },
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                for (i, n) in nodes.iter().enumerate() {
+                for (i, n) in ns.iter().enumerate() {
                     let remote = Remote::from(&n.host);
 
                     // Just remove $EL_DIR.
@@ -1036,7 +1139,7 @@ impl CustomOps for ExtraOp {
                     );
                 }
 
-                for id in nodes.iter().map(|n| n.id) {
+                for id in ns.iter().map(|n| n.id) {
                     env.meta
                         .nodes
                         .get_mut(&id)
@@ -1047,11 +1150,11 @@ impl CustomOps for ExtraOp {
 
                 env.write_cfg().c(d!())
             }
-            Self::SwitchELToReth(ids) => {
+            Self::SwitchELToReth { nodes } => {
                 let mut env = load_sysenv(en).c(d!())?;
 
-                let mut nodes = vec![];
-                for id in ids.iter() {
+                let mut ns = vec![];
+                for id in nodes.iter() {
                     let n = env
                         .meta
                         .nodes
@@ -1059,22 +1162,22 @@ impl CustomOps for ExtraOp {
                         .or_else(|| env.meta.fuhrers.get(id))
                         .cloned()
                         .c(d!("The node(id: {}) not found", id))?;
-                    alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, nodes.push(n));
+                    alt!(n.mark.unwrap_or(GETH_MARK) != RETH_MARK, ns.push(n));
                 }
 
                 SysCfg {
                     name: en.clone(),
-                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop((
-                        Some(nodes.iter().map(|n| n.id).collect()),
-                        false,
-                    )),
+                    op: Op::<CustomInfo, Ports, ExtraOp>::Stop {
+                        nodes: Some(ns.iter().map(|n| n.id).collect()),
+                        force: false,
+                    },
                 }
                 .exec(CmdGenerator)
                 .c(d!())?;
 
                 sleep_ms!(3000); // wait for the graceful exiting process
 
-                for (i, n) in nodes.iter().enumerate() {
+                for (i, n) in ns.iter().enumerate() {
                     let remote = Remote::from(&n.host);
 
                     // Just remove $EL_DIR.
@@ -1091,7 +1194,7 @@ impl CustomOps for ExtraOp {
                     );
                 }
 
-                for id in nodes.iter().map(|n| n.id) {
+                for id in ns.iter().map(|n| n.id) {
                     env.meta
                         .nodes
                         .get_mut(&id)
