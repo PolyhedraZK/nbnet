@@ -78,6 +78,13 @@ the first premint account will be used if not provided"
 the address coresponding to `wallet-seckey` will be used if not provided"
         )]
         withdraw_0x01_addr: Option<String>,
+        #[clap(
+            short = 'x',
+            long,
+            help = "If set, return immediately after the transaction is sent,
+or wait until the deposit transaction is confirmed on chain"
+        )]
+        async_wait: bool,
     },
     #[clap(about = "Destroy an existing ENV")]
     Destroy {
@@ -370,6 +377,13 @@ the first premint account will be used if not provided"
 the address coresponding to `wallet-seckey` will be used if not provided"
         )]
         withdraw_0x01_addr: Option<String>,
+        #[clap(
+            short = 'x',
+            long,
+            help = "If set, return immediately after the transaction is sent,
+or wait until the deposit transaction is confirmed on chain"
+        )]
+        async_wait: bool,
     },
     #[clap(about = "Destroy an existing ENV")]
     Destroy {

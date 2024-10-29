@@ -13,12 +13,24 @@ use alloy::{
     transports::http::reqwest::Url,
 };
 use ruc::*;
+use sb::sync::Mutex;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{
+    collections::HashMap,
+    fs,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        LazyLock,
+    },
+};
 
-type DepositData = Vec<DepositEntry>;
+static NONCE_CACHE: LazyLock<Mutex<HashMap<Address, AtomNonce>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 const HASH_LEN: usize = 32;
+
+type AtomNonce = AtomicU64;
+type DepositData = Vec<DepositEntry>;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct DepositEntry {
@@ -55,9 +67,15 @@ pub async fn deposit(
 ) -> Result<()> {
     let signkey = fs::read_to_string(wallet_signkey_path).c(d!())?;
     let deposit_data = fs::read_to_string(deposit_data_json_path).c(d!())?;
-    do_deposit(rpc_endpoint, deposit_contract_addr, &signkey, &deposit_data)
-        .await
-        .c(d!())
+    do_deposit(
+        rpc_endpoint,
+        deposit_contract_addr,
+        &signkey,
+        &deposit_data,
+        true,
+    )
+    .await
+    .c(d!())
 }
 
 // For inner usage
@@ -66,6 +84,7 @@ pub async fn do_deposit(
     deposit_contract_addr: &str,
     deposit_data_json: &str,
     wallet_signkey: &str,
+    async_wait: bool,
 ) -> Result<()> {
     let signkey = hex::decode(wallet_signkey.trim()).c(d!())?;
     let signkey = SigningKey::from_slice(&signkey).c(d!())?;
@@ -101,12 +120,20 @@ pub async fn do_deposit(
 
     let chain_id = provider.get_chain_id().await.c(d!())?;
     let gas_price = provider.get_gas_price().await.c(d!())?;
-    let nonce = provider.get_transaction_count(wallet_addr).await.c(d!())?;
+
+    let on_chain_nonce = provider.get_transaction_count(wallet_addr).await.c(d!())?;
+    let mut nonce_hdr = NONCE_CACHE.lock().await;
+    let nonce_hdr = nonce_hdr
+        .entry(wallet_addr)
+        .or_insert(AtomicU64::new(on_chain_nonce));
+    if nonce_hdr.load(Ordering::Relaxed) < on_chain_nonce {
+        nonce_hdr.store(on_chain_nonce, Ordering::Relaxed);
+    }
 
     let abi = include_bytes!("../../config/deposit/abi.json");
     let interface = serde_json::from_slice(abi).map(Interface::new).c(d!())?;
 
-    for (idx, dd) in deposit_data.into_iter().enumerate() {
+    for dd in deposit_data.into_iter() {
         let tx_input = interface
             .encode_input(
                 "deposit",
@@ -122,7 +149,7 @@ pub async fn do_deposit(
         let tx_req = TransactionRequest::default()
             .with_chain_id(chain_id)
             .with_gas_price(gas_price)
-            .with_nonce(nonce + idx as u64)
+            .with_nonce(nonce_hdr.fetch_add(1, Ordering::Relaxed))
             .with_from(wallet_addr)
             .with_to(contract_addr)
             .with_value(dd.amount)
@@ -136,30 +163,29 @@ pub async fn do_deposit(
             .await
             .c(d!())?;
 
-        let receipt = provider
-            .send_tx_envelope(tx_envelope)
-            .await
-            .c(d!())?
-            .get_receipt()
-            .await
-            .c(d!())?;
+        let hdr = provider.send_tx_envelope(tx_envelope).await.c(d!())?;
 
-        if receipt.status() {
-            println!(
-                "Transaction: {}, In Block: {}({})",
-                receipt.transaction_hash,
-                receipt
-                    .block_number
-                    .map(|i| i.to_string())
-                    .unwrap_or("null".to_owned()),
-                receipt
-                    .block_hash
-                    .map(|i| i.to_string())
-                    .unwrap_or("null".to_owned()),
-            );
+        if async_wait {
+            println!("Transaction: {}, async wait", hdr.tx_hash());
         } else {
-            dbg!(receipt);
-            pnk!(Err(eg!()));
+            let receipt = hdr.get_receipt().await.c(d!())?;
+            if receipt.status() {
+                println!(
+                    "Transaction: {}, In Block: {}({})",
+                    receipt.transaction_hash,
+                    receipt
+                        .block_number
+                        .map(|i| i.to_string())
+                        .unwrap_or("null".to_owned()),
+                    receipt
+                        .block_hash
+                        .map(|i| i.to_string())
+                        .unwrap_or("null".to_owned()),
+                );
+            } else {
+                dbg!(receipt);
+                pnk!(Err(eg!()));
+            }
         }
     }
 

@@ -91,6 +91,7 @@ impl From<DevCfg> for EnvCfg {
                 num_per_node,
                 wallet_seckey_path,
                 withdraw_0x01_addr,
+                async_wait,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -100,6 +101,7 @@ impl From<DevCfg> for EnvCfg {
                     num_per_node,
                     wallet_seckey_path,
                     withdraw_0x01_addr,
+                    async_wait,
                 })
             }
             DevOp::Destroy { env_name, force } => {
@@ -682,6 +684,7 @@ enum ExtraOp {
         num_per_node: u8,
         wallet_seckey_path: Option<String>,
         withdraw_0x01_addr: Option<String>,
+        async_wait: bool,
     },
     Show,
     ListRpcs {
@@ -711,6 +714,7 @@ impl CustomOps for ExtraOp {
                 num_per_node,
                 wallet_seckey_path,
                 withdraw_0x01_addr,
+                async_wait,
             } => {
                 let nodes = nodes.trim();
                 let withdraw_addr = withdraw_0x01_addr.as_ref().map(|addr| addr.trim());
@@ -835,6 +839,7 @@ impl CustomOps for ExtraOp {
                             &deposit_contract,
                             &deposits_json,
                             &wallet_key,
+                            *async_wait,
                         ))
                         .c(d!())?;
 
@@ -879,6 +884,13 @@ impl CustomOps for ExtraOp {
                 cl_vc,
                 cl_vc_metric,
             } => {
+                let default = !(*el_web3
+                    || *el_web3_ws
+                    || *el_metric
+                    || *cl_bn
+                    || *cl_bn_metric
+                    || *cl_vc
+                    || *cl_vc_metric);
                 let env = load_sysenv(en).c(d!())?;
 
                 let mut buf_el_web3 = vec![];
@@ -894,43 +906,43 @@ impl CustomOps for ExtraOp {
                     .values()
                     .chain(env.meta.nodes.values())
                     .for_each(|n| {
-                        if *el_web3 || !*el_web3_ws && !*cl_bn && !*cl_vc {
+                        if *el_web3 || default {
                             buf_el_web3.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.el_rpc
                             ));
                         }
-                        if *el_web3_ws {
+                        if *el_web3_ws || default {
                             buf_el_web3_ws.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.el_rpc_ws
                             ));
                         }
-                        if *el_metric {
+                        if *el_metric || default {
                             buf_el_metric.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.el_metric
                             ));
                         }
-                        if *cl_bn {
+                        if *cl_bn || default {
                             buf_cl_bn.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.cl_bn_rpc
                             ));
                         }
-                        if *cl_bn_metric {
+                        if *cl_bn_metric || default {
                             buf_cl_bn_metric.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.cl_bn_metric
                             ));
                         }
-                        if *cl_vc {
+                        if *cl_vc || default {
                             buf_cl_vc.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.cl_vc_rpc
                             ));
                         }
-                        if *cl_vc_metric {
+                        if *cl_vc_metric || default {
                             buf_cl_vc_metric.push(format!(
                                 "    http://{}:{}",
                                 env.meta.host_ip, n.ports.cl_vc_metric

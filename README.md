@@ -235,7 +235,12 @@ repository from GitHub. If you live in a restricted country, such as North Korea
 
 For example:
 ```shell
-export CHAIN_DEV_EGG_REPO="https://gitee.com/kt10/EGG"
+# Use mirror repo
+export CHAIN_DEV_EGG_REPO="https://gitlab.com/YOUR_NAME/EGG"
+
+# Or a more efficient approach
+git clone https://gitlab.com/YOUR_NAME/EGG
+export CHAIN_DEV_EGG_REPO="/PATH/TO/THE/LOCAL/EGG"
 ```
 
 If you want to further shorten the startup time, you can build the

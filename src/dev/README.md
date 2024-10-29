@@ -75,6 +75,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
       "el_geth_bin": "geth",
       "el_reth_bin": "reth"
     },
+    "deposit_contract_addr": "0x4242424242424242424242424242424242424242",
     "env_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT",
     "env_name": "DEFAULT",
     "fuhrer_nodes": {
@@ -107,29 +108,55 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
     "genesis_pre_settings": "",
     "host_ip": "127.0.0.1",
     "nodes": {
-      "4": {
+      "1": {
         "custom_data": {
           "deposits": {
-            "doctor same predict nominee modify race twenty busy more glad nasty siren private weekend urge memory remind fatigue use ancient invest size shove wolf": 1
+            "cluster forest hold opera essence laugh stadium spend guitar media seat unlock odor horse soap strike afraid satisfy bike salmon royal client universe dutch": 2
           },
-          "el_kind": "Reth"
+          "el_kind": "Geth"
         },
-        "id": 4,
+        "id": 1,
         "kind": "ArchiveNode",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/4",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/1",
         "ports": {
-          "cl_bn_metric": 26618,
-          "cl_bn_rpc": 43816,
-          "cl_discovery": 58403,
-          "cl_discovery_quic": 27605,
-          "cl_vc_metric": 51430,
-          "cl_vc_rpc": 48815,
-          "el_discovery": 44081,
-          "el_discovery_v5": 22668,
-          "el_engine_api": 25244,
-          "el_metric": 30756,
-          "el_rpc": 56521,
-          "el_rpc_ws": 61063
+          "cl_bn_metric": 49135,
+          "cl_bn_rpc": 27372,
+          "cl_discovery": 43000,
+          "cl_discovery_quic": 24661,
+          "cl_vc_metric": 52422,
+          "cl_vc_rpc": 22524,
+          "el_discovery": 51277,
+          "el_discovery_v5": 21075,
+          "el_engine_api": 34201,
+          "el_metric": 23192,
+          "el_rpc": 48796,
+          "el_rpc_ws": 21447
+        }
+      },
+      "2": {
+        "custom_data": {
+          "deposits": {
+            "poem now ribbon piano mistake nerve tribe outer beyond what robot orphan tuition that culture reduce soul cargo iron cup old drip auto claim": 5,
+            "scrap zebra settle melt egg hole legend author lazy load scorpion sell detect casino mansion tent twist exact photo version gift cream few uncover": 2
+          },
+          "el_kind": "Geth"
+        },
+        "id": 2,
+        "kind": "ArchiveNode",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/2",
+        "ports": {
+          "cl_bn_metric": 47909,
+          "cl_bn_rpc": 46205,
+          "cl_discovery": 59575,
+          "cl_discovery_quic": 50563,
+          "cl_vc_metric": 31657,
+          "cl_vc_rpc": 23876,
+          "el_discovery": 27307,
+          "el_discovery_v5": 31359,
+          "el_engine_api": 65321,
+          "el_metric": 42214,
+          "el_rpc": 65152,
+          "el_rpc_ws": 40657
         }
       }
     },

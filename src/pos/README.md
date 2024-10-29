@@ -5,7 +5,7 @@
 Usage:
 
 ```
-# `nb deposit`
+# `nb deposit -h`
 Manage deposit operations
 
 Usage: nb deposit --rpc-endpoint <RPC_ENDPOINT> \
@@ -27,7 +27,7 @@ Options:
 ```
 
 ```
-# `nb dev deposit` and `nb ddev deposit`
+# nb dev/ddev deposit -h
 Proof-of-Stake, deposit, exit, etc.
 
 Usage: nb dev/ddev deposit [OPTIONS] --nodes <NODES>
@@ -37,7 +37,7 @@ Options:
 
   -N, --nodes <NODES>
           Comma separated NodeID[s], '3', '3,2,1', etc.
-          if set to '*', then deposit on all non-fuhrer nodes
+          if set to 'all', then deposit on all non-fuhrer nodes
   -n, --num-per-node <NUM_PER_NODE>
           How many validators to deposit on each node [default: 1]
   -K, --wallet-seckey-path <WALLET_SECKEY_PATH>
@@ -46,6 +46,9 @@ Options:
   -A, --withdraw-0x01-addr <WITHDRAW_0X01_ADDR>
           An account used to receive the funds after validators exit,
           the address coresponding to `wallet-seckey` will be used if not provided
+  -x, --async-wait
+          If set, return immediately after the transaction is sent,
+          or wait until the deposit transaction is confirmed on chain
 ```
 
 Workflow:
