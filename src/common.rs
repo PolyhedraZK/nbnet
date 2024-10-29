@@ -2,7 +2,10 @@ use chaindev::beacon_based::common::NodePorts;
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::{collections::BTreeMap, env, thread};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    env, thread,
+};
 
 pub const EL_DIR: &str = "el";
 pub const CL_BN_DIR: &str = "cl/bn";
@@ -26,7 +29,7 @@ pub fn json_el_kind(v: &Option<JsonValue>) -> Eth1Kind {
 }
 
 #[inline(always)]
-pub fn json_set_el_kind(jv: &mut Option<JsonValue>, k: Eth1Kind) {
+pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) {
     let v = if let Some(v) = jv {
         let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
         v.el_kind = k;
@@ -42,26 +45,49 @@ pub fn json_set_el_kind(jv: &mut Option<JsonValue>, k: Eth1Kind) {
 }
 
 #[inline(always)]
-pub fn json_append_deposits(
+pub fn json_deposits_append(
     jv: &mut Option<JsonValue>,
-    mut deposits: BTreeMap<MnemonicWords, u16>,
+    mut deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
 ) {
     let v = if let Some(v) = jv {
         let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
-        if let Some(i) = v.deposits.as_mut() {
-            i.append(&mut deposits)
-        } else {
-            v.deposits = Some(deposits);
-        };
+        v.deposits.append(&mut deposits);
         v
     } else {
         NodeCustomData {
             el_kind: Eth1Kind::default(),
-            deposits: Some(deposits),
+            deposits,
         }
     };
 
     jv.replace(serde_json::to_value(&v).unwrap());
+}
+
+#[inline(always)]
+pub fn json_deposits_remove(
+    jv: &mut Option<JsonValue>,
+    mnemonic: &str,
+    idx: u16,
+) -> Result<bool> {
+    let mut ret = false;
+    let v = if let Some(v) = jv {
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        let hdr = v.deposits.get_mut(mnemonic).c(d!())?;
+        if hdr.remove(&idx) {
+            ret = true;
+        }
+        if hdr.is_empty() {
+            v.deposits.remove(mnemonic);
+        }
+        v
+    } else {
+        NodeCustomData::default()
+    };
+
+    serde_json::to_value(&v).c(d!()).map(|v| {
+        jv.replace(v);
+        ret
+    })
 }
 
 #[inline(always)]
@@ -74,7 +100,7 @@ pub struct NodeCustomData {
     pub el_kind: Eth1Kind,
 
     /// Mnemonic => deposited validator number
-    pub deposits: Option<BTreeMap<MnemonicWords, u16>>,
+    pub deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
 }
 
 impl NodeCustomData {
@@ -82,7 +108,7 @@ impl NodeCustomData {
     pub fn new_with_geth() -> Self {
         Self {
             el_kind: Eth1Kind::Geth,
-            deposits: None,
+            deposits: map! {B},
         }
     }
 
@@ -90,7 +116,7 @@ impl NodeCustomData {
     pub fn new_with_reth() -> Self {
         Self {
             el_kind: Eth1Kind::Reth,
-            deposits: None,
+            deposits: map! {B},
         }
     }
 

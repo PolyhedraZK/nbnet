@@ -27,6 +27,14 @@ install: release
 lint:
 	cargo clippy
 
+test:
+	cargo test
+
+test_ignored:
+	cargo test --release -- --ignored --nocapture
+
+test_all: test test_ignored
+
 update:
 	git pull
 	git submodule update --init

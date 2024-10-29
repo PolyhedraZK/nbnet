@@ -19,6 +19,8 @@ pub enum Commands {
     DDev(DDevCfg),
     #[clap(about = "Manage deposit operations")]
     Deposit(DepositCfg),
+    #[clap(about = "Exit an existing validator from the beacon chain")]
+    ValidatorExit(ValidatorExitCfg),
     #[clap(about = "Create a 24-words bip39 mnemonic")]
     NewMnemonic,
     #[clap(
@@ -46,7 +48,7 @@ pub struct DevCfg {
 pub enum DevOp {
     #[clap(about = "Create a new ENV")]
     Create(Box<DevCreationOptions>),
-    #[clap(about = "Proof-of-Stake, deposit, exit, etc.")]
+    #[clap(short_flag = 'd', about = "Proof-of-Stake, deposit")]
     Deposit {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -83,6 +85,28 @@ the address coresponding to `wallet-seckey` will be used if not provided"
             long,
             help = "If set, return immediately after the transaction is sent,
 or wait until the deposit transaction is confirmed on chain"
+        )]
+        async_wait: bool,
+    },
+    #[clap(
+        short_flag = 'D',
+        about = "Proof-of-Stake, exit all validators on the target node[s]"
+    )]
+    ValidatorExit {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then exit all validators of all non-fuhrer nodes"
+        )]
+        nodes: String,
+        #[clap(
+            short = 'x',
+            long,
+            help = "If set, return immediately after the request is sent,
+or wait until the exit request is confirmed on chain"
         )]
         async_wait: bool,
     },
@@ -345,7 +369,7 @@ pub struct DDevCfg {
 pub enum DDevOp {
     #[clap(about = "Create a new ENV")]
     Create(Box<DDevCreationOptions>),
-    #[clap(about = "Proof-of-Stake, deposit, exit, etc.")]
+    #[clap(short_flag = 'd', about = "Proof-of-Stake, deposit, exit, etc.")]
     Deposit {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -382,6 +406,28 @@ the address coresponding to `wallet-seckey` will be used if not provided"
             long,
             help = "If set, return immediately after the transaction is sent,
 or wait until the deposit transaction is confirmed on chain"
+        )]
+        async_wait: bool,
+    },
+    #[clap(
+        short_flag = 'D',
+        about = "Proof-of-Stake, exit all validators on the target node[s]"
+    )]
+    ValidatorExit {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then exit all validators of all non-fuhrer nodes"
+        )]
+        nodes: String,
+        #[clap(
+            short = 'x',
+            long,
+            help = "If set, return immediately after the request is sent,
+or wait until the exit request is confirmed on chain"
         )]
         async_wait: bool,
     },
@@ -822,4 +868,35 @@ produced by the ETH official 'staking-deposit-cli' tool"
         help = "The deposit principal will be deducted from this wallet"
     )]
     pub wallet_signkey_path: String,
+}
+
+#[derive(Debug, Args)]
+pub struct ValidatorExitCfg {
+    #[clap(
+        short = 'R',
+        long,
+        help = "CL Beacon RPC endpoint, e.g., 'http://localhost:5052'"
+    )]
+    pub beacon_endpoint: String,
+
+    #[clap(
+        short = 'G',
+        long,
+        help = "Used as the value of `--testnet-dir` of `lighthouse`"
+    )]
+    pub genesis_dir: String,
+
+    #[clap(
+        short = 'K',
+        long,
+        help = "The voting keystore of the target validator"
+    )]
+    pub keystore_path: String,
+
+    #[clap(
+        short = 'P',
+        long,
+        help = "The co-responding password of the 'voting keystore'"
+    )]
+    pub password_path: String,
 }

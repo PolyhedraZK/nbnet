@@ -52,6 +52,7 @@ Commands:
   dev                       Manage development clusters on a local host
   ddev                      Manage development clusters on various distributed hosts
   deposit                   Manage deposit operations
+  validator-exit            Exit an existing validator from the beacon chain
   new-mnemonic              Create a 24-words bip39 mnemonic
   gen-zsh-completions, -z   Generate the cmdline completion script for zsh
   gen-bash-completions, -b  Generate the cmdline completion script for bash
@@ -60,6 +61,7 @@ Commands:
 Options:
   -h, --help     Print help
   -V, --version  Print version
+
 ```
 
 For more detailed information, you can get it through the `nb <SUBCOMMAND> -h`.

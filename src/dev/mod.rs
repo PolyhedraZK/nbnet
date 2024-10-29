@@ -9,7 +9,7 @@
 use crate::{
     cfg::{DevCfg, DevOp},
     common::*,
-    pos::{create_mnemonic_words, deposit::do_deposit},
+    pos::{create_mnemonic_words, deposit::do_deposit, exit::exit_by_mnemonic},
     select_nodes_by_el_kind,
 };
 use alloy::{
@@ -103,6 +103,16 @@ impl From<DevCfg> for EnvCfg {
                     withdraw_0x01_addr,
                     async_wait,
                 })
+            }
+            DevOp::ValidatorExit {
+                env_name,
+                nodes,
+                async_wait,
+            } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::ValidatorExit { nodes, async_wait })
             }
             DevOp::Destroy { env_name, force } => {
                 if let Some(n) = env_name {
@@ -266,9 +276,9 @@ impl EnvCfg {
                     let mut env = load_sysenv(&self.sys_cfg.name).c(d!())?;
                     let fuhrer = env.meta.fuhrers.values_mut().next().unwrap();
                     let map = map!{B
-                        env.meta.genesis_mnemonic_words.clone() => env.meta.genesis_validator_num
+                        env.meta.genesis_mnemonic_words.clone() => (0..env.meta.genesis_validator_num).collect()
                     };
-                    json_append_deposits(&mut fuhrer.custom_data, map);
+                    json_deposits_append(&mut fuhrer.custom_data, map);
                     env.write_cfg().c(d!())
                 }
                 _ => Ok(()),
@@ -686,6 +696,10 @@ enum ExtraOp {
         withdraw_0x01_addr: Option<String>,
         async_wait: bool,
     },
+    ValidatorExit {
+        nodes: String, /*comma separated node IDs*/
+        async_wait: bool,
+    },
     Show,
     ListRpcs {
         el_web3: bool,
@@ -852,14 +866,89 @@ impl CustomOps for ExtraOp {
                         ))
                         .c(d!())?;
 
-                    json_append_deposits(
+                    json_deposits_append(
                         &mut env.meta.nodes.get_mut(&n.id).unwrap().custom_data,
-                        map! {B mnemonic => *num_per_node as u16 },
+                        map! {B mnemonic => (0..*num_per_node as u16).collect() },
                     );
 
                     env.write_cfg()
                         .c(d!())
                         .and_then(|_| fs::remove_dir_all(tmp_dir).c(d!()))?;
+                }
+
+                Ok(())
+            }
+            Self::ValidatorExit { nodes, async_wait } => {
+                let nodes = nodes.trim();
+                let mut env = load_sysenv(en).c(d!())?;
+
+                // All non-fuhrer nodes
+                let nodes = if "all" == nodes {
+                    env.meta.nodes.values().cloned().collect::<Vec<_>>()
+                } else {
+                    let ids = nodes
+                        .split(',')
+                        .map(|id| id.parse::<NodeID>().c(d!()))
+                        .collect::<Result<Vec<_>>>()?;
+                    let mut nodes = vec![];
+                    for id in ids.iter() {
+                        if env.meta.fuhrers.contains_key(id) {
+                            return Err(eg!(
+                                "Fuhrer node(id: {}) does not accept deposits",
+                                id
+                            ));
+                        }
+                        if let Some(n) = env.meta.nodes.get(id).cloned() {
+                            nodes.push(n);
+                        } else {
+                            return Err(eg!("The node(id: {}) does not exist", id));
+                        }
+                    }
+                    nodes
+                };
+
+                if nodes.is_empty() {
+                    return Err(eg!("No target nodes found!"));
+                }
+
+                let testnet_dir =
+                    format!("{}/{NODE_HOME_GENESIS_DIR_DST}", env.meta.home);
+
+                let beacon_rpc_endpoint =
+                    format!("http://{}:{}", env.meta.host_ip, nodes[0].ports.cl_bn_rpc);
+
+                for n in nodes.into_iter() {
+                    if let Some(c) = n.custom_data {
+                        for (mnemonic, idxs) in c["deposits"].as_object().c(d!())?.iter()
+                        {
+                            for idx in idxs.as_array().c(d!())?.iter() {
+                                let idx = idx.as_u64().c(d!())? as u16;
+                                let ret = exit_by_mnemonic(
+                                    &beacon_rpc_endpoint,
+                                    &testnet_dir,
+                                    mnemonic,
+                                    idx,
+                                    *async_wait,
+                                )
+                                .c(d!("Node: {}, {}/{}", n.id, mnemonic, idx))
+                                .and_then(|_| {
+                                    json_deposits_remove(
+                                        &mut env
+                                            .meta
+                                            .nodes
+                                            .get_mut(&n.id)
+                                            .unwrap()
+                                            .custom_data,
+                                        mnemonic,
+                                        idx,
+                                    )
+                                    .c(d!())
+                                })
+                                .and_then(|_| env.write_cfg().c(d!()));
+                                info_omit!(ret);
+                            }
+                        }
+                    }
                 }
 
                 Ok(())
@@ -1052,7 +1141,7 @@ impl CustomOps for ExtraOp {
                 }
 
                 for id in ns.iter().map(|n| n.id) {
-                    json_set_el_kind(
+                    json_el_kind_set(
                         &mut env
                             .meta
                             .nodes
@@ -1108,7 +1197,7 @@ impl CustomOps for ExtraOp {
                 }
 
                 for id in ns.iter().map(|n| n.id) {
-                    json_set_el_kind(
+                    json_el_kind_set(
                         &mut env
                             .meta
                             .nodes

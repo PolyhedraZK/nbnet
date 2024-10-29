@@ -11,7 +11,8 @@ Usage: nb dev [OPTIONS] [COMMAND]
 
 Commands:
   create              Create a new ENV
-  deposit             Proof-of-Stake, deposit, exit, etc.
+  deposit, -d         Proof-of-Stake, deposit
+  validator-exit, -D  Proof-of-Stake, exit all validators on the target node[s]
   destroy             Destroy an existing ENV
   destroy-all         Destroy all existing ENVs
   protect             Protect an existing ENV

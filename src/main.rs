@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![cfg_attr(test, warn(warnings))]
 
 use cfg::{Cfg, Commands};
 use chaindev::beacon_based::common::BASE_DIR;
@@ -58,6 +59,17 @@ fn main() {
                 &cfg.wallet_signkey_path,
             );
             if let Err(e) = common::new_sb_runtime().block_on(future) {
+                err_mgmt(e, "deposit");
+            }
+        }
+        Commands::ValidatorExit(cfg) => {
+            if let Err(e) = pos::exit(
+                &cfg.beacon_endpoint,
+                &cfg.genesis_dir,
+                &cfg.keystore_path,
+                &cfg.password_path,
+                false,
+            ) {
                 err_mgmt(e, "deposit");
             }
         }

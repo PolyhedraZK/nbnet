@@ -28,9 +28,9 @@ Options:
 
 ```
 # nb dev/ddev deposit -h
-Proof-of-Stake, deposit, exit, etc.
+Proof-of-Stake, deposit
 
-Usage: nb dev/ddev deposit [OPTIONS] --nodes <NODES>
+Usage: nb dev/ddev {deposit|-d} [OPTIONS] --nodes <NODES>
 
 Options:
   -e, --env-name <ENV_NAME>
@@ -49,6 +49,20 @@ Options:
   -x, --async-wait
           If set, return immediately after the transaction is sent,
           or wait until the deposit transaction is confirmed on chain
+```
+
+```
+# nb dev/ddev validator-exit -h
+Proof-of-Stake, exit all validators on the target node[s]
+
+Usage: nb dev/ddev {validator-exit|-D} [OPTIONS] --nodes <NODES>
+
+Options:
+  -e, --env-name <ENV_NAME>
+  -N, --nodes <NODES>        Comma separated NodeID[s], '3', '3,2,1', etc.
+                             if set to 'all', then exit all validators of all non-fuhrer nodes
+  -x, --async-wait           If set, return immediately after the request is sent,
+                             or wait until the exit request is confirmed on chain
 ```
 
 Workflow:
