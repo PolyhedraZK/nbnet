@@ -119,7 +119,6 @@ pub async fn do_deposit(
     }
 
     let chain_id = provider.get_chain_id().await.c(d!())?;
-    let gas_price = provider.get_gas_price().await.c(d!())?;
 
     let on_chain_nonce = provider.get_transaction_count(wallet_addr).await.c(d!())?;
     let mut nonce_hdr = NONCE_CACHE.lock().await;
@@ -146,16 +145,17 @@ pub async fn do_deposit(
             )
             .c(d!())?;
 
+        let gas_price = provider.get_gas_price().await.c(d!())?;
         let tx_req = TransactionRequest::default()
             .with_chain_id(chain_id)
-            .with_gas_price(gas_price)
+            .with_gas_price(gas_price * 105 / 100)
             .with_nonce(nonce_hdr.fetch_add(1, Ordering::Relaxed))
             .with_from(wallet_addr)
             .with_to(contract_addr)
             .with_value(dd.amount)
             .with_input(tx_input);
 
-        let gas_limit = provider.estimate_gas(&tx_req).await.c(d!())?;
+        let gas_limit = provider.estimate_gas(&tx_req).await.c(d!())? * 2;
 
         let tx_envelope = tx_req
             .with_gas_limit(gas_limit)

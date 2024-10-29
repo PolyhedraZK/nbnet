@@ -745,6 +745,10 @@ impl CustomOps for ExtraOp {
                     nodes
                 };
 
+                if nodes.is_empty() {
+                    return Err(eg!("No target nodes found!"));
+                }
+
                 let (wallet_addr, wallet_key) = if let Some(path) = wallet_seckey_path {
                     let key = fs::read_to_string(path).c(d!())?.trim().to_owned();
                     let addr = if let Some(addr) = withdraw_addr.map(|s| s.to_owned()) {
@@ -784,6 +788,9 @@ impl CustomOps for ExtraOp {
 
                 let runtime = crate::common::new_sb_runtime();
 
+                let el_rpc_endpoint =
+                    format!("http://{}:{}", env.meta.host_ip, nodes[0].ports.el_rpc);
+
                 for n in nodes.into_iter() {
                     let tmp_dir =
                         format!("/tmp/{}_{}", ts!(), ruc::algo::rand::rand_jwt());
@@ -801,8 +808,10 @@ impl CustomOps for ExtraOp {
                     let node_vc_data_dir = format!("{}/{CL_VC_DIR}", n.home);
                     let node_vc_api_token =
                         format!("{}/validators/api-token.txt", node_vc_data_dir);
-                    let node_el_rpc_endpoint =
-                        format!("http://{}:{}", env.meta.host_ip, n.ports.el_rpc);
+
+                    // let node_el_rpc_endpoint =
+                    //     format!("http://{}:{}", env.meta.host_ip, n.ports.el_rpc);
+
                     let node_vc_rpc_endpoint =
                         format!("http://localhost:{}", n.ports.cl_vc_rpc);
 
@@ -835,7 +844,7 @@ impl CustomOps for ExtraOp {
                     let deposits_json = fs::read_to_string(deposits_json).c(d!())?;
                     runtime
                         .block_on(do_deposit(
-                            &node_el_rpc_endpoint,
+                            &el_rpc_endpoint,
                             &deposit_contract,
                             &deposits_json,
                             &wallet_key,
