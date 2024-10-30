@@ -803,8 +803,11 @@ impl CustomOps for ExtraOp {
 
                 let runtime = crate::common::new_sb_runtime();
 
-                let el_rpc_endpoint =
-                    format!("http://{}:{}", env.meta.host_ip, nodes[0].ports.el_rpc);
+                let selected_node_idx = ts!() as usize % nodes.len();
+                let el_rpc_endpoint = format!(
+                    "http://{}:{}",
+                    env.meta.host_ip, nodes[selected_node_idx].ports.el_rpc
+                );
 
                 for n in nodes.into_iter() {
                     let tmp_dir =

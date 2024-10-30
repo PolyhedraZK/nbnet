@@ -1062,10 +1062,11 @@ impl CustomOps for ExtraOp {
 
                 let runtime = crate::common::new_sb_runtime();
 
+                let selected_node_idx = ts!() as usize % nodes.len();
                 let el_rpc_endpoint = format!(
                     "http://{}:{}",
-                    nodes[0].host.addr.connection_addr(),
-                    nodes[0].ports.el_rpc
+                    nodes[selected_node_idx].host.addr.connection_addr(),
+                    nodes[selected_node_idx].ports.el_rpc
                 );
 
                 for n in nodes.into_iter() {
