@@ -129,7 +129,7 @@ pub async fn do_deposit(
         nonce_hdr.store(on_chain_nonce, Ordering::Relaxed);
     }
 
-    let abi = include_bytes!("../../config/deposit/abi.json");
+    let abi = include_bytes!("../../static/deposit/abi.json");
     let interface = serde_json::from_slice(abi).map(Interface::new).c(d!())?;
 
     for dd in deposit_data.into_iter() {

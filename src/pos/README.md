@@ -84,7 +84,7 @@ Example:
 
 ```shell
 # Create a devnet with 1 non-fuhrer node
-nb dev create -n 1 -g config/genesis/minimal.env
+nb dev create -n 1
 
 NODE_HOME=$(nb dev | jq '.meta.nodes."1".node_home' | tr -d '"')
 
@@ -146,7 +146,7 @@ Embed Example:
 
 ```shell
 # Create a devnet with 2 non-fuhrer nodes
-nb dev create -n 2 -g config/genesis/minimal.env
+nb dev create -n 2
 
 # Deposit to all the non-fuhrer nodes
 # Check `nb dev/ddev deposit -h` for detail

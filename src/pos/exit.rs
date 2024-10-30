@@ -98,7 +98,7 @@ mod test {
         for _ in 0..10 {
             let mnemonic = crate::pos::mnemonic::create_mnemonic_words();
             let v_pubkey = pnk!(recover_keystore(
-                "config/genesis/example",
+                "static/genesis/example",
                 "/tmp",
                 &mnemonic,
                 0,
