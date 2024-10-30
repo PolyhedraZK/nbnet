@@ -76,9 +76,7 @@ pub fn json_deposits_remove(
         if hdr.remove(&idx) {
             ret = true;
         }
-        if hdr.is_empty() {
-            v.deposits.remove(mnemonic);
-        }
+        v.deposits.retain(|_, v| !v.is_empty());
         v
     } else {
         NodeCustomData::default()
