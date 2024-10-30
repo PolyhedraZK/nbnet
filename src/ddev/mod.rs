@@ -31,9 +31,10 @@ use chaindev::{
 };
 use ruc::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use std::{
     collections::{BTreeSet, HashSet},
-    env, fs,
+    env, fs, mem,
     str::FromStr,
 };
 
@@ -1245,6 +1246,30 @@ impl CustomOps for ExtraOp {
                 meta.remove("genesis_validator_num");
                 meta.remove("nodes_should_be_online");
                 meta.remove("next_node_id");
+
+                let mut list_to_cnt = |field: &str| {
+                    for ids in meta[field]
+                        .as_object_mut()
+                        .unwrap()
+                        .values_mut()
+                        .flat_map(|v| {
+                            v.as_object_mut().unwrap()["custom_data"]
+                                .as_object_mut()
+                                .unwrap()["deposits"]
+                                .as_object_mut()
+                                .unwrap()
+                                .values_mut()
+                        })
+                    {
+                        mem::swap(
+                            ids,
+                            &mut JsonValue::Number(ids.as_array().unwrap().len().into()),
+                        );
+                    }
+                };
+
+                list_to_cnt("fuhrer_nodes");
+                list_to_cnt("nodes");
 
                 let mut hosts = meta.remove("remote_hosts").unwrap();
                 meta.insert(
