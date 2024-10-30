@@ -63,7 +63,8 @@ if set to 'all', then deposit on all non-fuhrer nodes"
             short = 'n',
             long,
             default_value_t = 1,
-            help = "How many validators to deposit on each node"
+            help = "How many validators to deposit on each node,
+if set to zero, a random number between 1~20 will be dynamicly selected for each node"
         )]
         num_per_node: u8,
         #[clap(
@@ -384,7 +385,8 @@ if set to 'all', then deposit on all non-fuhrer nodes"
             short = 'n',
             long,
             default_value_t = 1,
-            help = "How many validators to deposit on each node"
+            help = "How many validators to deposit on each node,
+if set to zero, a random number between 1~20 will be dynamicly selected for each node"
         )]
         num_per_node: u8,
         #[clap(

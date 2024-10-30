@@ -1099,6 +1099,11 @@ impl CustomOps for ExtraOp {
                     let node_vc_rpc_endpoint =
                         format!("http://localhost:{}", n.ports.cl_vc_rpc);
 
+                    let num_per_node = if 0 == *num_per_node {
+                        ts!() as u8 % 20 + 1
+                    } else {
+                        *num_per_node
+                    };
                     let cmd = format!(
                         r#"
                         lighthouse validator-manager create \
@@ -1143,7 +1148,7 @@ impl CustomOps for ExtraOp {
 
                     json_deposits_append(
                         &mut env.meta.nodes.get_mut(&n.id).unwrap().custom_data,
-                        map! {B mnemonic => (0..*num_per_node as u16).collect() },
+                        map! {B mnemonic => (0..num_per_node as u16).collect() },
                     );
 
                     env.write_cfg()
