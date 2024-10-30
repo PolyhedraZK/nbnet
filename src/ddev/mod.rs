@@ -55,8 +55,8 @@ impl EnvCfg {
                     let map = map!{B
                         env.meta.genesis_mnemonic_words.clone() => (0..env.meta.genesis_validator_num).collect()
                     };
-                    json_deposits_append(&mut fuhrer.custom_data, map);
-                    env.write_cfg().c(d!())
+                    json_deposits_append(&mut fuhrer.custom_data, map).c(d!())
+                        .and_then(|_| env.write_cfg().c(d!()))
                 }
                 _ => Ok(()),
             })
@@ -85,9 +85,9 @@ macro_rules! select_nodes_by_el_kind {
                         if $geth && $reth {
                             true
                         } else if $geth {
-                            json_el_kind_matched(&n.custom_data, Eth1Kind::Geth)
+                            pnk!(json_el_kind_matched(&n.custom_data, Eth1Kind::Geth))
                         } else if $reth {
-                            json_el_kind_matched(&n.custom_data, Eth1Kind::Reth)
+                            pnk!(json_el_kind_matched(&n.custom_data, Eth1Kind::Reth))
                         } else {
                             true
                         }
@@ -340,11 +340,18 @@ impl From<DDevCfg> for EnvCfg {
                     force,
                 }
             }
-            DDevOp::Show { env_name } => {
+            DDevOp::Show {
+                env_name,
+                clean_up,
+                write_back,
+            } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                Op::Custom(ExtraOp::Show)
+                Op::Custom(ExtraOp::Show {
+                    clean_up,
+                    write_back,
+                })
             }
             DDevOp::ShowHosts { hosts, json } => {
                 Op::Custom(ExtraOp::ShowHosts { hosts, json })
@@ -519,7 +526,7 @@ if [ ! -d {genesis_dir} ]; then
 fi "#
         );
 
-        let el_kind = json_el_kind(&n.custom_data);
+        let el_kind = pnk!(json_el_kind(&n.custom_data));
 
         let local_ip = &n.host.addr.local_ip;
         let ext_ip = &n.host.addr.connection_addr(); // for `ddev` it should be e.external_ip
@@ -949,7 +956,10 @@ enum ExtraOp {
         nodes: String, /*comma separated node IDs*/
         async_wait: bool,
     },
-    Show,
+    Show {
+        clean_up: bool,
+        write_back: bool,
+    },
     ShowHosts {
         hosts: Option<HostExpression>,
         json: bool, /*in JSON format or not*/
@@ -1149,11 +1159,10 @@ impl CustomOps for ExtraOp {
                     json_deposits_append(
                         &mut env.meta.nodes.get_mut(&n.id).unwrap().custom_data,
                         map! {B mnemonic => (0..num_per_node as u16).collect() },
-                    );
-
-                    env.write_cfg()
-                        .c(d!())
-                        .and_then(|_| fs::remove_dir_all(tmp_dir).c(d!()))?;
+                    )
+                    .c(d!())
+                    .and_then(|_| env.write_cfg().c(d!()))
+                    .and_then(|_| fs::remove_dir_all(tmp_dir).c(d!()))?;
                 }
 
                 Ok(())
@@ -1236,8 +1245,28 @@ impl CustomOps for ExtraOp {
 
                 Ok(())
             }
-            Self::Show => {
-                let env = load_sysenv(en).c(d!())?;
+            Self::Show {
+                clean_up,
+                write_back,
+            } => {
+                let mut env = load_sysenv(en).c(d!())?;
+
+                if *clean_up {
+                    macro_rules! cl_up {
+                        ($nodes: tt) => {{
+                            for n in env.meta.$nodes.values_mut() {
+                                json_deposits_clean_up(&mut n.custom_data).c(d!())?;
+                            }
+                        }};
+                    }
+                    cl_up!(fuhrers);
+                    cl_up!(nodes);
+
+                    if *write_back {
+                        env.write_cfg().c(d!())?;
+                    }
+                }
+
                 let mut ret = pnk!(serde_json::to_value(&env));
 
                 ret.as_object_mut()
@@ -1541,7 +1570,7 @@ impl CustomOps for ExtraOp {
                         .cloned()
                         .c(d!("The node(id: {id}) not found"))?;
                     alt!(
-                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Geth),
+                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Geth).c(d!())?,
                         ns.push(n)
                     );
                 }
@@ -1585,7 +1614,8 @@ impl CustomOps for ExtraOp {
                             .unwrap()
                             .custom_data,
                         Eth1Kind::Geth,
-                    );
+                    )
+                    .c(d!())?;
                 }
 
                 env.write_cfg().c(d!())
@@ -1603,7 +1633,7 @@ impl CustomOps for ExtraOp {
                         .cloned()
                         .c(d!("The node(id: {}) not found", id))?;
                     alt!(
-                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Reth),
+                        !json_el_kind_matched(&n.custom_data, Eth1Kind::Reth).c(d!())?,
                         ns.push(n)
                     );
                 }
@@ -1647,7 +1677,8 @@ impl CustomOps for ExtraOp {
                             .unwrap()
                             .custom_data,
                         Eth1Kind::Reth,
-                    );
+                    )
+                    .c(d!())?;
                 }
 
                 env.write_cfg().c(d!())

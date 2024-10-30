@@ -246,6 +246,15 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     Show {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
+        #[clap(short = 'c', long, help = "Clean up expired data before showing")]
+        clean_up: bool,
+        #[clap(
+            short = 'w',
+            long,
+            requires = "clean_up",
+            help = "Whether to write back after a `clean up`"
+        )]
+        write_back: bool,
     },
     #[clap(about = "Show failed nodes in a list")]
     DebugFailedNodes {
@@ -297,7 +306,11 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
 
 impl Default for DevOp {
     fn default() -> Self {
-        Self::Show { env_name: None }
+        Self::Show {
+            env_name: None,
+            clean_up: false,
+            write_back: false,
+        }
     }
 }
 
@@ -610,6 +623,15 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     Show {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
+        #[clap(short = 'c', long, help = "Clean up expired data before showing")]
+        clean_up: bool,
+        #[clap(
+            short = 'w',
+            long,
+            requires = "clean_up",
+            help = "Whether to write back after a `clean up`"
+        )]
+        write_back: bool,
     },
     #[clap(
         about = "Show the remote host configations in JSON or the `nb` native format"
@@ -781,7 +803,11 @@ all remote files will be collected into this directory,
 
 impl Default for DDevOp {
     fn default() -> Self {
-        Self::Show { env_name: None }
+        Self::Show {
+            env_name: None,
+            clean_up: false,
+            write_back: false,
+        }
     }
 }
 

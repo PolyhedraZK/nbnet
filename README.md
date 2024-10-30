@@ -68,14 +68,15 @@ For more detailed information, you can get it through the `nb <SUBCOMMAND> -h`.
 
 For example:
 ```
-# nb dev destroy -h
-Destroy an existing ENV
+# nb ddev show -h
+Default operation, show the information of an existing ENV
 
-Usage: nb dev destroy [OPTIONS]
+Usage: nb ddev show [OPTIONS]
 
 Options:
   -e, --env-name <ENV_NAME>
-      --force                Destroy the target ENV even if it is protected
+  -c, --clean-up             Clean up expired data before showing
+  -w, --write-back           Whether to write back after a `clean up`
 ```
 
 #### Shell Completion

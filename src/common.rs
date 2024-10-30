@@ -18,20 +18,20 @@ pub const CL_VC_LOG_NAME: &str = "cl.vc.log";
 pub type MnemonicWords = String;
 
 #[inline(always)]
-pub fn json_el_kind(v: &Option<JsonValue>) -> Eth1Kind {
+pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
     if let Some(v) = v {
         serde_json::from_value::<NodeCustomData>(v.clone())
-            .unwrap()
-            .el_kind
+            .c(d!())
+            .map(|d| d.el_kind)
     } else {
-        Eth1Kind::default()
+        Ok(Eth1Kind::default())
     }
 }
 
 #[inline(always)]
-pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) {
+pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) -> Result<()> {
     let v = if let Some(v) = jv {
-        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
         v.el_kind = k;
         v
     } else {
@@ -41,16 +41,18 @@ pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) {
         }
     };
 
-    jv.replace(serde_json::to_value(&v).unwrap());
+    serde_json::to_value(&v).c(d!()).map(|v| {
+        jv.replace(v);
+    })
 }
 
 #[inline(always)]
 pub fn json_deposits_append(
     jv: &mut Option<JsonValue>,
     mut deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
-) {
+) -> Result<()> {
     let v = if let Some(v) = jv {
-        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
         v.deposits.append(&mut deposits);
         v
     } else {
@@ -60,10 +62,11 @@ pub fn json_deposits_append(
         }
     };
 
-    jv.replace(serde_json::to_value(&v).unwrap());
+    serde_json::to_value(&v).c(d!()).map(|v| {
+        jv.replace(v);
+    })
 }
 
-#[inline(always)]
 pub fn json_deposits_remove(
     jv: &mut Option<JsonValue>,
     mnemonic: &str,
@@ -71,12 +74,11 @@ pub fn json_deposits_remove(
 ) -> Result<bool> {
     let mut ret = false;
     let v = if let Some(v) = jv {
-        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).unwrap();
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
         let hdr = v.deposits.get_mut(mnemonic).c(d!())?;
         if hdr.remove(&idx) {
             ret = true;
         }
-        v.deposits.retain(|_, v| !v.is_empty());
         v
     } else {
         NodeCustomData::default()
@@ -88,9 +90,27 @@ pub fn json_deposits_remove(
     })
 }
 
+pub fn json_deposits_clean_up(jv: &mut Option<JsonValue>) -> Result<()> {
+    if let Some(v) = jv {
+        let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
+
+        let old_len = v.deposits.len();
+
+        v.deposits.retain(|_, v| !v.is_empty());
+
+        if v.deposits.len() < old_len {
+            serde_json::to_value(&v).c(d!()).map(|v| {
+                jv.replace(v);
+            })?;
+        }
+    }
+
+    Ok(())
+}
+
 #[inline(always)]
-pub fn json_el_kind_matched(v: &Option<JsonValue>, k: Eth1Kind) -> bool {
-    json_el_kind(v) == k
+pub fn json_el_kind_matched(v: &Option<JsonValue>, k: Eth1Kind) -> Result<bool> {
+    json_el_kind(v).map(|i| i == k).c(d!())
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
