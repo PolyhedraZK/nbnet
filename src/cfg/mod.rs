@@ -799,6 +799,15 @@ all remote files will be collected into this directory,
         )]
         nodes: Option<String>,
     },
+    #[clap(about = "Manage the ENV meta in git")]
+    Git {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/nb-01.git")]
+        remote_url: Option<String>,
+        #[clap(short = 'p', long, help = "Push local updates to the remote codebase")]
+        push: bool,
+    },
 }
 
 impl Default for DDevOp {

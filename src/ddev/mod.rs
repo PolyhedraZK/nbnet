@@ -29,7 +29,7 @@ use chaindev::{
     },
     CustomOps, EnvName, NodeID,
 };
-use ruc::*;
+use ruc::{cmd, *};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{
@@ -478,6 +478,16 @@ impl From<DDevCfg> for EnvCfg {
                     .map(|s| s.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
                 Op::Custom(ExtraOp::SwitchELToReth { nodes: pnk!(nodes) })
+            }
+            DDevOp::Git {
+                env_name,
+                remote_url,
+                push,
+            } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::Git { remote_url, push })
             }
         };
 
@@ -988,6 +998,10 @@ enum ExtraOp {
     SwitchELToReth {
         nodes: BTreeSet<NodeID>,
     },
+    Git {
+        remote_url: Option<String>,
+        push: bool,
+    },
 }
 
 impl CustomOps for ExtraOp {
@@ -1126,7 +1140,7 @@ impl CustomOps for ExtraOp {
                             --output-path {tmp_dir}
                         "#
                     );
-                    ruc::cmd::exec_output(&cmd).c(d!())?;
+                    cmd::exec_output(&cmd).c(d!())?;
 
                     let remote = Remote::from(&n.host);
                     remote
@@ -1682,6 +1696,30 @@ impl CustomOps for ExtraOp {
                 }
 
                 env.write_cfg().c(d!())
+            }
+            Self::Git { remote_url, push } => {
+                let env_home = load_sysenv(en).c(d!())?.meta.home;
+
+                let mut cmd = format!("cd {env_home} || exit 1;");
+                if let Some(url) = remote_url.as_ref() {
+                    let piece = format!(
+                        r#"
+                        git remote add nbnet {0} \
+                        || git remote set-url nbnet {0} \
+                        || exit 1;
+                        "#,
+                        url
+                    );
+                    cmd.push_str(&piece);
+                }
+
+                if *push {
+                    cmd.push_str("git push nbnet HEAD:master")
+                }
+
+                cmd::exec_output(&cmd).c(d!()).map(|s| {
+                    println!("{s}");
+                })
             }
         }
     }

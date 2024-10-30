@@ -45,6 +45,7 @@ Commands:
   host-exec           Execute commands on all remote hosts
   get-logs            Get the remote logs from all nodes of the ENV
   dump-vc-data        Dump the validator client data from all nodes of the ENV
+  git                 Manage the ENV meta in git
 ```
 
 Set the ssh public key(eg `~/.ssh/id_rsa.pub`) of your localhost to the correct path(eg `~/.ssh/authorized_keys`) on every remote host,
