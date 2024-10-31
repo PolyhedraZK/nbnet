@@ -7,3 +7,6 @@
 [submodule "submodules/reth"]
 	path = submodules/reth
 	url = https://github.com/NBnet/reth
+[submodule "submodules/side-chain-data-collector"]
+	path = submodules/side-chain-data-collector
+	url = https://github.com/NBnet/side-chain-data-collector.git

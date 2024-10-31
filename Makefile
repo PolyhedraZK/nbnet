@@ -92,13 +92,22 @@ bin_lighthouse:
 	cd submodules/lighthouse && make
 	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
 
-docker_runtime:
-	bash -x tools/ddev_docker_runtime.sh $(shell pwd)/Dockerfile
+bin_scd:
+	mkdir -p ~/.cargo/bin
+	cd submodules/side-chain-data-collector && make release
+	cp -f submodules/side-chain-data-collector/target/release/scd ~/.cargo/bin/
 
-ddev_docker_runtime: install
-	nb ddev host-put-file -l Dockerfile -r /tmp/Dockerfile
+docker_runtime: bin_scd
+	bash -x tools/ddev_docker_runtime.sh \
+		$(shell pwd)/tools/Dockerfile \
+		$(shell pwd)/submodules/side-chain-data-collector/target/release/scd
+
+ddev_docker_runtime: install bin_scd
+	nb ddev host-put-file -l submodules/side-chain-data-collector/target/release/scd -r /tmp/scd
+	nb ddev host-put-file -l tools/entrypoint.sh -r /tmp/entrypoint.sh
+	nb ddev host-put-file -l tools/Dockerfile -r /tmp/Dockerfile
 	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
-	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile'
+	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile /tmp/scd'
 	@ printf '\n\x1b[0;33mThe new contents of the $${NB_DDEV_HOSTS_JSON} file should be:\x1b[0m\n'
 	@ nb ddev show-hosts --json \
 		| sed -r 's/("ssh_port": )[0-9]+/\12222/g' \
