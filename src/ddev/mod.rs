@@ -1326,8 +1326,12 @@ impl CustomOps for ExtraOp {
                     hosts
                         .as_object_mut()
                         .unwrap()
-                        .values_mut()
-                        .map(|v| v.take())
+                        .iter_mut()
+                        .map(|(id, v)| {
+                            let mut v = v.take();
+                            v["ID"] = id.to_owned().into();
+                            v
+                        })
                         .collect::<Vec<_>>()
                         .into(),
                 );
