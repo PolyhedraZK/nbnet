@@ -211,6 +211,8 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+        #[clap(long)]
+        force: bool,
     },
     #[clap(
         name = "switch-EL-to-geth",
@@ -542,6 +544,8 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
         nodes: String,
         #[clap(short = 'H', long)]
         host_addr: Option<String>,
+        #[clap(long)]
+        force: bool,
     },
     #[clap(about = "Remove(destroy) some node from an existing ENV")]
     KickNodes {
@@ -564,6 +568,8 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+        #[clap(long)]
+        force: bool,
     },
     #[clap(
         name = "switch-EL-to-geth",

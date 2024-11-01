@@ -190,6 +190,7 @@ impl From<DevCfg> for EnvCfg {
                 num,
                 geth,
                 reth,
+                force,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -203,7 +204,11 @@ impl From<DevCfg> for EnvCfg {
                             ids
                         }
                     });
-                Op::KickNodes { nodes: ids, num }
+                Op::KickNodes {
+                    nodes: ids,
+                    num,
+                    force,
+                }
             }
             DevOp::SwitchELToGeth { env_name, nodes } => {
                 if let Some(n) = env_name {

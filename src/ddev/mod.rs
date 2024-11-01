@@ -285,6 +285,7 @@ impl From<DDevCfg> for EnvCfg {
                 env_name,
                 nodes,
                 host_addr,
+                force,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -297,6 +298,7 @@ impl From<DDevCfg> for EnvCfg {
                 Op::MigrateNodes {
                     nodes,
                     host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
+                    force,
                 }
             }
             DDevOp::KickNodes {
@@ -305,6 +307,7 @@ impl From<DDevCfg> for EnvCfg {
                 num,
                 geth,
                 reth,
+                force,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -318,7 +321,11 @@ impl From<DDevCfg> for EnvCfg {
                             ids
                         }
                     });
-                Op::KickNodes { nodes: ids, num }
+                Op::KickNodes {
+                    nodes: ids,
+                    num,
+                    force,
+                }
             }
             DDevOp::PushHosts { env_name, hosts } => {
                 if let Some(n) = env_name {
@@ -529,7 +536,7 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
 echo "{rand_jwt}" > {auth_jwt} | tr -d '\n' || exit 1
 
 if [ ! -d {genesis_dir} ]; then
-    tar -C {home} -xpf {home}/{NODE_HOME_GENESIS_DST} || exit 1
+    tar -C {home} -xf {home}/{NODE_HOME_GENESIS_DST} || exit 1
     if [ ! -d {genesis_dir} ]; then
         mv {home}/$(tar -tf {home}/{NODE_HOME_GENESIS_DST} | head -1) {genesis_dir} || exit 1
     fi
@@ -825,7 +832,7 @@ if [[ -f '{home}/{NODE_HOME_VCDATA_DST}' ]]; then
     if [[ (! -d '{cl_vc_dir}/validators') && ("" != ${{vcdata_dir_name}}) ]]; then
         rm -rf /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
         mkdir -p {cl_vc_dir} /tmp/{cl_vc_dir}_{id}_{ts} || exit 1
-        tar -C /tmp/{cl_vc_dir}_{id}_{ts} -xpf {home}/{NODE_HOME_VCDATA_DST} || exit 1
+        tar -C /tmp/{cl_vc_dir}_{id}_{ts} -xf {home}/{NODE_HOME_VCDATA_DST} || exit 1
         mv /tmp/{cl_vc_dir}_{id}_{ts}/${{vcdata_dir_name}}/* {cl_vc_dir}/ || exit 1
     fi
 fi "#
@@ -904,21 +911,24 @@ nohup {lighthouse} validator_client \
     ) -> impl FnOnce() -> Result<()> {
         || {
             let tgz = format!("vcdata_{}.tar.gz", ts!());
+            let path = format!("/tmp/{tgz}");
 
-            let src_cmd = format!("tar -C /tmp -zcf {tgz} {}/{CL_VC_DIR}", &src.home);
+            let src_cmd = format!(
+                "cd {0} && tar -zcf {tgz} {CL_VC_DIR} && mv {tgz} {path}",
+                &src.home
+            );
             let src_remote = Remote::from(&src.host);
             src_remote
                 .exec_cmd(&src_cmd)
                 .c(d!())
-                .and_then(|_| src_remote.get_file("/tmp/{tgz}", "/tmp/{tgz}").c(d!()))?;
+                .and_then(|_| src_remote.get_file(&path, &path).c(d!()))?;
 
-            let dst_cmd = format!(
-                "rm -rf {0}/{CL_VC_DIR} && tar -C {0} -zcf /tmp/{tgz}",
-                &src.home
-            );
+            // The node home has been created by the caller
+            let dst_cmd =
+                format!("cd {0} && rm -rf {CL_VC_DIR} && tar -xf {path}", &dst.home);
             let dst_remote = Remote::from(&dst.host);
             dst_remote
-                .put_file("/tmp/{tgz}", "/tmp/{tgz}")
+                .put_file(&path, &path)
                 .c(d!())
                 .and_then(|_| dst_remote.exec_cmd(&dst_cmd).c(d!()))
                 .map(|_| ())
