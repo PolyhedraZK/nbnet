@@ -29,7 +29,7 @@ use chaindev::{
     },
     CustomOps, EnvName, NodeID,
 };
-use ruc::{cmd, *};
+use ruc::{algo::rand::rand_jwt, cmd, *};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{
@@ -918,7 +918,7 @@ nohup {lighthouse} validator_client \
         _e: &EnvMeta<CustomInfo, Node<Ports>>,
     ) -> impl FnOnce() -> Result<()> {
         || {
-            let tgz = format!("vcdata_{}.tar.gz", ts!());
+            let tgz = format!("MIGRATE_vcdata_{}.tar.gz", datetime!().replace(" ", "_"));
             let path = format!("/tmp/{tgz}");
 
             let src_cmd = format!(
@@ -1112,8 +1112,7 @@ impl CustomOps for ExtraOp {
                 );
 
                 for n in nodes.into_iter() {
-                    let tmp_dir =
-                        format!("/tmp/{}_{}", ts!(), ruc::algo::rand::rand_jwt());
+                    let tmp_dir = format!("/tmp/{}_{}", ts!(), rand_jwt());
                     omit!(fs::remove_dir_all(&tmp_dir));
                     fs::create_dir_all(&tmp_dir).c(d!())?;
 
