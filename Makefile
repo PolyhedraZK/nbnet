@@ -104,7 +104,7 @@ docker_runtime: bin_scd bin_expander
 		$(shell pwd)/submodules/side-chain-data-collector/target/release/scd \
 		$(shell pwd)/submodules/expander/target/release/expander-exec
 
-ddev_docker_runtime: install bin_scd
+ddev_docker_runtime: install bin_scd bin_expander
 	nb ddev host-put-file -l submodules/side-chain-data-collector/target/release/scd -r /tmp/scd
 	nb ddev host-put-file -l submodules/expander/target/release/expander-exec -r /tmp/expander-exec
 	nb ddev host-put-file -l tools/entrypoint.sh -r /tmp/entrypoint.sh

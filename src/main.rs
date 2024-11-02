@@ -9,7 +9,7 @@ use clap_complete::{
     shells::{Bash, Zsh},
 };
 use ruc::*;
-use std::{fs, io};
+use std::{fs, io, process::ExitCode};
 
 mod cfg;
 mod common;
@@ -17,7 +17,7 @@ mod ddev;
 mod dev;
 mod pos;
 
-fn main() {
+fn main() -> ExitCode {
     let config = Cfg::parse();
 
     pnk!(vsdb::vsdb_set_base_dir(format!(
@@ -25,7 +25,7 @@ fn main() {
         BASE_DIR.as_str()
     )));
 
-    let err_mgmt = |e: Box<dyn RucError>, mark: &str| {
+    let err = |e: Box<dyn RucError>, mark: &str| {
         let e = e.to_string();
         let err = e.trim_start().trim_end();
         if 24 < err.lines().count() {
@@ -38,17 +38,19 @@ fn main() {
         } else {
             eprintln!("{err}");
         }
+
+        ExitCode::FAILURE
     };
 
     match config.commands {
         Commands::Dev(cfg) => {
             if let Err(e) = dev::EnvCfg::from(cfg).exec() {
-                err_mgmt(e, "dev");
+                return err(e, "dev");
             }
         }
         Commands::DDev(cfg) => {
             if let Err(e) = ddev::EnvCfg::from(cfg).exec() {
-                err_mgmt(e, "d_dev");
+                return err(e, "d_dev");
             }
         }
         Commands::Deposit(cfg) => {
@@ -59,7 +61,7 @@ fn main() {
                 &cfg.wallet_signkey_path,
             );
             if let Err(e) = common::new_sb_runtime().block_on(future) {
-                err_mgmt(e, "deposit");
+                return err(e, "deposit");
             }
         }
         Commands::ValidatorExit(cfg) => {
@@ -70,7 +72,7 @@ fn main() {
                 &cfg.password_path,
                 false,
             ) {
-                err_mgmt(e, "deposit");
+                return err(e, "deposit");
             }
         }
         Commands::NewMnemonic => {
@@ -83,4 +85,6 @@ fn main() {
             generate(Bash, &mut Cfg::command(), crate_name!(), &mut io::stdout());
         }
     }
+
+    ExitCode::SUCCESS
 }
