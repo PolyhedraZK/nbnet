@@ -137,7 +137,7 @@ impl From<DDevCfg> for EnvCfg {
                     .hosts
                     .as_deref()
                     .map(|hs| hs.into())
-                    .or_else(env_hosts);
+                    .or_else(|| pnk!(env_hosts()));
                 let hosts = pnk!(
                     hosts,
                     "No hosts registered! Use `--hosts` or $NB_DDEV_HOSTS to set."
@@ -331,7 +331,9 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let hosts = pnk!(hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts));
+                let hosts = pnk!(hosts
+                    .map(|h| pnk!(parse_cfg(&h)))
+                    .or_else(|| pnk!(env_hosts())));
                 Op::PushHosts { hosts }
             }
             DDevOp::KickHosts {
@@ -405,7 +407,9 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostPutFile {
                     local_path,
                     remote_path,
-                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
+                    hosts: hosts
+                        .map(|h| pnk!(parse_cfg(&h)))
+                        .or_else(|| pnk!(env_hosts())),
                 }
             }
             DDevOp::HostGetFile {
@@ -420,7 +424,9 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostGetFile {
                     remote_path,
                     local_base_dir,
-                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
+                    hosts: hosts
+                        .map(|h| pnk!(parse_cfg(&h)))
+                        .or_else(|| pnk!(env_hosts())),
                 }
             }
             DDevOp::HostExec {
@@ -435,7 +441,9 @@ impl From<DDevCfg> for EnvCfg {
                 Op::HostExec {
                     cmd,
                     script_path,
-                    hosts: hosts.map(|h| pnk!(parse_cfg(&h))).or_else(env_hosts),
+                    hosts: hosts
+                        .map(|h| pnk!(parse_cfg(&h)))
+                        .or_else(|| pnk!(env_hosts())),
                 }
             }
             DDevOp::GetLogs {
@@ -939,16 +947,16 @@ nohup {lighthouse} validator_client \
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
 
-fn env_hosts() -> Option<Hosts> {
+fn env_hosts() -> Result<Option<Hosts>> {
     if let Ok(json) = env::var("NB_DDEV_HOSTS_JSON") {
-        let r = fs::read(json)
+        fs::read(json)
             .c(d!())
-            .and_then(|b| Hosts::from_json_cfg(&b).c(d!()));
-        Some(pnk!(r))
+            .and_then(|b| Hosts::from_json_cfg(&b).c(d!()))
+            .map(Some)
     } else if let Ok(expr) = env::var("NB_DDEV_HOSTS") {
-        Some(Hosts::from(&expr))
+        Hosts::from_str(&expr).c(d!()).map(Some)
     } else {
-        None
+        Ok(None)
     }
 }
 
@@ -1354,7 +1362,7 @@ impl CustomOps for ExtraOp {
                 let hosts = pnk!(hosts
                     .as_ref()
                     .map(|h| pnk!(parse_cfg(h)))
-                    .or_else(env_hosts));
+                    .or_else(|| pnk!(env_hosts())));
                 if *json {
                     let s = serde_json::to_string_pretty(&hosts).unwrap();
                     println!("{s}");
