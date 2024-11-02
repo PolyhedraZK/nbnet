@@ -77,37 +77,40 @@ start_all:
 
 bin_all: install bin_geth bin_reth bin_lighthouse
 
-bin_geth:
-	mkdir -p ~/.cargo/bin
+bin_geth: basic_prepare
 	cd submodules/go-ethereum && make geth
 	cp -f submodules/go-ethereum/build/bin/geth ~/.cargo/bin/
 
-bin_reth:
-	mkdir -p ~/.cargo/bin
+bin_reth: basic_prepare
 	cd submodules/reth && make build
 	cp -f submodules/reth/target/release/reth ~/.cargo/bin/
 
-bin_lighthouse:
-	mkdir -p ~/.cargo/bin
+bin_lighthouse: basic_prepare
 	cd submodules/lighthouse && make
 	cp -f submodules/lighthouse/target/release/lighthouse ~/.cargo/bin/
 
-bin_scd:
-	mkdir -p ~/.cargo/bin
+bin_scd: basic_prepare
 	cd submodules/side-chain-data-collector && make release
 	cp -f submodules/side-chain-data-collector/target/release/scd ~/.cargo/bin/
 
-docker_runtime: bin_scd
+bin_expander: basic_prepare
+	cd submodules/expander && \
+		cargo build --release --bin expander-exec
+	cp -f submodules/expander/target/release/expander-exec ~/.cargo/bin/
+
+docker_runtime: bin_scd bin_expander
 	bash -x tools/ddev_docker_runtime.sh \
 		$(shell pwd)/tools/Dockerfile \
-		$(shell pwd)/submodules/side-chain-data-collector/target/release/scd
+		$(shell pwd)/submodules/side-chain-data-collector/target/release/scd \
+		$(shell pwd)/submodules/expander/target/release/expander-exec
 
 ddev_docker_runtime: install bin_scd
 	nb ddev host-put-file -l submodules/side-chain-data-collector/target/release/scd -r /tmp/scd
+	nb ddev host-put-file -l submodules/expander/target/release/expander-exec -r /tmp/expander-exec
 	nb ddev host-put-file -l tools/entrypoint.sh -r /tmp/entrypoint.sh
 	nb ddev host-put-file -l tools/Dockerfile -r /tmp/Dockerfile
 	nb ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
-	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile /tmp/scd'
+	nb ddev host-exec -c 'bash -x /tmp/ddr.sh /tmp/Dockerfile /tmp/scd /tmp/expander-exec'
 	@ printf '\n\x1b[0;33mThe new contents of the $${NB_DDEV_HOSTS_JSON} file should be:\x1b[0m\n'
 	@ nb ddev show-hosts --json \
 		| sed -r 's/("ssh_port": )[0-9]+/\12222/g' \
@@ -121,3 +124,6 @@ git_fetch_reset:
 
 git_submods:
 	git submodule update --init --recursive
+
+basic_prepare:
+	mkdir -p ~/.cargo/bin

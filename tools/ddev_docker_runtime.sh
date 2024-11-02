@@ -17,6 +17,8 @@ cd $EXEC_PATH || exit 1
 
 docker_file=$1
 scd_bin=$2
+expander_bin=$3
+
 dir="/tmp/NB_DOCKER_RUNTIME_BUILD_DIR_${RANDOM}_$(date +%s)"
 
 mkdir -p ${HOME}/__NB_DATA__/{usr_local_bin,tmp} || exit 1
@@ -29,6 +31,7 @@ cd $dir || exit 1
 cp ~/.ssh/authorized_keys ./ || exit 1
 cp ${EXEC_PATH}/entrypoint.sh ./ || exit 1
 cp $scd_bin ./scd || exit 1
+cp $expander_bin ./expander-exec || exit 1
 cp $docker_file ./Dockerfile || exit 1
 
 ######################################################

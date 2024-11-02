@@ -10,3 +10,7 @@
 [submodule "submodules/side-chain-data-collector"]
 	path = submodules/side-chain-data-collector
 	url = https://github.com/NBnet/side-chain-data-collector.git
+[submodule "submodules/expander"]
+	path = submodules/expander
+	url = https://github.com/NBnet/Expander.git
+	branch = fix-cmd-verify
