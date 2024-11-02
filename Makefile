@@ -120,7 +120,7 @@ ddev_docker_runtime: install bin_scd bin_expander
 
 git_fetch_reset:
 	git fetch
-	git reset --hard origin/master
+	git reset --hard origin/$(shell git branch --show-current)
 
 git_submods:
 	git submodule update --init --recursive
