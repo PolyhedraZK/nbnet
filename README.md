@@ -38,7 +38,7 @@ If you do not want to spend the compiling time, feel free to use your own binari
 - Downloading them from the offical sites of these projects
 - Or use your own pre-compiled binaries
 
-For the `nb` binary, download the statically compiled(linked) package from [**this link**](https://github.com/NBnet/nbnet/releases/download/v0.5.0/nb.linux.amd64.tar.gz), and put it in your `$PATH`.
+For the `nb` binary, download the statically compiled(linked) package from [**this link**](https://github.com/NBnet/nbnet/releases/download/v0.6.0/nb.linux.amd64.tar.gz), and put it in your `$PATH`.
 
 If you want to compile a `nb` binary from source, use `make install`. It will be located at `~/.cargo/bin/`, so you should make sure that this directory is under your `$PATH`. We assume you have already been familiar with the configuration of the rust development environment, so we won't introduce this aspect.
 
