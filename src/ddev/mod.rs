@@ -266,7 +266,7 @@ impl From<DDevCfg> for EnvCfg {
                 reth,
                 fullnode,
                 num,
-                make_public,
+                public_p2p,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -275,8 +275,8 @@ impl From<DDevCfg> for EnvCfg {
                     host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
                     custom_data: alt!(
                         reth,
-                        NodeCustomData::new_with_reth(make_public).to_json_value(),
-                        NodeCustomData::new_with_geth(make_public).to_json_value()
+                        NodeCustomData::new_with_reth(public_p2p).to_json_value(),
+                        NodeCustomData::new_with_geth(public_p2p).to_json_value()
                     ),
                     fullnode,
                     num,
@@ -553,10 +553,10 @@ fi "#
         );
 
         let el_kind = pnk!(json_el_kind(&n.custom_data));
-        let make_public = pnk!(json_make_public(&n.custom_data));
+        let public_p2p = pnk!(json_public_p2p(&n.custom_data));
 
         let local_ip = &n.host.addr.local_ip;
-        let ext_ip = if make_public {
+        let ext_ip = if public_p2p {
             n.host.addr.connection_addr()
         } else {
             &n.host.addr.local_ip

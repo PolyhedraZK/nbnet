@@ -27,11 +27,11 @@ pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
     }
 }
 
-pub fn json_make_public(v: &Option<JsonValue>) -> Result<bool> {
+pub fn json_public_p2p(v: &Option<JsonValue>) -> Result<bool> {
     if let Some(v) = v {
         serde_json::from_value::<NodeCustomData>(v.clone())
             .c(d!())
-            .map(|d| d.make_public)
+            .map(|d| d.public_p2p)
     } else {
         Ok(false)
     }
@@ -66,7 +66,7 @@ pub fn json_deposits_append(
         NodeCustomData {
             el_kind: Eth1Kind::default(),
             deposits,
-            make_public: false,
+            public_p2p: false,
         }
     };
 
@@ -127,23 +127,23 @@ pub struct NodeCustomData {
     /// Used as a public node or not,
     /// that is, set external IP for it for not
     #[serde(default)]
-    pub make_public: bool,
+    pub public_p2p: bool,
 }
 
 impl NodeCustomData {
-    pub fn new_with_geth(make_public: bool) -> Self {
+    pub fn new_with_geth(public_p2p: bool) -> Self {
         Self {
             el_kind: Eth1Kind::Geth,
             deposits: map! {B},
-            make_public,
+            public_p2p,
         }
     }
 
-    pub fn new_with_reth(make_public: bool) -> Self {
+    pub fn new_with_reth(public_p2p: bool) -> Self {
         Self {
             el_kind: Eth1Kind::Reth,
             deposits: map! {B},
-            make_public,
+            public_p2p,
         }
     }
 

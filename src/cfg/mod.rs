@@ -535,7 +535,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
             long,
             help = "Set a public p2p address for this node, or not"
         )]
-        make_public: bool,
+        public_p2p: bool,
     },
     #[clap(about = "Migrate some existing nodes to other hosts,
 NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
