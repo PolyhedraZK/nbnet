@@ -17,7 +17,6 @@ pub const CL_VC_LOG_NAME: &str = "cl.vc.log";
 
 pub type MnemonicWords = String;
 
-#[inline(always)]
 pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
     if let Some(v) = v {
         serde_json::from_value::<NodeCustomData>(v.clone())
@@ -28,7 +27,16 @@ pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
     }
 }
 
-#[inline(always)]
+pub fn json_make_public(v: &Option<JsonValue>) -> Result<bool> {
+    if let Some(v) = v {
+        serde_json::from_value::<NodeCustomData>(v.clone())
+            .c(d!())
+            .map(|d| d.make_public)
+    } else {
+        Ok(false)
+    }
+}
+
 pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) -> Result<()> {
     let v = if let Some(v) = jv {
         let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
@@ -41,12 +49,11 @@ pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) -> Result<()> {
         }
     };
 
-    serde_json::to_value(&v).c(d!()).map(|v| {
-        jv.replace(v);
-    })
+    jv.replace(v.to_json_value());
+
+    Ok(())
 }
 
-#[inline(always)]
 pub fn json_deposits_append(
     jv: &mut Option<JsonValue>,
     mut deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
@@ -59,12 +66,13 @@ pub fn json_deposits_append(
         NodeCustomData {
             el_kind: Eth1Kind::default(),
             deposits,
+            make_public: false,
         }
     };
 
-    serde_json::to_value(&v).c(d!()).map(|v| {
-        jv.replace(v);
-    })
+    jv.replace(v.to_json_value());
+
+    Ok(())
 }
 
 pub fn json_deposits_remove(
@@ -84,10 +92,9 @@ pub fn json_deposits_remove(
         NodeCustomData::default()
     };
 
-    serde_json::to_value(&v).c(d!()).map(|v| {
-        jv.replace(v);
-        ret
-    })
+    jv.replace(v.to_json_value());
+
+    Ok(ret)
 }
 
 pub fn json_deposits_clean_up(jv: &mut Option<JsonValue>) -> Result<()> {
@@ -99,16 +106,13 @@ pub fn json_deposits_clean_up(jv: &mut Option<JsonValue>) -> Result<()> {
         v.deposits.retain(|_, v| !v.is_empty());
 
         if v.deposits.len() < old_len {
-            serde_json::to_value(&v).c(d!()).map(|v| {
-                jv.replace(v);
-            })?;
+            jv.replace(v.to_json_value());
         }
     }
 
     Ok(())
 }
 
-#[inline(always)]
 pub fn json_el_kind_matched(v: &Option<JsonValue>, k: Eth1Kind) -> Result<bool> {
     json_el_kind(v).map(|i| i == k).c(d!())
 }
@@ -119,26 +123,30 @@ pub struct NodeCustomData {
 
     /// Mnemonic => deposited validator number
     pub deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
+
+    /// Used as a public node or not,
+    /// that is, set external IP for it for not
+    #[serde(default)]
+    pub make_public: bool,
 }
 
 impl NodeCustomData {
-    #[inline(always)]
-    pub fn new_with_geth() -> Self {
+    pub fn new_with_geth(make_public: bool) -> Self {
         Self {
             el_kind: Eth1Kind::Geth,
             deposits: map! {B},
+            make_public,
         }
     }
 
-    #[inline(always)]
-    pub fn new_with_reth() -> Self {
+    pub fn new_with_reth(make_public: bool) -> Self {
         Self {
             el_kind: Eth1Kind::Reth,
             deposits: map! {B},
+            make_public,
         }
     }
 
-    #[inline(always)]
     pub fn to_json_value(&self) -> JsonValue {
         serde_json::to_value(self).c(d!()).unwrap()
     }
