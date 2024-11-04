@@ -577,17 +577,21 @@ fi "#
                 .values()
                 .chain(e.fuhrers.values())
                 .filter(|n| online_nodes.contains(&n.id))
-                .map(|n| {
+                .map(|o| {
                     (
                         format!(
                             "http://{}:{}",
-                            &n.host.addr.connection_addr(),
-                            n.ports.el_rpc
+                            &o.host
+                                .addr
+                                .connection_addr_x(&n.host.addr.local_network_id),
+                            o.ports.el_rpc
                         ),
                         format!(
                             "http://{}:{}",
-                            &n.host.addr.connection_addr(),
-                            n.ports.cl_bn_rpc
+                            &o.host
+                                .addr
+                                .connection_addr_x(&n.host.addr.local_network_id),
+                            o.ports.cl_bn_rpc
                         ),
                     )
                 })
