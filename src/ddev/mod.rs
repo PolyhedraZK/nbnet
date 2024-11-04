@@ -553,9 +553,10 @@ fi "#
         );
 
         let el_kind = pnk!(json_el_kind(&n.custom_data));
+        let make_public = pnk!(json_make_public(&n.custom_data));
 
         let local_ip = &n.host.addr.local_ip;
-        let ext_ip = if pnk!(json_make_public(&n.custom_data)) {
+        let ext_ip = if make_public {
             n.host.addr.connection_addr()
         } else {
             &n.host.addr.local_ip
@@ -567,10 +568,9 @@ fi "#
                 .nodes_should_be_online
                 .iter()
                 .map(|(k, _)| k)
-                .filter(|k| *k < n.id) // early nodes only
                 .collect::<HashSet<_>>() // for random purpose
                 .into_iter()
-                .take(5)
+                .take(12)
                 .collect::<Vec<_>>();
 
             if online_nodes.is_empty() {
@@ -586,16 +586,12 @@ fi "#
                     (
                         format!(
                             "http://{}:{}",
-                            &o.host
-                                .addr
-                                .connection_addr_x(&n.host.addr.local_network_id),
+                            &o.host.addr.connection_addr(),
                             o.ports.el_rpc
                         ),
                         format!(
                             "http://{}:{}",
-                            &o.host
-                                .addr
-                                .connection_addr_x(&n.host.addr.local_network_id),
+                            &o.host.addr.connection_addr(),
                             o.ports.cl_bn_rpc
                         ),
                     )
@@ -693,7 +689,8 @@ nohup {geth} \
     --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
     --metrics \
-    --metrics.port={el_metric_port} "#
+    --metrics.port={el_metric_port} \
+    "#
             );
 
             let cmd_run_part_1 = if el_bootnodes.is_empty() {
@@ -736,13 +733,19 @@ nohup {reth} node \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
     --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
-    --metrics='{local_ip}:{el_metric_port}' "#
+    --metrics='{local_ip}:{el_metric_port}' \
+    "#
             );
 
             let cmd_run_part_1 = if el_bootnodes.is_empty() {
                 String::new()
             } else {
-                format!(" --bootnodes='{el_bootnodes}' --trusted-peers='{el_bootnodes}'")
+                format!(
+                    r#"\
+    --bootnodes='{el_bootnodes}' \
+    --trusted-peers='{el_bootnodes}' \
+    "#
+                )
             };
 
             //
@@ -804,6 +807,7 @@ nohup {lighthouse} beacon_node \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
     --disable-upnp \
+    --enable-private-discovery \
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
@@ -814,13 +818,19 @@ nohup {lighthouse} beacon_node \
     --http --http-address={local_ip} \
     --http-port={cl_bn_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \
-    --metrics-port={cl_bn_metric_port} --metrics-allow-origin='*' "#
+    --metrics-port={cl_bn_metric_port} --metrics-allow-origin='*' \
+    "#
             );
 
             let mut cmd_run_part_1 = if cl_bn_bootnodes.is_empty() {
                 String::new()
             } else {
-                format!(" --boot-nodes='{cl_bn_bootnodes}' --trusted-peers='{cl_bn_trusted_peers}'")
+                format!(
+                    r#"\
+    --boot-nodes='{cl_bn_bootnodes}' \
+    --trusted-peers='{cl_bn_trusted_peers}' \
+    "#
+                )
             };
 
             if node_sync_from_genesis() || checkpoint_sync_url.is_empty() {

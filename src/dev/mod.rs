@@ -344,7 +344,7 @@ fi "#
         let el_kind = pnk!(json_el_kind(&n.custom_data));
 
         let local_ip = &e.host_ip;
-        let ext_ip = local_ip; // for `ddev` it should be e.external_ip
+        let ext_ip = local_ip; // for `ddev` it should be e.external_ip?
 
         let ts_start = ts!();
         let (el_bootnodes, cl_bn_bootnodes, cl_bn_trusted_peers, checkpoint_sync_url) = loop {
@@ -606,7 +606,7 @@ nohup {lighthouse} beacon_node \
                     .push_str(&format!(" --checkpoint-sync-url={checkpoint_sync_url}"));
             }
 
-            // Disable this line in the `ddev` mod
+            // Disable this line in the `ddev` mod?
             cmd_run_part_1.push_str(" --enable-private-discovery");
 
             let cmd_run_part_2 = " >>/dev/null 2>&1 &";
