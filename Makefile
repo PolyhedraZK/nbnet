@@ -97,7 +97,7 @@ bin_geth: basic_prepare
 		&& cp -f geth ~/.cargo/bin/
 
 bin_reth: basic_prepare
-	cd submodules/reth && make build
+	cd submodules/reth && make build_with_expander
 	cd submodules/reth/target/release \
 		&& rm -f reth.txz \
 		&& tar -Jcf reth.txz reth \
