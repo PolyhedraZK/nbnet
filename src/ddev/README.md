@@ -111,7 +111,7 @@ Options:
           Only the `local_ip` field is mandatory, the others are optional;
           The `fallback_` prefixed fields can be used to avoid duplicate entries;
           If the `ext_ip` is missing, will fallback to the `local_ip` for external connections;
-          The `weight` should be a positive number(1~255),
+          The `weight` should be a positive number(1~65535),
           if not set, the number of CPU threads on the host will be used,
           the larger the number, the more nodes the host will carry;
           The configuration here will override the `$NB_DDEV_HOSTS_JSON` settings.
@@ -144,7 +144,7 @@ Options:
           Only the `host_ip` field is mandatory, the others are optional;
           If the `external_ip` is missing, will fallback to the `host_ip` for external connections;
           All whitespace characters(\n,\t, etc.) will be removed before parsing the value;
-          The `host_weight` should be a positive number(1~255),
+          The `host_weight` should be a positive number(1~65535),
           if not set, the number of CPU threads on the host will be used,
           the larger the number, the more nodes the host will carry;
           The configuration here will override the `$NB_DDEV_HOSTS` settings.
