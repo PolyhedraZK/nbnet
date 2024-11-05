@@ -225,7 +225,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
         )]
         nodes: String,
     },
@@ -240,7 +240,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
         )]
         nodes: String,
     },
@@ -582,7 +582,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
         )]
         nodes: String,
     },
@@ -597,7 +597,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
+            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
         )]
         nodes: String,
     },
@@ -617,7 +617,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
         #[clap(
-            short = 'N',
+            short = 'H',
             long,
             help = "Comma separated NodeID[s], 'HostID', 'HostID,HostID', etc."
         )]
