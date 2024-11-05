@@ -39,6 +39,10 @@ update:
 	git pull
 	git submodule update --init
 	cargo update
+	cd submodules/expander && cargo update
+	cd submodules/reth && cargo update
+	cd submodules/lighthouse && cargo update
+	cd submodules/side-chain-data-collector && cargo update
 
 fmt:
 	cargo fmt
