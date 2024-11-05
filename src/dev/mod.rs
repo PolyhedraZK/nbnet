@@ -352,10 +352,19 @@ fi "#
                 .nodes_should_be_online
                 .iter()
                 .map(|(k, _)| k)
-                .filter(|k| *k < n.id) // early nodes only
+                .filter(|k| *k < n.id)
                 .collect::<HashSet<_>>() // for random purpose
                 .into_iter()
-                .take(6)
+                .take(5)
+                .chain(
+                    e.nodes_should_be_online
+                        .iter()
+                        .map(|(k, _)| k)
+                        .filter(|k| *k > n.id)
+                        .collect::<HashSet<_>>() // for random purpose
+                        .into_iter()
+                        .take(5),
+                )
                 .collect::<Vec<_>>();
 
             if online_nodes.is_empty() {
@@ -439,7 +448,7 @@ fi "#
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir}/logs || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
-        {el_genesis} >>{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
+        {el_genesis} >{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
             );
 
@@ -476,7 +485,7 @@ nohup {geth} \
                 format!(" --bootnodes='{el_bootnodes}'")
             };
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else if Eth1Kind::Reth == el_kind {
@@ -487,8 +496,8 @@ nohup {geth} \
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir}/logs || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
-        --log.file.directory={el_dir}/logs >>/dev/null 2>&1 || exit 1
-    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null || exit 1
+        --log.file.directory={el_dir}/logs >/dev/null 2>&1 || exit 1
+    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null 2>&1 || exit 1
 fi "#
             );
 
@@ -529,7 +538,7 @@ nohup {reth} node \
             //     cmd_run_part_1.push_str(" --full");
             // }
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else {
@@ -609,7 +618,7 @@ nohup {lighthouse} beacon_node \
             // Disable this line in the `ddev` mod?
             cmd_run_part_1.push_str(" --enable-private-discovery");
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         };
@@ -658,7 +667,7 @@ nohup {lighthouse} validator_client \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-    >>/dev/null 2>&1 &
+    >/dev/null 2>&1 &
      "#
             );
 

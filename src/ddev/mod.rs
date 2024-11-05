@@ -565,7 +565,16 @@ fi "#
                 .filter(|k| *k < n.id)
                 .collect::<HashSet<_>>() // for random purpose
                 .into_iter()
-                .take(6)
+                .take(5)
+                .chain(
+                    e.nodes_should_be_online
+                        .iter()
+                        .map(|(k, _)| k)
+                        .filter(|k| *k > n.id)
+                        .collect::<HashSet<_>>() // for random purpose
+                        .into_iter()
+                        .take(5),
+                )
                 .collect::<Vec<_>>();
 
             if online_nodes.is_empty() {
@@ -637,7 +646,7 @@ fi "#
         let el_dir = format!("{home}/{EL_DIR}");
         let el_genesis = format!("{genesis_dir}/genesis.json");
         let el_discovery_port = n.ports.el_discovery;
-        // let el_discovery_v5_port = n.ports.el_discovery_v5;
+        let el_discovery_v5_port = n.ports.el_discovery_v5;
         let el_rpc_port = n.ports.el_rpc;
         let el_rpc_ws_port = n.ports.el_rpc_ws;
         let el_engine_port = n.ports.el_engine_api;
@@ -657,7 +666,7 @@ fi "#
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir}/logs || exit 1
     {geth} init --datadir={el_dir} --state.scheme=hash \
-        {el_genesis} >>{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
+        {el_genesis} >{el_dir}/logs/{EL_LOG_NAME} 2>&1 || exit 1
 fi "#
             );
 
@@ -677,6 +686,7 @@ nohup {geth} \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
+    --discovery.v5 \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.vhosts='*' --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
     --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
@@ -694,7 +704,7 @@ nohup {geth} \
                 format!(" --bootnodes='{el_bootnodes}'")
             };
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else if Eth1Kind::Reth == el_kind {
@@ -705,8 +715,8 @@ nohup {geth} \
 if [ ! -d {el_dir} ]; then
     mkdir -p {el_dir}/logs || exit 1
     {reth} init --datadir={el_dir} --chain={el_genesis} \
-        --log.file.directory={el_dir}/logs >>/dev/null 2>&1 || exit 1
-    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null || exit 1
+        --log.file.directory={el_dir}/logs >/dev/null 2>&1 || exit 1
+    ln -sv {el_dir}/logs/*/reth.log {el_dir}/logs/{EL_LOG_NAME} >/dev/null 2>&1 || exit 1
 fi "#
             );
 
@@ -722,6 +732,8 @@ nohup {reth} node \
     --nat=extip:{ext_ip} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
+    --enable-discv5-discovery \
+    --discovery.v5.port={el_discovery_v5_port} \
     --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
     --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
@@ -751,7 +763,7 @@ nohup {reth} node \
             //     cmd_run_part_1.push_str(" --full");
             // }
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else {
@@ -834,7 +846,7 @@ nohup {lighthouse} beacon_node \
                     .push_str(&format!(" --checkpoint-sync-url={checkpoint_sync_url}"));
             }
 
-            let cmd_run_part_2 = " >>/dev/null 2>&1 &";
+            let cmd_run_part_2 = " >/dev/null 2>&1 &";
 
             cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         };
@@ -883,7 +895,7 @@ nohup {lighthouse} validator_client \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
     --metrics --metrics-address={local_ip} \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
-    >>/dev/null 2>&1 &
+    >/dev/null 2>&1 &
      "#
             );
 
@@ -1570,7 +1582,7 @@ impl CustomOps for ExtraOp {
                         &format!("{EL_DIR}/logs/{EL_LOG_NAME}"),
                         &format!("{CL_BN_DIR}/logs/{CL_BN_LOG_NAME}"),
                         &format!("{CL_VC_DIR}/logs/{CL_VC_LOG_NAME}"),
-                        "mgmt.log",
+                        MGMT_LOG_NAME,
                     ],
                     local_dir.as_deref(),
                 )

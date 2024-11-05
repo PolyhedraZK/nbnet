@@ -15,6 +15,12 @@ pub const EL_LOG_NAME: &str = "el.log";
 pub const CL_BN_LOG_NAME: &str = "cl.bn.log";
 pub const CL_VC_LOG_NAME: &str = "cl.vc.log";
 
+pub const MGMT_LOG_NAME: &str = "mgmt.log";
+
+// pub const EL_ERR_NAME: &str = "el.err";
+// pub const CL_BN_ERR_NAME: &str = "cl.bn.err";
+// pub const CL_VC_ERR_NAME: &str = "cl.vc.err";
+
 pub type MnemonicWords = String;
 
 pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
