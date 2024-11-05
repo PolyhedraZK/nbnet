@@ -813,7 +813,7 @@ nohup {lighthouse} beacon_node \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
     --disable-upnp \
-    --target-peers=1 \
+    --target-peers=0 \
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
