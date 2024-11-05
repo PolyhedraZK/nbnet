@@ -266,7 +266,6 @@ impl From<DDevCfg> for EnvCfg {
                 reth,
                 fullnode,
                 num,
-                public_p2p,
             } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -275,8 +274,8 @@ impl From<DDevCfg> for EnvCfg {
                     host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
                     custom_data: alt!(
                         reth,
-                        NodeCustomData::new_with_reth(public_p2p).to_json_value(),
-                        NodeCustomData::new_with_geth(public_p2p).to_json_value()
+                        NodeCustomData::new_with_reth().to_json_value(),
+                        NodeCustomData::new_with_geth().to_json_value()
                     ),
                     fullnode,
                     num,
@@ -553,14 +552,9 @@ fi "#
         );
 
         let el_kind = pnk!(json_el_kind(&n.custom_data));
-        let public_p2p = pnk!(json_public_p2p(&n.custom_data));
 
         let local_ip = &n.host.addr.local_ip;
-        let ext_ip = if public_p2p {
-            n.host.addr.connection_addr()
-        } else {
-            &n.host.addr.local_ip
-        };
+        let ext_ip = n.host.addr.connection_addr();
 
         let ts_start = ts!();
         let (el_bootnodes, cl_bn_bootnodes, cl_bn_trusted_peers, checkpoint_sync_url) = loop {
@@ -807,7 +801,6 @@ nohup {lighthouse} beacon_node \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
     --disable-upnp \
-    --enable-private-discovery \
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \

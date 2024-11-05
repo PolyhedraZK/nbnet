@@ -530,12 +530,6 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
             help = "How many new node[s] to add"
         )]
         num: u8,
-        #[clap(
-            short = 'P',
-            long,
-            help = "Set a public p2p address for this node, or not"
-        )]
-        public_p2p: bool,
     },
     #[clap(about = "Migrate some existing nodes to other hosts,
 NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]

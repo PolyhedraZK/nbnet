@@ -27,16 +27,6 @@ pub fn json_el_kind(v: &Option<JsonValue>) -> Result<Eth1Kind> {
     }
 }
 
-pub fn json_public_p2p(v: &Option<JsonValue>) -> Result<bool> {
-    if let Some(v) = v {
-        serde_json::from_value::<NodeCustomData>(v.clone())
-            .c(d!())
-            .map(|d| d.public_p2p)
-    } else {
-        Ok(false)
-    }
-}
-
 pub fn json_el_kind_set(jv: &mut Option<JsonValue>, k: Eth1Kind) -> Result<()> {
     let v = if let Some(v) = jv {
         let mut v = serde_json::from_value::<NodeCustomData>(v.clone()).c(d!())?;
@@ -66,7 +56,6 @@ pub fn json_deposits_append(
         NodeCustomData {
             el_kind: Eth1Kind::default(),
             deposits,
-            public_p2p: false,
         }
     };
 
@@ -123,27 +112,20 @@ pub struct NodeCustomData {
 
     /// Mnemonic => deposited validator number
     pub deposits: BTreeMap<MnemonicWords, BTreeSet<u16>>,
-
-    /// Used as a public node or not,
-    /// that is, set external IP for it for not
-    #[serde(default)]
-    pub public_p2p: bool,
 }
 
 impl NodeCustomData {
-    pub fn new_with_geth(public_p2p: bool) -> Self {
+    pub fn new_with_geth() -> Self {
         Self {
             el_kind: Eth1Kind::Geth,
             deposits: map! {B},
-            public_p2p,
         }
     }
 
-    pub fn new_with_reth(public_p2p: bool) -> Self {
+    pub fn new_with_reth() -> Self {
         Self {
             el_kind: Eth1Kind::Reth,
             deposits: map! {B},
-            public_p2p,
         }
     }
 

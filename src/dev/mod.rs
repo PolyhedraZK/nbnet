@@ -177,8 +177,8 @@ impl From<DevCfg> for EnvCfg {
                 Op::PushNodes {
                     custom_data: alt!(
                         reth,
-                        NodeCustomData::new_with_reth(false).to_json_value(),
-                        NodeCustomData::new_with_geth(false).to_json_value()
+                        NodeCustomData::new_with_reth().to_json_value(),
+                        NodeCustomData::new_with_geth().to_json_value()
                     ),
                     fullnode,
                     num,
