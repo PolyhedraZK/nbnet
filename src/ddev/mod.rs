@@ -562,9 +562,10 @@ fi "#
                 .nodes_should_be_online
                 .iter()
                 .map(|(k, _)| k)
+                .filter(|k| *k < n.id)
                 .collect::<HashSet<_>>() // for random purpose
                 .into_iter()
-                .take(12)
+                .take(6)
                 .collect::<Vec<_>>();
 
             if online_nodes.is_empty() {
@@ -795,12 +796,12 @@ nohup {lighthouse} beacon_node \
     --logfile-max-number=20 \
     --staking \
     {reconstruct_states} \
-    --subscribe-all-subnets \
     --epochs-per-migration={epochs_per_migration} \
     --slots-per-restore-point={cl_slots_per_rp} \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
     --disable-upnp \
+    --target-peers=1 \
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \

@@ -108,7 +108,7 @@ bin_reth: basic_prepare
 		&& cp -f reth ~/.cargo/bin/
 
 bin_lighthouse: basic_prepare
-	cd submodules/lighthouse && make
+	cd submodules/lighthouse && make build_release
 	cd submodules/lighthouse/target/release \
 		&& rm -f lighthouse.txz \
 		&& tar -Jcf lighthouse.txz lighthouse \
