@@ -53,7 +53,6 @@ fmtall:
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_geth: bin_geth
-	@- nb ddev stop --geth 2>/dev/null
 	nb ddev host-exec -c \
 		'sudo su -c "rm -f /tmp/geth.txz /tmp/geth /usr/local/bin/geth"'
 	nb ddev host-put-file \
@@ -61,10 +60,9 @@ deploy_bin_geth: bin_geth
 		--remote-path=/tmp/geth.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf geth.txz && mv geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
-	nb ddev start --geth
+	nb ddev restart --geth
 
 deploy_bin_reth: bin_reth
-	@- nb ddev stop --reth 2>/dev/null
 	nb ddev host-exec -c \
 		'sudo su -c "rm -f /tmp/reth.txz /tmp/reth /usr/local/bin/reth"'
 	nb ddev host-put-file \
@@ -72,10 +70,9 @@ deploy_bin_reth: bin_reth
 		--remote-path=/tmp/reth.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf reth.txz && mv reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
-	nb ddev start --reth
+	nb ddev restart --reth
 
 deploy_bin_lighthouse: bin_lighthouse
-	@- nb ddev stop 2>/dev/null
 	nb ddev host-exec -c \
 		'sudo su -c "rm -f /tmp/lighthouse.txz /tmp/lighthouse /usr/local/bin/lighthouse"'
 	nb ddev host-put-file \
@@ -83,16 +80,7 @@ deploy_bin_lighthouse: bin_lighthouse
 		--remote-path=/tmp/lighthouse.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf lighthouse.txz && mv lighthouse /usr/local/bin/lighthouse && chmod +x /usr/local/bin/lighthouse"'
-	nb ddev start
-
-start_filter_geth:
-	nb ddev start --geth
-
-start_filter_reth:
-	nb ddev start --reth
-
-start_all:
-	nb ddev start
+	nb ddev restart -N all
 
 bin_all: install bin_geth bin_reth bin_lighthouse
 

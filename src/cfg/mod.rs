@@ -118,11 +118,6 @@ or wait until the exit request is confirmed on chain"
         #[clap(long, help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
-    #[clap(about = "Destroy all existing ENVs")]
-    DestroyAll {
-        #[clap(long, help = "Destroy the target ENVs even if they are protected")]
-        force: bool,
-    },
     #[clap(about = "Protect an existing ENV")]
     Protect {
         #[clap(short = 'e', long)]
@@ -133,7 +128,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
-    #[clap(about = "Start an existing ENV")]
+    #[clap(about = "Start nodes of an existing ENV")]
     Start {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -151,7 +146,7 @@ if set to 'all', then apply to all nodes"
         #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
         ignore_failed: bool,
     },
-    #[clap(about = "Stop an existing ENV")]
+    #[clap(about = "Stop nodes of an existing ENV")]
     Stop {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -166,6 +161,31 @@ if set to 'all', then apply to all nodes"
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+    },
+    #[clap(about = "Restart nodes of an existing ENV")]
+    Restart {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then apply to all nodes"
+        )]
+        nodes: String,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
+        #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
+        ignore_failed: bool,
+        #[clap(
+            short = 'w',
+            long,
+            default_value_t = 3,
+            help = "Seconds to wait between the `stop` and `start` ops"
+        )]
+        wait_itv_secs: u8,
     },
     #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {
@@ -453,11 +473,6 @@ or wait until the exit request is confirmed on chain"
         #[clap(long, help = "Destroy the target ENV even if it is protected")]
         force: bool,
     },
-    #[clap(about = "Destroy all existing ENVs")]
-    DestroyAll {
-        #[clap(long, help = "Destroy the target ENVs even if they are protected")]
-        force: bool,
-    },
     #[clap(about = "Protect an existing ENV")]
     Protect {
         #[clap(short = 'e', long)]
@@ -468,7 +483,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(short = 'e', long)]
         env_name: Option<String>,
     },
-    #[clap(about = "Start an existing ENV")]
+    #[clap(about = "Start nodes of an existing ENV")]
     Start {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -488,7 +503,7 @@ if set to 'all', then apply to all nodes"
         #[clap(short = 'R', long, help = "Try to realloc ports when necessary")]
         realloc_ports: bool,
     },
-    #[clap(about = "Stop an existing ENV")]
+    #[clap(about = "Stop nodes of an existing ENV")]
     Stop {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
@@ -503,6 +518,33 @@ if set to 'all', then stop all nodes"
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
+    },
+    #[clap(about = "Restart nodes of an existing ENV")]
+    Restart {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(
+            short = 'N',
+            long,
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then apply to all nodes"
+        )]
+        nodes: String,
+        #[clap(long, help = "Filter nodes with the geth el")]
+        geth: bool,
+        #[clap(long, help = "Filter nodes with the reth el")]
+        reth: bool,
+        #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
+        ignore_failed: bool,
+        #[clap(short = 'R', long, help = "Try to realloc ports when necessary")]
+        realloc_ports: bool,
+        #[clap(
+            short = 'w',
+            long,
+            default_value_t = 3,
+            help = "Seconds to wait between the `stop` and `start` ops"
+        )]
+        wait_itv_secs: u8,
     },
     #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {

@@ -18,13 +18,11 @@ Commands:
   deposit, -d         Proof-of-Stake, deposit, exit, etc.
   validator-exit, -D  Proof-of-Stake, exit all validators on the target node[s]
   destroy             Destroy an existing ENV
-  destroy-all         Destroy all existing ENVs
   protect             Protect an existing ENV
   unprotect           Unprotect an existing ENV
-  start               Start an existing ENV
-  start-all           Start all existing ENVs
-  stop                Stop an existing ENV
-  stop-all            Stop all existing ENVs
+  start               Start nodes of an existing ENV
+  stop                Stop nodes of an existing ENV
+  restart             Restart nodes of an existing ENV
   push-nodes          Push some new nodes to an existing ENV
   migrate-nodes       Migrate some existing nodes to other hosts,
                       NOTE: the 'new' node will be left stopped, a `start` operation may be needed

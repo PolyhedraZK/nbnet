@@ -213,7 +213,6 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 Op::Destroy { force }
             }
-            DDevOp::DestroyAll { force } => Op::DestroyAll { force },
             DDevOp::Protect { env_name } => {
                 if let Some(n) = env_name {
                     en = n.into();
@@ -255,6 +254,25 @@ impl From<DDevCfg> for EnvCfg {
                 Op::Stop {
                     nodes: select_nodes_by_el_kind!(nodes, geth, reth, en),
                     force: false,
+                }
+            }
+            DDevOp::Restart {
+                env_name,
+                nodes,
+                geth,
+                reth,
+                ignore_failed,
+                realloc_ports,
+                wait_itv_secs,
+            } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Restart {
+                    nodes: select_nodes_by_el_kind!(nodes, geth, reth, en),
+                    ignore_failed,
+                    realloc_ports,
+                    wait_itv_secs,
                 }
             }
             DDevOp::PushNodes {
@@ -542,9 +560,31 @@ impl NodeCmdGenerator<Node<Ports>, EnvMeta<CustomInfo, Node<Ports>>> for CmdGene
         let rand_jwt = ruc::algo::rand::rand_jwt();
         let auth_jwt = format!("{home}/auth.jwt");
 
+        let geth = if e.custom_data.el_geth_bin.contains("/") {
+            e.custom_data.el_geth_bin.clone()
+        } else {
+            format!("$(which {})", e.custom_data.el_geth_bin)
+        };
+
+        let reth = if e.custom_data.el_reth_bin.contains("/") {
+            e.custom_data.el_reth_bin.clone()
+        } else {
+            format!("$(which {})", e.custom_data.el_reth_bin)
+        };
+
+        let lighthouse = if e.custom_data.cl_bin.contains("/") {
+            e.custom_data.cl_bin.clone()
+        } else {
+            format!("$(which {})", e.custom_data.cl_bin)
+        };
+
         let prepare_cmd = format!(
             r#"
 echo "{rand_jwt}" > {auth_jwt} | tr -d '\n' || exit 1
+
+cp -f {geth} {home}/geth_bin || exit 1
+cp -f {reth} {home}/reth_bin || exit 1
+cp -f {lighthouse} {home}/lighthouse_bin || exit 1
 
 if [ ! -d {genesis_dir} ]; then
     tar -C {home} -xf {home}/{NODE_HOME_GENESIS_DST} || exit 1
@@ -656,8 +696,6 @@ fi "#
         let el_metric_port = n.ports.el_metric;
 
         let el_cmd = if Eth1Kind::Geth == el_kind {
-            let geth = &e.custom_data.el_geth_bin;
-
             let el_gc_mode = if matches!(n.kind, NodeKind::FullNode) {
                 "full"
             } else {
@@ -675,7 +713,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-nohup {geth} \
+nohup {home}/geth_bin \
     --syncmode=full \
     --gcmode={el_gc_mode} \
     --networkid=$(grep -Po '(?<="chainId":)\s*\d+' {el_genesis} | tr -d ' ') \
@@ -712,8 +750,6 @@ nohup {geth} \
 
             cmd_init_part + &cmd_run_part_0 + &cmd_run_part_1 + cmd_run_part_2
         } else if Eth1Kind::Reth == el_kind {
-            let reth = &e.custom_data.el_reth_bin;
-
             let cmd_init_part = format!(
                 r#"
 if [ ! -d {el_dir} ]; then
@@ -726,7 +762,7 @@ fi "#
 
             let cmd_run_part_0 = format!(
                 r#"
-nohup {reth} node \
+nohup {home}/reth_bin node \
     --chain={el_genesis} \
     --datadir={el_dir} \
     --log.file.directory={el_dir}/logs \
@@ -778,8 +814,6 @@ nohup {reth} node \
         // CL
         ////////////////////////////////////////////////
 
-        let lighthouse = &e.custom_data.cl_bin;
-
         let cl_bn_dir = format!("{home}/{CL_BN_DIR}");
         let cl_vc_dir = format!("{home}/{CL_VC_DIR}");
         let cl_genesis = genesis_dir;
@@ -803,7 +837,7 @@ nohup {reth} node \
 mkdir -p {cl_bn_dir} || exit 1
 sleep 0.5
 
-nohup {lighthouse} beacon_node \
+nohup {home}/lighthouse_bin beacon_node \
     --testnet-dir={cl_genesis} \
     --datadir={cl_bn_dir} \
     --logfile={cl_bn_dir}/logs/{CL_BN_LOG_NAME} \
@@ -884,7 +918,7 @@ fi "#
 mkdir -p {cl_vc_dir} || exit 1
 sleep 1
 
-nohup {lighthouse} validator_client \
+nohup {home}/lighthouse_bin validator_client \
     --testnet-dir={cl_genesis} \
     --datadir={cl_vc_dir} \
     --logfile={cl_vc_dir}/logs/{CL_VC_LOG_NAME} \
