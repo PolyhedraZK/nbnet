@@ -588,7 +588,8 @@ nohup {lighthouse} beacon_node \
     --enr-address={ext_ip} \
     --disable-enr-auto-update \
     --disable-upnp \
-    --target-peers=0 \
+    --target-peers=80 \
+    --subscribe-all-subnets \
     --listen-address={local_ip} \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
