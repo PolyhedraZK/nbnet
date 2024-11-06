@@ -601,19 +601,17 @@ fi "#
                 .iter()
                 .map(|(k, _)| k)
                 .filter(|k| *k < n.id)
-                .collect::<HashSet<_>>() // for random purpose
-                .into_iter()
-                .take(5)
+                .take(8) // take some static peers
                 .chain(
                     e.nodes_should_be_online
                         .iter()
                         .map(|(k, _)| k)
                         .filter(|k| *k > n.id)
-                        .collect::<HashSet<_>>() // for random purpose
+                        .collect::<HashSet<_>>() // take some random peers
                         .into_iter()
-                        .take(5),
+                        .take(8),
                 )
-                .collect::<Vec<_>>();
+                .collect::<HashSet<_>>();
 
             if online_nodes.is_empty() {
                 break (String::new(), String::new(), String::new(), String::new());
