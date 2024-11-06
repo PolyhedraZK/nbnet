@@ -687,9 +687,9 @@ nohup {geth} \
     --port={el_discovery_port} \
     --discovery.port={el_discovery_port} \
     --discovery.v5 \
-    --http --http.addr={local_ip} --http.port={el_rpc_port} --http.vhosts='*' --http.corsdomain='*' \
+    --http --http.addr='0.0.0.0' --http.port={el_rpc_port} --http.vhosts='*' --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
+    --ws --ws.addr='0.0.0.0' --ws.port={el_rpc_ws_port} --ws.origins='*' \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
     --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
@@ -734,13 +734,13 @@ nohup {reth} node \
     --discovery.port={el_discovery_port} \
     --enable-discv5-discovery \
     --discovery.v5.port={el_discovery_v5_port} \
-    --http --http.addr={local_ip} --http.port={el_rpc_port} --http.corsdomain='*' \
+    --http --http.addr='0.0.0.0' --http.port={el_rpc_port} --http.corsdomain='*' \
     --http.api='admin,debug,eth,net,txpool,web3,rpc' \
-    --ws --ws.addr={local_ip} --ws.port={el_rpc_ws_port} --ws.origins='*' \
+    --ws --ws.addr='0.0.0.0' --ws.port={el_rpc_ws_port} --ws.origins='*' \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
     --authrpc.addr={local_ip} --authrpc.port={el_engine_port} \
     --authrpc.jwtsecret={auth_jwt} \
-    --metrics='{local_ip}:{el_metric_port}' \
+    --metrics='0.0.0.0:{el_metric_port}' \
     "#
             );
 
@@ -815,16 +815,16 @@ nohup {lighthouse} beacon_node \
     --disable-upnp \
     --target-peers=80 \
     --subscribe-all-subnets \
-    --listen-address={local_ip} \
+    --listen-address='0.0.0.0' \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
     --quic-port={cl_bn_discovery_quic_port} \
     --execution-endpoints='http://{local_ip}:{el_engine_port}' \
     --jwt-secrets={auth_jwt} \
     --suggested-fee-recipient={FEE_RECIPIENT} \
-    --http --http-address={local_ip} \
+    --http --http-address='0.0.0.0' \
     --http-port={cl_bn_rpc_port} --http-allow-origin='*' \
-    --metrics --metrics-address={local_ip} \
+    --metrics --metrics-address='0.0.0.0' \
     --metrics-port={cl_bn_metric_port} --metrics-allow-origin='*' \
     "#
             );
@@ -894,7 +894,7 @@ nohup {lighthouse} validator_client \
     --enable-doppelganger-protection \
     --http --http-address="127.0.0.1" \
     --http-port={cl_vc_rpc_port} --http-allow-origin='*' \
-    --metrics --metrics-address={local_ip} \
+    --metrics --metrics-address='0.0.0.0' \
     --metrics-port={cl_vc_metric_port} --metrics-allow-origin='*' \
     >/dev/null 2>&1 &
      "#
