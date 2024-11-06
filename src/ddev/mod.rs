@@ -252,6 +252,11 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
+                let nodes = if "all" == nodes.as_str() {
+                    None
+                } else {
+                    Some(nodes)
+                };
                 Op::Stop {
                     nodes: select_nodes_by_el_kind!(nodes, geth, reth, en),
                     force: false,

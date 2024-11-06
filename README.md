@@ -108,7 +108,7 @@ For `nb dev`:
     - the el client is geth
     - the cl client is lighthouse
 2. `nb dev show`: show the information of the ENV
-3. `nb dev stop`: stop all nodes of the ENV
+3. `nb dev stop -N all`: stop all nodes of the ENV
 4. `nb dev start`: restart all nodes of the ENV
 5. `nb dev push-node`: add a new node to the ENV
 6. `nb dev kick-node`: remove a node from the ENV
@@ -125,7 +125,7 @@ For `nb ddev`:
     - the el client is geth
     - the cl client is lighthouse
 3. `nb ddev show`: show the information of the ENV
-4. `nb ddev stop`: stop all nodes of the ENV
+4. `nb ddev stop -N all`: stop all nodes of the ENV
 5. `nb ddev start`: restart all nodes of the ENV
 6. `nb ddev push-node`: add a new node to the ENV
 7. `nb ddev kick-node`: remove a node from the ENV
