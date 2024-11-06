@@ -149,7 +149,6 @@ impl From<DevCfg> for EnvCfg {
                     ignore_failed,
                 }
             }
-            DevOp::StartAll => Op::StartAll,
             DevOp::Stop {
                 env_name,
                 nodes,
@@ -164,7 +163,6 @@ impl From<DevCfg> for EnvCfg {
                     force: false,
                 }
             }
-            DevOp::StopAll => Op::StopAll { force: false },
             DevOp::PushNodes {
                 env_name,
                 reth,
@@ -195,15 +193,21 @@ impl From<DevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let ids =
-                    select_nodes_by_el_kind!(nodes, geth, reth, en, false).map(|ids| {
-                        let num = num as usize;
-                        if ids.len() > num {
-                            ids.into_iter().take(num).collect()
-                        } else {
-                            ids
-                        }
-                    });
+                let ids = select_nodes_by_el_kind!(
+                    nodes.clone().unwrap_or("all".to_owned()),
+                    geth,
+                    reth,
+                    en,
+                    false
+                )
+                .map(|ids| {
+                    let num = num as usize;
+                    if ids.len() > num {
+                        ids.into_iter().take(num).collect()
+                    } else {
+                        ids
+                    }
+                });
                 Op::KickNodes {
                     nodes: ids,
                     num,

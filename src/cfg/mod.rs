@@ -140,9 +140,10 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then apply to all nodes"
         )]
-        nodes: Option<String>,
+        nodes: String,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -150,8 +151,6 @@ or wait until the exit request is confirmed on chain"
         #[clap(short = 'I', long, help = "Ignore failed cases and continue")]
         ignore_failed: bool,
     },
-    #[clap(about = "Start all existing ENVs")]
-    StartAll,
     #[clap(about = "Stop an existing ENV")]
     Stop {
         #[clap(short = 'e', long)]
@@ -159,16 +158,15 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then apply to all nodes"
         )]
-        nodes: Option<String>,
+        nodes: String,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
     },
-    #[clap(about = "Stop all existing ENVs")]
-    StopAll,
     #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {
         #[clap(short = 'e', long)]
@@ -477,9 +475,10 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then apply to all nodes"
         )]
-        nodes: Option<String>,
+        nodes: String,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -489,8 +488,6 @@ or wait until the exit request is confirmed on chain"
         #[clap(short = 'R', long, help = "Try to realloc ports when necessary")]
         realloc_ports: bool,
     },
-    #[clap(about = "Start all existing ENVs")]
-    StartAll,
     #[clap(about = "Stop an existing ENV")]
     Stop {
         #[clap(short = 'e', long)]
@@ -498,16 +495,15 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+if set to 'all', then stop all nodes"
         )]
-        nodes: Option<String>,
+        nodes: String,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
         reth: bool,
     },
-    #[clap(about = "Stop all existing ENVs")]
-    StopAll,
     #[clap(about = "Push some new nodes to an existing ENV")]
     PushNodes {
         #[clap(short = 'e', long)]
