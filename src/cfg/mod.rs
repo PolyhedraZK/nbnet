@@ -135,10 +135,9 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then apply to all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -153,10 +152,9 @@ if set to 'all', then apply to all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then apply to all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -169,10 +167,9 @@ if set to 'all', then apply to all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then apply to all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -490,10 +487,9 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then apply to all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -510,10 +506,9 @@ if set to 'all', then apply to all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then stop all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]
@@ -526,10 +521,9 @@ if set to 'all', then stop all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
-if set to 'all', then apply to all nodes"
+            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
         )]
-        nodes: String,
+        nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
         geth: bool,
         #[clap(long, help = "Filter nodes with the reth el")]

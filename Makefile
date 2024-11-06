@@ -80,7 +80,7 @@ deploy_bin_lighthouse: bin_lighthouse
 		--remote-path=/tmp/lighthouse.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf lighthouse.txz && mv lighthouse /usr/local/bin/lighthouse && chmod +x /usr/local/bin/lighthouse"'
-	nb ddev restart -N all
+	nb ddev restart
 
 bin_all: install bin_geth bin_reth bin_lighthouse
 

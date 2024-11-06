@@ -66,10 +66,11 @@ impl EnvCfg {
 #[macro_export]
 macro_rules! select_nodes_by_el_kind {
     ($nodes: expr, $geth: expr, $reth: expr, $en: expr, $include_fuhrer_nodes: expr) => {{
-        if "all" == $nodes.as_str() && !$geth && !$reth {
+        if $nodes.is_none() && !$geth && !$reth {
             None
-        } else if "all" != $nodes.as_str() && !$geth && !$reth {
+        } else if $nodes.is_some() && !$geth && !$reth {
             let parsed = $nodes
+                .unwrap()
                 .split(',')
                 .map(|id| id.parse::<NodeID>().c(d!()))
                 .collect::<Result<BTreeSet<_>>>();
@@ -101,8 +102,8 @@ macro_rules! select_nodes_by_el_kind {
                 ids.append(&mut get_ids(env.meta.fuhrers));
             }
 
-            if "all" != $nodes.as_str() {
-                let parsed = $nodes
+            if let Some(s) = $nodes {
+                let parsed = s
                     .split(',')
                     .map(|id| id.parse::<NodeID>().c(d!()))
                     .collect::<Result<BTreeSet<_>>>();
@@ -327,21 +328,15 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let ids = select_nodes_by_el_kind!(
-                    nodes.clone().unwrap_or("all".to_owned()),
-                    geth,
-                    reth,
-                    en,
-                    false
-                )
-                .map(|ids| {
-                    let num = num as usize;
-                    if ids.len() > num {
-                        ids.into_iter().rev().take(num).collect()
-                    } else {
-                        ids
-                    }
-                });
+                let ids =
+                    select_nodes_by_el_kind!(nodes, geth, reth, en, false).map(|ids| {
+                        let num = num as usize;
+                        if ids.len() > num {
+                            ids.into_iter().rev().take(num).collect()
+                        } else {
+                            ids
+                        }
+                    });
                 Op::KickNodes {
                     nodes: ids,
                     num,
