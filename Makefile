@@ -50,6 +50,25 @@ fmt:
 fmtall:
 	bash tools/fmt.sh
 
+deploy_restart_bin_all: deploy_bin_all restart_all
+
+deploy_restart_bin_geth: deploy_bin_geth restart_filter_geth
+
+deploy_restart_bin_reth: deploy_bin_reth restart_filter_reth
+
+deploy_restart_bin_lighthouse: deploy_bin_lighthouse restart_filter_lighthouse
+
+restart_all: restart_filter_lighthouse
+
+restart_filter_geth:
+	nb ddev restart --geth -w 6
+
+restart_filter_reth:
+	nb ddev restart --reth -w 6
+
+restart_filter_lighthouse:
+	nb ddev restart -w 6
+
 deploy_bin_all: deploy_bin_geth deploy_bin_reth deploy_bin_lighthouse
 
 deploy_bin_geth: bin_geth
@@ -60,7 +79,6 @@ deploy_bin_geth: bin_geth
 		--remote-path=/tmp/geth.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf geth.txz && mv geth /usr/local/bin/geth && chmod +x /usr/local/bin/geth"'
-	nb ddev restart --geth -w 6
 
 deploy_bin_reth: bin_reth
 	nb ddev host-exec -c \
@@ -70,7 +88,6 @@ deploy_bin_reth: bin_reth
 		--remote-path=/tmp/reth.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf reth.txz && mv reth /usr/local/bin/reth && chmod +x /usr/local/bin/reth"'
-	nb ddev restart --reth -w 6
 
 deploy_bin_lighthouse: bin_lighthouse
 	nb ddev host-exec -c \
@@ -80,7 +97,24 @@ deploy_bin_lighthouse: bin_lighthouse
 		--remote-path=/tmp/lighthouse.txz
 	nb ddev host-exec -c \
 		'sudo su -c "cd /tmp && tar -xf lighthouse.txz && mv lighthouse /usr/local/bin/lighthouse && chmod +x /usr/local/bin/lighthouse"'
-	nb ddev restart -w 6
+
+deploy_bin_scd: bin_scd
+	nb ddev host-exec -c \
+		'sudo su -c "rm -f /tmp/scd.txz /tmp/scd /usr/bin/scd; pkill scd"'
+	nb ddev host-put-file \
+		--local-path=submodules/side-chain-data-collector/target/release/scd.txz \
+		--remote-path=/tmp/scd.txz
+	nb ddev host-exec -c \
+		'sudo su -c "cd /tmp && tar -xf scd.txz && mv scd /usr/bin/scd && chmod +x /usr/bin/scd && scd -d >>/tmp/scd.log 2>&1"'
+
+deploy_bin_expander: bin_expander
+	nb ddev host-exec -c \
+		'sudo su -c "rm -f /tmp/expander-exec.txz /tmp/expander-exec /usr/bin/expander-exec"'
+	nb ddev host-put-file \
+		--local-path=submodules/expander/target/release/expander-exec.txz \
+		--remote-path=/tmp/expander-exec.txz
+	nb ddev host-exec -c \
+		'sudo su -c "cd /tmp && tar -xf expander-exec.txz && mv expander-exec /usr/bin/expander-exec && chmod +x /usr/bin/expander-exec"'
 
 bin_all: install bin_geth bin_reth bin_lighthouse
 
@@ -107,12 +141,18 @@ bin_lighthouse: basic_prepare
 
 bin_scd: basic_prepare
 	cd submodules/side-chain-data-collector && make release
-	cp -f submodules/side-chain-data-collector/target/release/scd ~/.cargo/bin/
+	cd submodules/side-chain-data-collector/target/release \
+		&& rm -f scd.txz \
+		&& tar -Jcf scd.txz scd \
+		&& cp -f scd ~/.cargo/bin/
 
 bin_expander: basic_prepare
 	cd submodules/expander && \
 		cargo build --release --bin expander-exec
-	cp -f submodules/expander/target/release/expander-exec ~/.cargo/bin/
+	cd submodules/expander/target/release \
+		&& rm -f expander-exec.txz \
+		&& tar -Jcf expander-exec.txz expander-exec \
+		&& cp -f expander-exec ~/.cargo/bin/
 
 docker_runtime: bin_scd bin_expander
 	bash -x tools/ddev_docker_runtime.sh \

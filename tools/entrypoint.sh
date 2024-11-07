@@ -1,5 +1,5 @@
 #!/bin/bash
 
-nohup scd 2>&1 >/tmp/scd.log &
+scd -d >>/tmp/scd.log 2>&1
 
 sudo /usr/sbin/sshd -D
