@@ -4,15 +4,12 @@
 [submodule "submodules/go-ethereum"]
 	path = submodules/go-ethereum
 	url = https://github.com/NBnet/go-ethereum
-	branch = feat-expander
 [submodule "submodules/reth"]
 	path = submodules/reth
 	url = https://github.com/NBnet/reth
-	branch = feat-expander
 [submodule "submodules/side-chain-data-collector"]
 	path = submodules/side-chain-data-collector
 	url = https://github.com/NBnet/side-chain-data-collector.git
 [submodule "submodules/expander"]
 	path = submodules/expander
 	url = https://github.com/NBnet/Expander.git
-	branch = fix-cmd-verify
