@@ -1,4 +1,4 @@
-use chaindev::beacon_based::common::NodePorts;
+use chaindev::{beacon_based::common::NodePorts, NodeID};
 use ruc::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -402,4 +402,121 @@ pub fn new_sb_runtime() -> sb::runtime::Runtime {
         .enable_io()
         .build()
         .unwrap()
+}
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+pub fn parse_nodes_to_vec(nodes_expr: &str) -> Result<Vec<NodeID>> {
+    parse_nodes(nodes_expr).map(|ns| ns.into_iter().collect())
+}
+
+pub fn parse_nodes(nodes_expr: &str) -> Result<BTreeSet<NodeID>> {
+    if nodes_expr.is_empty() {
+        return Err(eg!("The nodes expression is empty!"));
+    }
+
+    let mut ret = set! {B};
+
+    for expr in nodes_expr.split(',') {
+        if let Some((l, h)) = expr.split_once('-') {
+            let l_id = l.parse::<NodeID>().c(d!(l))?;
+            let h_id = h.parse::<NodeID>().c(d!(h))?;
+            if l_id > h_id {
+                return Err(eg!("Incorrect range: {}~{}", l_id, h_id));
+            }
+            for id in l_id..=h_id {
+                ret.insert(id);
+            }
+        } else {
+            let id = expr.parse::<NodeID>().c(d!(expr))?;
+            ret.insert(id);
+        }
+    }
+
+    Ok(ret)
+}
+
+#[macro_export]
+macro_rules! def_select_nodes {
+    () => {
+        fn select_nodes(
+            env_name: &chaindev::EnvName,
+            nodes_expr: Option<&str>,
+            filter_geth: bool,
+            filter_reth: bool,
+            include_fuhrer_nodes: bool,
+        ) -> Result<Option<std::collections::BTreeSet<chaindev::NodeID>>> {
+            if nodes_expr.is_none() && !filter_geth && !filter_reth {
+                Ok(None)
+            } else if nodes_expr.is_some() && !filter_geth && !filter_reth {
+                $crate::common::parse_nodes(nodes_expr.unwrap())
+                    .map(Some)
+                    .c(d!())
+            } else {
+                let env = load_sysenv(env_name).c(d!())?;
+                let get_ids = |nodes: &std::collections::BTreeMap<
+                    chaindev::NodeID,
+                    Node<Ports>, /*USE RELATIVE PATH*/
+                >| {
+                    nodes
+                        .values()
+                        .filter(|n| {
+                            if filter_geth && filter_reth {
+                                true
+                            } else if filter_geth {
+                                pnk!(json_el_kind_matched(
+                                    &n.custom_data,
+                                    Eth1Kind::Geth
+                                ))
+                            } else if filter_reth {
+                                pnk!(json_el_kind_matched(
+                                    &n.custom_data,
+                                    Eth1Kind::Reth
+                                ))
+                            } else {
+                                true
+                            }
+                        })
+                        .map(|n| n.id)
+                        .collect::<BTreeSet<_>>()
+                };
+
+                let mut ids = get_ids(&env.meta.nodes);
+
+                if include_fuhrer_nodes {
+                    ids.append(&mut get_ids(&env.meta.fuhrers));
+                }
+
+                if let Some(expr) = nodes_expr {
+                    let parsed = $crate::common::parse_nodes(expr).c(d!())?;
+                    ids = ids.intersection(&parsed).copied().collect();
+                }
+
+                Ok(Some(ids))
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! select_nodes_by_el_kind {
+    ($nodes_expr: expr, $filter_geth: expr, $filter_reth: expr, $env_name: expr, $include_fuhrer_nodes: expr) => {{
+        pnk!(select_nodes(
+            &$env_name,
+            $nodes_expr.as_deref(),
+            $filter_geth,
+            $filter_reth,
+            $include_fuhrer_nodes
+        ))
+    }};
+    ($nodes_expr: expr, $filter_geth: expr, $filter_reth: expr, $env_name: expr) => {{
+        select_nodes_by_el_kind!(
+            $nodes_expr,
+            $filter_geth,
+            $filter_reth,
+            $env_name,
+            true
+        )
+    }};
 }

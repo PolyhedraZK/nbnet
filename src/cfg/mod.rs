@@ -55,7 +55,7 @@ pub enum DevOp {
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,2,4-9', etc.
 if set to 'all', then deposit on all non-fuhrer nodes"
         )]
         nodes: String,
@@ -99,7 +99,7 @@ or wait until the deposit transaction is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,2,4-9', etc.
 if set to 'all', then exit all validators of all non-fuhrer nodes"
         )]
         nodes: String,
@@ -135,7 +135,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc."
         )]
         nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
@@ -152,7 +152,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,4-9,2,1', etc.
 if set to 'all', then apply the operation to all nodes"
         )]
         nodes: String,
@@ -168,7 +168,7 @@ if set to 'all', then apply the operation to all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc."
         )]
         nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
@@ -213,7 +213,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
         #[clap(
@@ -241,7 +241,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9', etc."
         )]
         nodes: String,
     },
@@ -256,7 +256,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9', etc."
         )]
         nodes: String,
     },
@@ -417,7 +417,7 @@ pub enum DDevOp {
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,4-9,2,1', etc.
 if set to 'all', then deposit on all non-fuhrer nodes"
         )]
         nodes: String,
@@ -461,7 +461,7 @@ or wait until the deposit transaction is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc.
 if set to 'all', then exit all validators of all non-fuhrer nodes"
         )]
         nodes: String,
@@ -497,7 +497,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
@@ -516,7 +516,7 @@ or wait until the exit request is confirmed on chain"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc.
+            help = "Comma separated NodeID[s], '3', '3,4-9,2,1', etc.
 if set to 'all', then apply the operation to all nodes"
         )]
         nodes: String,
@@ -532,7 +532,7 @@ if set to 'all', then apply the operation to all nodes"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc."
         )]
         nodes: Option<String>,
         #[clap(long, help = "Filter nodes with the geth el")]
@@ -582,7 +582,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,4-9,2,1', etc."
         )]
         nodes: String,
         #[clap(short = 'H', long)]
@@ -597,7 +597,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
         #[clap(
@@ -625,7 +625,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc."
         )]
         nodes: String,
     },
@@ -640,7 +640,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], 'NodeID', 'NodeID,NodeID', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,4-9,1', etc."
         )]
         nodes: String,
     },
@@ -819,7 +819,7 @@ all remote files will be collected into this directory,
             conflicts_with = "failed",
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
         #[clap(
@@ -844,7 +844,7 @@ all remote files will be collected into this directory,
         #[clap(
             short = 'N',
             long,
-            help = "Comma separated NodeID[s], '3', '3,2,1', etc."
+            help = "Comma separated NodeID[s], '3', '3,4-9,2,1', etc."
         )]
         nodes: Option<String>,
     },

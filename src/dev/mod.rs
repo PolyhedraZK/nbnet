@@ -9,6 +9,7 @@
 use crate::{
     cfg::{DevCfg, DevOp},
     common::*,
+    def_select_nodes,
     pos::{create_mnemonic_words, deposit::do_deposit, exit::exit_by_mnemonic},
     select_nodes_by_el_kind,
 };
@@ -36,6 +37,8 @@ use std::{
 pub struct EnvCfg {
     sys_cfg: SysCfg<CustomInfo, Ports, ExtraOp>,
 }
+
+def_select_nodes!();
 
 impl From<DevCfg> for EnvCfg {
     fn from(cfg: DevCfg) -> Self {
@@ -216,6 +219,9 @@ impl From<DevCfg> for EnvCfg {
                 }
                 let ids =
                     select_nodes_by_el_kind!(nodes, geth, reth, en, false).map(|ids| {
+                        if nodes.is_some() {
+                            return ids;
+                        }
                         let num = num as usize;
                         if ids.len() > num {
                             ids.into_iter().take(num).collect()
@@ -233,21 +239,15 @@ impl From<DevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let nodes = nodes
-                    .split(',')
-                    .map(|s| s.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToGeth { nodes: pnk!(nodes) })
+                let nodes = pnk!(parse_nodes(&nodes));
+                Op::Custom(ExtraOp::SwitchELToGeth { nodes })
             }
             DevOp::SwitchELToReth { env_name, nodes } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let nodes = nodes
-                    .split(',')
-                    .map(|s| s.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToReth { nodes: pnk!(nodes) })
+                let nodes = pnk!(parse_nodes(&nodes));
+                Op::Custom(ExtraOp::SwitchELToReth { nodes })
             }
             DevOp::Show {
                 env_name,
@@ -815,10 +815,7 @@ impl CustomOps for ExtraOp {
                 let nodes = if "all" == nodes {
                     env.meta.nodes.values().cloned().collect::<Vec<_>>()
                 } else {
-                    let ids = nodes
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()?;
+                    let ids = parse_nodes(nodes).c(d!())?;
                     let mut nodes = vec![];
                     for id in ids.iter() {
                         if env.meta.fuhrers.contains_key(id) {
@@ -970,10 +967,7 @@ impl CustomOps for ExtraOp {
                 let nodes = if "all" == nodes {
                     env.meta.nodes.values().cloned().collect::<Vec<_>>()
                 } else {
-                    let ids = nodes
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()?;
+                    let ids = parse_nodes(nodes).c(d!())?;
                     let mut nodes = vec![];
                     for id in ids.iter() {
                         if env.meta.fuhrers.contains_key(id) {

@@ -7,7 +7,9 @@
 use crate::{
     cfg::{DDevCfg, DDevOp},
     common::*,
+    def_select_nodes,
     pos::{create_mnemonic_words, deposit::do_deposit, exit::exit_by_mnemonic},
+    select_nodes_by_el_kind,
 };
 use alloy::{
     primitives::{hex, Address},
@@ -43,6 +45,8 @@ pub struct EnvCfg {
     sys_cfg: SysCfg<CustomInfo, Ports, ExtraOp>,
 }
 
+def_select_nodes!();
+
 impl EnvCfg {
     pub fn exec(&self) -> Result<()> {
         self.sys_cfg
@@ -61,62 +65,6 @@ impl EnvCfg {
                 _ => Ok(()),
             })
     }
-}
-
-#[macro_export]
-macro_rules! select_nodes_by_el_kind {
-    ($nodes: expr, $geth: expr, $reth: expr, $en: expr, $include_fuhrer_nodes: expr) => {{
-        if $nodes.is_none() && !$geth && !$reth {
-            None
-        } else if $nodes.is_some() && !$geth && !$reth {
-            let parsed = $nodes
-                .unwrap()
-                .split(',')
-                .map(|id| id.parse::<NodeID>().c(d!()))
-                .collect::<Result<BTreeSet<_>>>();
-
-            Some(pnk!(parsed, "Invalid ID[s], parse failed"))
-        } else {
-            let env = pnk!(load_sysenv(&$en));
-            let get_ids = |nodes: std::collections::BTreeMap<NodeID, Node<Ports>>| {
-                nodes
-                    .values()
-                    .filter(|n| {
-                        if $geth && $reth {
-                            true
-                        } else if $geth {
-                            pnk!(json_el_kind_matched(&n.custom_data, Eth1Kind::Geth))
-                        } else if $reth {
-                            pnk!(json_el_kind_matched(&n.custom_data, Eth1Kind::Reth))
-                        } else {
-                            true
-                        }
-                    })
-                    .map(|n| n.id)
-                    .collect::<BTreeSet<_>>()
-            };
-
-            let mut ids = get_ids(env.meta.nodes);
-
-            if $include_fuhrer_nodes {
-                ids.append(&mut get_ids(env.meta.fuhrers));
-            }
-
-            if let Some(s) = $nodes {
-                let parsed = s
-                    .split(',')
-                    .map(|id| id.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                let parsed_ids = pnk!(parsed, "Invalid ID[s], parse failed");
-                ids = ids.intersection(&parsed_ids).copied().collect();
-            }
-
-            Some(ids)
-        }
-    }};
-    ($nodes: expr, $geth: expr, $reth: expr, $en: expr) => {{
-        select_nodes_by_el_kind!($nodes, $geth, $reth, $en, true)
-    }};
 }
 
 impl From<DDevCfg> for EnvCfg {
@@ -311,11 +259,7 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let parsed = nodes
-                    .split(',')
-                    .map(|id| id.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                let nodes = pnk!(parsed, "Invalid ID[s], parse failed");
+                let nodes = pnk!(parse_nodes(&nodes));
                 Op::MigrateNodes {
                     nodes,
                     host: host_addr.map(|a| pnk!(HostAddr::from_str(&a))),
@@ -335,6 +279,9 @@ impl From<DDevCfg> for EnvCfg {
                 }
                 let ids =
                     select_nodes_by_el_kind!(nodes, geth, reth, en, false).map(|ids| {
+                        if nodes.is_some() {
+                            return ids;
+                        }
                         let num = num as usize;
                         if ids.len() > num {
                             ids.into_iter().rev().take(num).collect()
@@ -499,21 +446,15 @@ impl From<DDevCfg> for EnvCfg {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let nodes = nodes
-                    .split(',')
-                    .map(|s| s.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToGeth { nodes: pnk!(nodes) })
+                let nodes = pnk!(parse_nodes(&nodes));
+                Op::Custom(ExtraOp::SwitchELToGeth { nodes })
             }
             DDevOp::SwitchELToReth { env_name, nodes } => {
                 if let Some(n) = env_name {
                     en = n.into();
                 }
-                let nodes = nodes
-                    .split(',')
-                    .map(|s| s.parse::<NodeID>().c(d!()))
-                    .collect::<Result<BTreeSet<_>>>();
-                Op::Custom(ExtraOp::SwitchELToReth { nodes: pnk!(nodes) })
+                let nodes = pnk!(parse_nodes(&nodes));
+                Op::Custom(ExtraOp::SwitchELToReth { nodes })
             }
             DDevOp::Git {
                 env_name,
@@ -1102,10 +1043,7 @@ impl CustomOps for ExtraOp {
                 let nodes = if "all" == nodes {
                     env.meta.nodes.values().cloned().collect::<Vec<_>>()
                 } else {
-                    let ids = nodes
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()?;
+                    let ids = parse_nodes(nodes).c(d!())?;
                     let mut nodes = vec![];
                     for id in ids.iter() {
                         if env.meta.fuhrers.contains_key(id) {
@@ -1268,10 +1206,7 @@ impl CustomOps for ExtraOp {
                 let nodes = if "all" == nodes {
                     env.meta.nodes.values().cloned().collect::<Vec<_>>()
                 } else {
-                    let ids = nodes
-                        .split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()?;
+                    let ids = parse_nodes(nodes).c(d!())?;
                     let mut nodes = vec![];
                     for id in ids.iter() {
                         if env.meta.fuhrers.contains_key(id) {
@@ -1590,10 +1525,7 @@ impl CustomOps for ExtraOp {
                 let env = load_sysenv(en).c(d!())?;
 
                 let mut ids = if let Some(s) = nodes {
-                    s.split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()
-                        .map(Some)?
+                    parse_nodes_to_vec(s).map(Some).c(d!())?
                 } else {
                     None
                 };
@@ -1637,10 +1569,7 @@ impl CustomOps for ExtraOp {
             }
             Self::DumpVcData { local_dir, nodes } => {
                 let ids = if let Some(s) = nodes {
-                    s.split(',')
-                        .map(|id| id.parse::<NodeID>().c(d!()))
-                        .collect::<Result<Vec<_>>>()
-                        .map(Some)?
+                    parse_nodes_to_vec(s).map(Some).c(d!())?
                 } else {
                     None
                 };
