@@ -27,6 +27,9 @@ RUN chown nb /home/nb/.ssh/authorized_keys \
     && sed -ri 's/^[# ]*MaxSessions +[0-9]+.*$/MaxSessions 30/' /etc/ssh/sshd_config \
     && echo 'nb ALL=NOPASSWD:ALL' >>/etc/sudoers
 
+VOLUME /tmp
+VOLUME /usr/local/bin
+
 RUN service ssh start
 
 ENTRYPOINT [ "/entrypoint.sh" ]
