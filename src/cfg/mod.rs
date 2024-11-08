@@ -213,6 +213,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
         #[clap(
             short = 'N',
             long,
+            conflicts_with = "num",
             help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
@@ -220,6 +221,7 @@ NOTE: the fullnode mode of `reth` is unstable, do NOT use it"
             short = 'n',
             long,
             default_value_t = 1,
+            conflicts_with = "nodes",
             help = "How many node[s] to kick"
         )]
         num: u8,
@@ -597,6 +599,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
         #[clap(
             short = 'N',
             long,
+            conflicts_with = "num",
             help = "Comma separated NodeID[s], '3', '3,2,1,4-9', etc."
         )]
         nodes: Option<String>,
@@ -604,6 +607,7 @@ NOTE: the 'new' node will be left stopped, a `start` operation may be needed")]
             short = 'n',
             long,
             default_value_t = 1,
+            conflicts_with = "nodes",
             help = "How many node[s] to kick"
         )]
         num: u8,
