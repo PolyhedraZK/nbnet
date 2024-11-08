@@ -292,6 +292,16 @@ impl From<DevCfg> for EnvCfg {
                 Op::DebugFailedNodes
             }
             DevOp::List => Op::List,
+            DevOp::Git {
+                env_name,
+                remote_url,
+                push,
+            } => {
+                if let Some(n) = env_name {
+                    en = n.into();
+                }
+                Op::Custom(ExtraOp::Git { remote_url, push })
+            }
         };
 
         Self {
@@ -778,6 +788,10 @@ enum ExtraOp {
     },
     SwitchELToReth {
         nodes: BTreeSet<NodeID>,
+    },
+    Git {
+        remote_url: Option<String>,
+        push: bool,
     },
 }
 
@@ -1325,6 +1339,30 @@ impl CustomOps for ExtraOp {
                 }
 
                 env.write_cfg().c(d!())
+            }
+            Self::Git { remote_url, push } => {
+                let env_home = load_sysenv(en).c(d!())?.meta.home;
+
+                let mut cmd = format!("cd {env_home} || exit 1;");
+                if let Some(url) = remote_url.as_ref() {
+                    let piece = format!(
+                        r#"
+                        git remote add nbnet {0} \
+                        || git remote set-url nbnet {0} \
+                        || exit 1;
+                        "#,
+                        url
+                    );
+                    cmd.push_str(&piece);
+                }
+
+                if *push {
+                    cmd.push_str("git push nbnet HEAD:master")
+                }
+
+                cmd::exec_output(&cmd).c(d!()).map(|s| {
+                    println!("{s}");
+                })
             }
         }
     }

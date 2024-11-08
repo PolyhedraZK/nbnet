@@ -320,6 +320,15 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     },
     #[clap(about = "Show names of all existing ENVs")]
     List,
+    #[clap(about = "Manage the ENV meta in git")]
+    Git {
+        #[clap(short = 'e', long)]
+        env_name: Option<String>,
+        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/nb-01.git")]
+        remote_url: Option<String>,
+        #[clap(short = 'p', long, help = "Push local updates to the remote codebase")]
+        push: bool,
+    },
 }
 
 impl Default for DevOp {

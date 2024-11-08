@@ -39,7 +39,7 @@ sb = { package = "tokio", version = "1.41.0", features = [ "rt" ] }
 # self-maintained crates
 ruc = { version = "7.7.3", features = [ "http", "algo_rand" ] }
 
-chaindev = "0.52.0"
+chaindev = "0.52.1"
 vsdb = { version = "3.0", default-features = false }
 
 [build-dependencies]
