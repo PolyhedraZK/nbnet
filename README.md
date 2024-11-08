@@ -259,7 +259,7 @@ nb dev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 # nb ddev create -G "data/genesis.tar.gz+data/vcdata.tar.gz"
 ```
 
-##### 5. I don't want to store `nb` data under `/tmp`, how should I do?
+##### 5. I don't want to store `nb` data under `/tmp`, what should I do?
 
 There are two recommended methods.
 
@@ -269,12 +269,12 @@ Method 1:
 ```shell
 mkdir -p $P
 
-# `ddev` is also mgmt under this path
+# `dev` and `ddev` are both mgmt under this path
 export RUNTIME_CHAIN_DEV_BASE_DIR="$P"
 ```
 
 Method 2:
-> The `make ddev_docker_tuntime` may be a better choice for `ddev`,
+> The `make ddev_docker_runtime` may be a better choice for `ddev`,
 > check [**here**](src/ddev/README.md) for more infomation.
 ```shell
 mkdir -p $P
@@ -286,13 +286,11 @@ nb ddev host-exec -c "mkdir -p $P && ln -svf $P /tmp/__CHAIN_DEV__"
 
 ##### 6. How to check the host information separately?
 
-Static configrations:
 ```shell
 nb ddev show-hosts --json
-```
 
-Runtime load:
-```shell
+# OR
+
 nb ddev | jq '.meta.remote_hosts'
 ```
 
@@ -336,7 +334,7 @@ nb dev start -I
 # nb ddev start -I
 ```
 
-If there are still nodes with this problem:
+If some nodes always fail, try this:
 ```shell
 # run it a few more times and it will finally clean up all failed nodes
 # NOTE: the `-R` option will cause the failed node ports to be reallocated!
