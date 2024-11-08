@@ -420,8 +420,8 @@ pub fn parse_nodes(nodes_expr: &str) -> Result<BTreeSet<NodeID>> {
 
     for expr in nodes_expr.split(',') {
         if let Some((l, h)) = expr.split_once('-') {
-            let l_id = l.parse::<NodeID>().c(d!(l))?;
-            let h_id = h.parse::<NodeID>().c(d!(h))?;
+            let l_id = l.parse::<NodeID>().c(d!(expr))?;
+            let h_id = h.parse::<NodeID>().c(d!(expr))?;
             if l_id > h_id {
                 return Err(eg!("Incorrect range: {}~{}", l_id, h_id));
             }
