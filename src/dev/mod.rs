@@ -638,6 +638,7 @@ nohup {home}/lighthouse_bin beacon_node \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
     --quic-port={cl_bn_discovery_quic_port} \
+    --enable-private-discovery \
     --execution-endpoints='http://{local_ip}:{el_engine_port}' \
     --jwt-secrets={auth_jwt} \
     --suggested-fee-recipient={FEE_RECIPIENT} \
@@ -659,9 +660,6 @@ nohup {home}/lighthouse_bin beacon_node \
                 cmd_run_part_1
                     .push_str(&format!(" --checkpoint-sync-url={checkpoint_sync_url}"));
             }
-
-            // Disable this line in the `ddev` mod?
-            cmd_run_part_1.push_str(" --enable-private-discovery");
 
             let cmd_run_part_2 = " >/dev/null 2>&1 &";
 

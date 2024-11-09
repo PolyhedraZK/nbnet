@@ -796,6 +796,7 @@ nohup {home}/lighthouse_bin beacon_node \
     --port={cl_bn_discovery_port} \
     --discovery-port={cl_bn_discovery_port} \
     --quic-port={cl_bn_discovery_quic_port} \
+    --enable-private-discovery \
     --execution-endpoints='http://{local_ip}:{el_engine_port}' \
     --jwt-secrets={auth_jwt} \
     --suggested-fee-recipient={FEE_RECIPIENT} \
