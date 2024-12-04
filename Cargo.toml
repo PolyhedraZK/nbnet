@@ -1,14 +1,14 @@
 [package]
-name = "nb"
+name = "exp"
 version = "0.6.0"
 edition = "2021"
-authors = ["hui.fan@mail.ru"]
+authors = ["fanhui@polyhedra.network", "galen@polyhedra.network", "frank@polyhedra.network"]
 build = "build.rs"
 keywords = ["eth", "blockchain", "development"]
 categories = ["development-tools::testing"]
 license = "MIT"
-homepage = "https://github.com/nbnet/nbnet"
-repository = "https://github.com/nbnet/nbnet.git"
+homepage = "https://github.com/PolyhedraZK/EXPchain"
+repository = "https://github.com/PolyhedraZK/EXPchain.git"
 
 [dependencies]
 clap = { version = "4.5", features = [ "cargo", "derive" ] }

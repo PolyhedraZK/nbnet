@@ -1,7 +1,7 @@
 //!
-//! `nbnet ddev` SubCommand
+//! `exp ddev` SubCommand
 //!
-//! The distributed version of `nbnet dev`.
+//! The distributed version of `exp dev`.
 //!
 
 use crate::{
@@ -88,7 +88,7 @@ impl From<DDevCfg> for EnvCfg {
                     .or_else(|| pnk!(env_hosts()));
                 let hosts = pnk!(
                     hosts,
-                    "No hosts registered! Use `--hosts` or $NB_DDEV_HOSTS to set."
+                    "No hosts registered! Use `--hosts` or $EXP_DDEV_HOSTS to set."
                 );
 
                 let (genesis_tgz_path, genesis_vkeys_tgz_path) =
@@ -952,12 +952,12 @@ nohup {home}/lighthouse_bin validator_client \
 //////////////////////////////////////////////////
 
 fn env_hosts() -> Result<Option<Hosts>> {
-    if let Ok(json) = env::var("NB_DDEV_HOSTS_JSON") {
+    if let Ok(json) = env::var("EXP_DDEV_HOSTS_JSON") {
         fs::read(json)
             .c(d!())
             .and_then(|b| Hosts::from_json_cfg(&b).c(d!()))
             .map(Some)
-    } else if let Ok(expr) = env::var("NB_DDEV_HOSTS") {
+    } else if let Ok(expr) = env::var("EXP_DDEV_HOSTS") {
         Hosts::from_str(&expr).c(d!()).map(Some)
     } else {
         Ok(None)
@@ -1369,7 +1369,7 @@ impl CustomOps for ExtraOp {
                         .values()
                         .map(|h| {
                             format!(
-                                "  {}{}{}{}{}#nb#2222#{}#{}",
+                                "  {}{}{}{}{}#exp#2222#{}#{}",
                                 h.meta.addr.local_network_id,
                                 alt!(h.meta.addr.local_network_id.is_empty(), "", "%"),
                                 h.meta.addr.local_ip,
@@ -1717,8 +1717,8 @@ impl CustomOps for ExtraOp {
                 if let Some(url) = remote_url.as_ref() {
                     let piece = format!(
                         r#"
-                        git remote add nbnet {0} \
-                        || git remote set-url nbnet {0} \
+                        git remote add expchain {0} \
+                        || git remote set-url expchain {0} \
                         || exit 1;
                         "#,
                         url
@@ -1727,7 +1727,7 @@ impl CustomOps for ExtraOp {
                 }
 
                 if *push {
-                    cmd.push_str("git push nbnet HEAD:master")
+                    cmd.push_str("git push expchain HEAD:master")
                 }
 
                 cmd::exec_output(&cmd).c(d!()).map(|s| {

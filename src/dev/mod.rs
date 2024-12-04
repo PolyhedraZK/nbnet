@@ -1,5 +1,5 @@
 //!
-//! `nbnet dev` SubCommand
+//! `expchain dev` SubCommand
 //!
 //! - make sure all names and ports are unique
 //!     - keep a meta file in ${GLOBAL_BASE_DIR}
@@ -1339,8 +1339,8 @@ impl CustomOps for ExtraOp {
                 if let Some(url) = remote_url.as_ref() {
                     let piece = format!(
                         r#"
-                        git remote add nbnet {0} \
-                        || git remote set-url nbnet {0} \
+                        git remote add expchain {0} \
+                        || git remote set-url expchain {0} \
                         || exit 1;
                         "#,
                         url
@@ -1349,7 +1349,7 @@ impl CustomOps for ExtraOp {
                 }
 
                 if *push {
-                    cmd.push_str("git push nbnet HEAD:master")
+                    cmd.push_str("git push expchain HEAD:master")
                 }
 
                 cmd::exec_output(&cmd).c(d!()).map(|s| {

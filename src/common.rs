@@ -393,7 +393,7 @@ pub fn cl_get_boot_nodes(
 }
 
 pub fn node_sync_from_genesis() -> bool {
-    env::var("NBNET_NODE_SYNC_FROM_GENESIS").is_ok()
+    env::var("EXPCHAIN_NODE_SYNC_FROM_GENESIS").is_ok()
 }
 
 pub fn new_sb_runtime() -> sb::runtime::Runtime {

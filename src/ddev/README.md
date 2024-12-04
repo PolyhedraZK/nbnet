@@ -1,17 +1,17 @@
-# `nb ddev`
+# `exp ddev`
 
-This is a distributed version of [`nb dev`](../dev/README.md).
+This is a distributed version of [`exp dev`](../dev/README.md).
 
-If you have a deep understanding of the `nb dev`, it will be very helpful for `nb ddev`, so it is highly recommended that you read [the documentation of `nb dev`](../dev/README.md) first.
+If you have a deep understanding of the `exp dev`, it will be very helpful for `exp ddev`, so it is highly recommended that you read [the documentation of `exp dev`](../dev/README.md) first.
 
 #### Quick start
 
-Through a `nb ddev -h` we can see:
+Through a `exp ddev -h` we can see:
 
 ```
 Manage development clusters on various distributed hosts
 
-Usage: nb ddev [OPTIONS] [COMMAND]
+Usage: exp ddev [OPTIONS] [COMMAND]
 
 Commands:
   create              Create a new ENV
@@ -34,7 +34,7 @@ Commands:
   push-hosts          Add some new hosts to the cluster
   kick-hosts          Remove some hosts from the cluster
   show                Default operation, show the information of an existing ENV
-  show-hosts          Show the remote host configations in JSON or the `nb` native format
+  show-hosts          Show the remote host configations in JSON or the `exp` native format
   debug-failed-nodes  Show failed nodes in a list
   list-rpcs           List various RPC endpoints of the ENV
   list                Show names of all existing ENVs
@@ -47,7 +47,7 @@ Commands:
 ```
 
 Set the ssh public key(eg `~/.ssh/id_rsa.pub`) of your localhost to the correct path(eg `~/.ssh/authorized_keys`) on every remote host,
-and then transfer all necessary binaries(lighthouse/geth/reth/nb) to remote hosts.
+and then transfer all necessary binaries(lighthouse/geth/reth/exp) to remote hosts.
 
 Assume your have 3 remote hosts,
 and you have set the ssh public key of your local machine on each of them:
@@ -55,11 +55,11 @@ and you have set the ssh public key of your local machine on each of them:
 - `10.0.0.3#bob`
 - `10.0.0.4#jack`
 
-Let's check the help information of `nb dev create`:
+Let's check the help information of `exp dev create`:
 ```
 Create a new ENV
 
-Usage: nb ddev create [OPTIONS]
+Usage: exp ddev create [OPTIONS]
 
 Options:
   -e, --env-name <ENV_NAME>
@@ -112,7 +112,7 @@ Options:
           The `weight` should be a positive number(1~65535),
           if not set, the number of CPU threads on the host will be used,
           the larger the number, the more nodes the host will carry;
-          The configuration here will override the `$NB_DDEV_HOSTS_JSON` settings.
+          The configuration here will override the `$EXP_DDEV_HOSTS_JSON` settings.
 
           # The second way is to use the custom expressions(contents directly, not a path!),
           FORMAT:
@@ -145,7 +145,7 @@ Options:
           The `host_weight` should be a positive number(1~65535),
           if not set, the number of CPU threads on the host will be used,
           the larger the number, the more nodes the host will carry;
-          The configuration here will override the `$NB_DDEV_HOSTS` settings.
+          The configuration here will override the `$EXP_DDEV_HOSTS` settings.
 
   -t, --block-time-secs <BLOCK_TIME_SECS>
           If not set, use the default value in the genesis,
@@ -172,34 +172,34 @@ Options:
 Create and start a distributed cluster:
 ```shell
 # this distributed cluster has 4 validator nodes and 1 bootstrap node
-nb ddev create --hosts '10.0.0.2#alice,10.0.0.3#bob,10.0.0.4#jack'
+exp ddev create --hosts '10.0.0.2#alice,10.0.0.3#bob,10.0.0.4#jack'
 ```
 
 If all the user names are same as the user name of your local machine, the above can be simplified to:
 ```shell
-nb ddev create --hosts '10.0.0.2,10.0.0.3,10.0.0.4'
+exp ddev create --hosts '10.0.0.2,10.0.0.3,10.0.0.4'
 ```
 
-You can use `nb ddev list-rpcs -w` to get all Web3 endpoints.
+You can use `exp ddev list-rpcs -w` to get all Web3 endpoints.
 
 If your remote hosts has different OSs with your localhost, your local compiled binaries may not run correctly on the remote hosts. For this situation, there is a `make ddev_docker_runtime` that can solve this problem.
 
 > The premise is that `docker` has already been installed on your remote hosts.    
-> You can use the `nb ddev host-exec` to batch install docker or any other apps,    
-> for example: `nb ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.    
+> You can use the `exp ddev host-exec` to batch install docker or any other apps,    
+> for example: `exp ddev host-exec -c "sudo su -c 'apt install docker.io -y'"`.    
 > Of course, it is also OK to use podman instead of docker.
 
-After a successful `make ddev_docker_runtime`, you should reset the `$NB_DDEV_HOSTS`(change all the ssh user name to 'nb', change all the ssh port to '2222'). The command itself will output suggested new values, usually without the need for you to edit them manually.
+After a successful `make ddev_docker_runtime`, you should reset the `$EXP_DDEV_HOSTS`(change all the ssh user name to 'exp', change all the ssh port to '2222'). The command itself will output suggested new values, usually without the need for you to edit them manually.
 
 Sample outputs of the `make ddev_docker_runtime`:
 ```
-The new contents of the ${NB_DDEV_HOSTS_JSON} file should be:
+The new contents of the ${EXP_DDEV_HOSTS_JSON} file should be:
 {
   "10.0.0.35|3.15.10.61": {
     "local_ip": "10.0.0.35",
     "local_network_id": "",
     "ext_ip": "3.15.10.61",
-    "ssh_user": "nb",
+    "ssh_user": "exp",
     "ssh_port": 2222,
     "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
     "weight": 16,
@@ -209,7 +209,7 @@ The new contents of the ${NB_DDEV_HOSTS_JSON} file should be:
     "local_ip": "10.0.0.56",
     "local_network_id": "",
     "ext_ip": "3.19.7.209",
-    "ssh_user": "nb",
+    "ssh_user": "exp",
     "ssh_port": 2222,
     "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
     "weight": 16,
@@ -219,7 +219,7 @@ The new contents of the ${NB_DDEV_HOSTS_JSON} file should be:
     "local_ip": "10.0.0.58",
     "local_network_id": "",
     "ext_ip": "3.17.11.90",
-    "ssh_user": "nb",
+    "ssh_user": "exp",
     "ssh_port": 2222,
     "ssh_sk_path": "/home/bob/.ssh/id_ed25519",
     "weight": 16,
@@ -227,19 +227,19 @@ The new contents of the ${NB_DDEV_HOSTS_JSON} file should be:
   }
 }
 
-The new value of the ${NB_DDEV_HOSTS} should be:
+The new value of the ${EXP_DDEV_HOSTS} should be:
 "
-  10.0.0.35|3.15.10.61#nb#22#16#/home/bob/.ssh/id_ed25519,
-  10.0.0.56|3.19.7.209#nb#22#16#/home/bob/.ssh/id_ed25519,
-  10.0.0.58|3.17.11.90#nb#22#16#/home/bob/.ssh/id_ed25519
+  10.0.0.35|3.15.10.61#exp#22#16#/home/bob/.ssh/id_ed25519,
+  10.0.0.56|3.19.7.209#exp#22#16#/home/bob/.ssh/id_ed25519,
+  10.0.0.58|3.17.11.90#exp#22#16#/home/bob/.ssh/id_ed25519
 "
 ```
 
 #### Management of 'a single cluster/multiple clusters'
 
-The usage of this section is almost the same as `nb dev`, except that you must specify an additional `--hosts` option to define the necessary information for all remote hosts.
+The usage of this section is almost the same as `exp dev`, except that you must specify an additional `--hosts` option to define the necessary information for all remote hosts.
 
-There is also an environment variable named `$NB_DDEV_HOSTS` that has the same function as this option, but the command line option has a higher priority.
+There is also an environment variable named `$EXP_DDEV_HOSTS` that has the same function as this option, but the command line option has a higher priority.
 
 The format of acceptable values for this option is as follows:
 - `host_ip#remote_user#ssh_port#host_weight#ssh_local_private_key,...`
@@ -268,7 +268,7 @@ Also, there are additional 4 options:
 - `--host-exec`, execute commands on all remote hosts
 - `--get-logs`, collect all node logs from remote hosts to local host
 
-A json file path can also be passed to the `--hosts` option or as the value of `$NB_DDEV_HOSTS_JSON`, the json contents should be like:
+A json file path can also be passed to the `--hosts` option or as the value of `$EXP_DDEV_HOSTS_JSON`, the json contents should be like:
 ```json
 {
   "fallback_ssh_port": 22,
@@ -300,7 +300,7 @@ A json file path can also be passed to the `--hosts` option or as the value of `
 
 #### Internal organization of data and logs
 
-The layout is almost the same as `nb dev`, the only difference is that the node data is distributed on the remote hosts instead of your localhost, but, of course, the metadata is still stored on your localhost.
+The layout is almost the same as `exp dev`, the only difference is that the node data is distributed on the remote hosts instead of your localhost, but, of course, the metadata is still stored on your localhost.
 
 #### OS compatibility
 

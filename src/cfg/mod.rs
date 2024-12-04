@@ -326,7 +326,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
     Git {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/nb-01.git")]
+        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/exp-01.git")]
         remote_url: Option<String>,
         #[clap(short = 'p', long, help = "Push local updates to the remote codebase")]
         push: bool,
@@ -687,7 +687,7 @@ NOTE: the node will be left stopped, a `start` operation may be needed"
         write_back: bool,
     },
     #[clap(
-        about = "Show the remote host configations in JSON or the `nb` native format"
+        about = "Show the remote host configations in JSON or the `exp` native format"
     )]
     ShowHosts {
         #[clap(
@@ -856,7 +856,7 @@ all remote files will be collected into this directory,
     Git {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/nb-01.git")]
+        #[clap(short = 'r', long, help = "E.g., https://github.com/bob/exp-01.git")]
         remote_url: Option<String>,
         #[clap(short = 'p', long, help = "Push local updates to the remote codebase")]
         push: bool,

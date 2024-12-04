@@ -1,13 +1,13 @@
-# `nb dev`
+# `exp dev`
 
 A powerful and convenient development tool for managing local clusters of ETH2-based networks.
 
-Through a `nb dev -h` we can see:
+Through a `exp dev -h` we can see:
 
 ```
 Manage development clusters on a local host
 
-Usage: nb dev [OPTIONS] [COMMAND]
+Usage: exp dev [OPTIONS] [COMMAND]
 
 Commands:
   create              Create a new ENV
@@ -34,14 +34,14 @@ Commands:
 #### Management of a single cluster
 
 In the simplest scenario, we can:
-- create and start a single cluster(`nb dev create`)
-- stop the cluster(`nb dev stop`)
-- restart/start the cluster(`nb dev start`)
-- destroy the cluster(`nb dev destroy`)
+- create and start a single cluster(`exp dev create`)
+- stop the cluster(`exp dev stop`)
+- restart/start the cluster(`exp dev start`)
+- destroy the cluster(`exp dev destroy`)
 
-However, `nb dev` can do far more than these, let's show a typical usage flow.
+However, `exp dev` can do far more than these, let's show a typical usage flow.
 
-The first step, a new cluster(aka ENV) need to be created by `nb dev create`, all configurations use default values, for example, the name of this ENV will be 'DEFAULT', the listening address of all nodes is '127.0.0.1', and so on.
+The first step, a new cluster(aka ENV) need to be created by `exp dev create`, all configurations use default values, for example, the name of this ENV will be 'DEFAULT', the listening address of all nodes is '127.0.0.1', and so on.
 
 Now you can do some tests on this new ENV:
 - `curl 'http://127.0.0.1:5052/eth/v1/node/identity'`
@@ -60,10 +60,10 @@ But wait,
 
 In a word, how to easily get all necessary information?
 
-Don't worry, a `nb dev show -e <ENV>` will show you everything you need, you can use a shorter style `nb dev` when using the default ENV, they are equal.
+Don't worry, a `exp dev show -e <ENV>` will show you everything you need, you can use a shorter style `exp dev` when using the default ENV, they are equal.
 
 Below is the information of the default ENV, its name is 'DEFAULT'.
-`nb dev`:
+`exp dev`:
 ```json
 {
   "is_protected": false,
@@ -75,7 +75,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
       "el_reth_bin": "reth"
     },
     "deposit_contract_addr": "0x4242424242424242424242424242424242424242",
-    "env_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT",
+    "env_home": "/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/DEFAULT",
     "env_name": "DEFAULT",
     "fuhrer_nodes": {
       "0": {
@@ -87,7 +87,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
         },
         "id": 0,
         "kind": "Fuhrer",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/0",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/DEFAULT/0",
         "ports": {
           "cl_bn_metric": 5054,
           "cl_bn_rpc": 5052,
@@ -116,7 +116,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
         },
         "id": 1,
         "kind": "ArchiveNode",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/1",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/DEFAULT/1",
         "ports": {
           "cl_bn_metric": 49135,
           "cl_bn_rpc": 27372,
@@ -142,7 +142,7 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
         },
         "id": 2,
         "kind": "ArchiveNode",
-        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/2",
+        "node_home": "/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/DEFAULT/2",
         "ports": {
           "cl_bn_metric": 47909,
           "cl_bn_rpc": 46205,
@@ -169,27 +169,27 @@ Below is the information of the default ENV, its name is 'DEFAULT'.
 }
 ```
 
-As you see in the outputs of `nb dev show`, the nodes in the `fuhrer_nodes` list are some special instances created along with the ENV's birth, and can not be removed, the only way to destroy them is distroy the entire ENV. In contrast, the nodes in the `nodes` list are so-called 'Ordinary Node', they can be removd as your will.
+As you see in the outputs of `exp dev show`, the nodes in the `fuhrer_nodes` list are some special instances created along with the ENV's birth, and can not be removed, the only way to destroy them is distroy the entire ENV. In contrast, the nodes in the `nodes` list are so-called 'Ordinary Node', they can be removd as your will.
 
 The `premined_accounts` fild hold all test tokens for you.
 
-You can use `nb dev list-rpcs -w` to get all Web3 endpoints.
+You can use `exp dev list-rpcs -w` to get all Web3 endpoints.
 
-The initial validators are managed by the first fuhrer node, so all the keys are stored in its home directory. In the above example, it is `/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/DEFAULT/0/cl/vc/`.
+The initial validators are managed by the first fuhrer node, so all the keys are stored in its home directory. In the above example, it is `/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/DEFAULT/0/cl/vc/`.
 
-You can pause the ENV by `nb dev stop`, and resume it by `nb dev start` at any time; you can also scale up the ENV by `nb dev push-node`, and scale it down by `nb dev kick-node`.
+You can pause the ENV by `exp dev stop`, and resume it by `exp dev start` at any time; you can also scale up the ENV by `exp dev push-node`, and scale it down by `exp dev kick-node`.
 
-At last, if you don't need this ENV anymore, you can permanently destroy it with the `nb dev destroy` subcommand.
+At last, if you don't need this ENV anymore, you can permanently destroy it with the `exp dev destroy` subcommand.
 
 The above is the simplest management process of a local development environment, which is enough for developers to self-debug on their localhosts.
 
-But obviously, for example, for the scenario of front-end and back-end joint debugging, the simplest ENV configuration above is not enough, so we need some additional configuration options to meet these requirements. Most of these additional configurations need to be specified during the ENV creation process, that is, specified in the scope of the `nb dev create` subcommand.
+But obviously, for example, for the scenario of front-end and back-end joint debugging, the simplest ENV configuration above is not enough, so we need some additional configuration options to meet these requirements. Most of these additional configurations need to be specified during the ENV creation process, that is, specified in the scope of the `exp dev create` subcommand.
 
-Let's check the help information of `nb dev create`:
+Let's check the help information of `exp dev create`:
 ```
 Create a new ENV
 
-Usage: nb dev create [OPTIONS]
+Usage: exp dev create [OPTIONS]
 
 Options:
   -e, --env-name <ENV_NAME>
@@ -222,7 +222,7 @@ For the issue of remote joint debugging, we can use the `--host-ip` option to sp
 
 Below is a more complete example with richer options:
 ```shell
-nb dev create \
+exp dev create \
     -H 192.168.2.5 \
     -e MyEnv \
     -t 10 \
@@ -245,37 +245,37 @@ nb dev create \
 If you want to check what happened behind the `start`/`stop`/`destroy` etc., check the `mgmt.log` for details.
 For example, you want to check the node with ID 2:
 ```shell
-# cat /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/mgmt.log
+# cat /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/mgmt.log
 
 [ 2024-10-15 11:23:53 +00:00:00 ]
 
-echo "2443ecbca98c5597f10bffe784be68d772689081d85928dcdee2cfb195d11770" > /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt | tr -d '\n' || exit 1
+echo "2443ecbca98c5597f10bffe784be68d772689081d85928dcdee2cfb195d11770" > /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt | tr -d '\n' || exit 1
 
-if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis ]; then
-    tar -C /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2 -xpf /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis.tar.gz || exit 1
-    if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis ]; then
-        mv /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/$(tar -tf /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis.tar.gz | head -1) \
-        /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
+if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis ]; then
+    tar -C /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2 -xpf /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis.tar.gz || exit 1
+    if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis ]; then
+        mv /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/$(tar -tf /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis.tar.gz | head -1) \
+        /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
         || exit 1
     fi
 fi
 
-if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el ]; then
-    mkdir -p /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el || exit 1
+if [ ! -d /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el ]; then
+    mkdir -p /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el || exit 1
     (which geth; geth version; echo) \
-    >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1
-    geth init --datadir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el --state.scheme=hash \
-        /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis/genesis.json \
-        >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1 \
+    >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1
+    geth init --datadir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el --state.scheme=hash \
+        /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis/genesis.json \
+        >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1 \
         || exit 1
 fi
-(which geth; geth version; echo) >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1
+(which geth; geth version; echo) >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1
 
 nohup geth \
     --syncmode=full \
     --gcmode=archive \
-    --networkid=$(grep -Po '(?<="chainId":)\s*\d+' /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis/genesis.json | tr -d ' ') \
-    --datadir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el \
+    --networkid=$(grep -Po '(?<="chainId":)\s*\d+' /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis/genesis.json | tr -d ' ') \
+    --datadir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el \
     --state.scheme=hash \
     --nat=extip:127.0.0.1 \
     --port=57691 \
@@ -286,21 +286,21 @@ nohup geth \
     --ws --ws.addr=127.0.0.1 --ws.port=41960 --ws.origins='*' \
     --ws.api='admin,debug,eth,net,txpool,web3,rpc' \
     --authrpc.addr=127.0.0.1 --authrpc.port=62103 \
-    --authrpc.jwtsecret=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt \
+    --authrpc.jwtsecret=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt \
     --metrics \
     --metrics.port=37648  \
     --bootnodes='enode://b4fbaa4be939f54cc37ab6900d7cac91544bef15247442e41b20d2c9c25ca006acb145a7c16697dc170db5b5080cf05c61dcce5da3c4bc4766d7b6c99ad717f1@127.0.0.1:58860' \
-    >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1 &
+    >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/el/el.log 2>&1 &
 
 
-mkdir -p /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn || exit 1
+mkdir -p /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn || exit 1
 sleep 0.5
 
-(which lighthouse; lighthouse --version; echo) >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn/cl.bn.log 2>&1
+(which lighthouse; lighthouse --version; echo) >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn/cl.bn.log 2>&1
 
 nohup lighthouse beacon_node \
-    --testnet-dir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
-    --datadir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn \
+    --testnet-dir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
+    --datadir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn \
     --staking \
     --slots-per-restore-point=32 \
     --enr-address=127.0.0.1 \
@@ -311,7 +311,7 @@ nohup lighthouse beacon_node \
     --discovery-port=58473 \
     --quic-port=56182 \
     --execution-endpoints='http://127.0.0.1:62103' \
-    --jwt-secrets=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt \
+    --jwt-secrets=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/auth.jwt \
     --suggested-fee-recipient=0x47102e476Bb96e616756ea7701C227547080Ea48 \
     --http --http-address=127.0.0.1 \
     --http-port=37050 --http-allow-origin='*' \
@@ -322,14 +322,14 @@ nohup lighthouse beacon_node \
     --trusted-peers='16Uiu2HAkyrsM9hvi3UrKRniujkXKeWw2wcjQNMCXLQ28YVTDMbpw' \
     --checkpoint-sync-url=http://127.0.0.1:45384 \
     --enable-private-discovery \
-    >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn/cl.bn.log 2>&1 &
+    >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/bn/cl.bn.log 2>&1 &
 
-mkdir -p /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc || exit 1
+mkdir -p /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc || exit 1
 sleep 1
 
 nohup lighthouse validator_client \
-    --testnet-dir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
-    --datadir=/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc\
+    --testnet-dir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/genesis \
+    --datadir=/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc\
     --beacon-nodes='http://127.0.0.1:37050' \
     --init-slashing-protection \
     --suggested-fee-recipient=0x47102e476Bb96e616756ea7701C227547080Ea48 \
@@ -338,23 +338,23 @@ nohup lighthouse validator_client \
     --http-port=40933 --http-allow-origin='*' \
     --metrics --metrics-address=127.0.0.1 \
     --metrics-port=57629 --metrics-allow-origin='*' \
-     >>/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc/cl.vc.log 2>&1 &
+     >>/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}+${USER}/__DEV__/envs/MyEnv/2/cl/vc/cl.vc.log 2>&1 &
 ```
 
 #### Management of multiple ENVs
 
 Since each ENV can specify its own binaries(lighthouse/reth/geth), the multi-ENV mode is of great significance for functional comparison, testing and problem debugging between different versions or between different features.
 
-Managing multiple ENVs, or in other words, managing custom ENVs is not much different from the default ENV because resource allocation and process running between different ENVs are completely isolated in `nb dev`.
+Managing multiple ENVs, or in other words, managing custom ENVs is not much different from the default ENV because resource allocation and process running between different ENVs are completely isolated in `exp dev`.
 
 The only difference is that you do not have to explicitly specify the env name when managing the default ENV, but for non-default ENVs, all operations must explicitly specify the name of the target env.
 
-For example, for the default ENV, `nb dev stop` is equal to `nb dev stop -e DEFAULT`, both styles are ok; but there is only one style for a custom ENV, that is `nb dev stop -e YourCustomEnv`.
+For example, for the default ENV, `exp dev stop` is equal to `exp dev stop -e DEFAULT`, both styles are ok; but there is only one style for a custom ENV, that is `exp dev stop -e YourCustomEnv`.
 
 Also, there are some subcommands designed specifically for multi-ENV management:
-- `nb dev list`, list the names of all existing ENVs
-- `nb dev show-all`, list the details of all existing ENVs
-- `nb dev destroy-all`, destroy all existing ENVs
+- `exp dev list`, list the names of all existing ENVs
+- `exp dev show-all`, list the details of all existing ENVs
+- `exp dev destroy-all`, destroy all existing ENVs
 
 #### Internal organization of data and logs
 
@@ -362,8 +362,8 @@ All data and logs are located under `/tmp/__CHAIN_DEV__`, so you should have a `
 
 Let's check their structures:
 ```
-# tree -F -L 2 /tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}_${USER}/__DEV__/
-/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}_${USER}/__DEV__/
+# tree -F -L 2 /tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}_${USER}/__DEV__/
+/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}_${USER}/__DEV__/
 ├── envs/               # existing ENVs
 │   ├── DEFAULT/        # the default ENV
 │   ├── env_A/          # a custom ENV named 'env_A'
@@ -373,7 +373,7 @@ Let's check their structures:
 
 Let's check the inner structure of 'DEFAULT':
 ```
-/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}_${USER}/__DEV__/envs/DEFAULT/
+/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}_${USER}/__DEV__/envs/DEFAULT/
 ├── 0/           # the original node of this ENV, can *not* be removed dynamicly
 ├── 1/           # the first ordinary node of this ENV, can be removed dynamicly
 ├── 2/           # the second ordinary node of this ENV, can be removed dynamicly
@@ -383,7 +383,7 @@ Let's check the inner structure of 'DEFAULT':
 
 Then further check the internal structure of a node:
 ```
-/tmp/__CHAIN_DEV__/beacon_based/NBNET/${HOST}_${USER}/__DEV__/envs/MyEnv/1/
+/tmp/__CHAIN_DEV__/beacon_based/EXPCHAIN/${HOST}_${USER}/__DEV__/envs/MyEnv/1/
 ├── auth.jwt                # the jwt used to build connection between cl and el
 ├── cl/
 │   ├── bn/
@@ -398,10 +398,10 @@ Then further check the internal structure of a node:
 │   ├── genesis.json        # genesis file of the el
 │   └── genesis.ssz         # genesis file of the cl
 ├── genesis.tar.gz          # a tar.gz package of the genesis dir
-└── mgmt.log                # management log of the `nb` system
+└── mgmt.log                # management log of the `exp` system
 ```
 
-The `nb` management operations of `nb dev` will be logged in the `mgmt.log` file.
+The `exp` management operations of `exp dev` will be logged in the `mgmt.log` file.
 
 #### OS compatibility
 

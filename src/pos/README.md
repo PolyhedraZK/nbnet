@@ -5,10 +5,10 @@
 Usage:
 
 ```
-# `nb deposit -h`
+# `exp deposit -h`
 Manage deposit operations
 
-Usage: nb deposit --rpc-endpoint <RPC_ENDPOINT> \
+Usage: exp deposit --rpc-endpoint <RPC_ENDPOINT> \
             --deposit-contract-addr <DEPOSIT_CONTRACT_ADDR> \
             --deposit-data-json-path <DEPOSIT_DATA_JSON_PATH> \
             --wallet-signkey-path <WALLET_SIGNKEY_PATH>
@@ -27,10 +27,10 @@ Options:
 ```
 
 ```
-# nb dev/ddev deposit -h
+# exp dev/ddev deposit -h
 Proof-of-Stake, deposit
 
-Usage: nb dev/ddev {deposit|-d} [OPTIONS] --nodes <NODES>
+Usage: exp dev/ddev {deposit|-d} [OPTIONS] --nodes <NODES>
 
 Options:
   -e, --env-name <ENV_NAME>
@@ -52,10 +52,10 @@ Options:
 ```
 
 ```
-# nb dev/ddev validator-exit -h
+# exp dev/ddev validator-exit -h
 Proof-of-Stake, exit all validators on the target node[s]
 
-Usage: nb dev/ddev {validator-exit|-D} [OPTIONS] --nodes <NODES>
+Usage: exp dev/ddev {validator-exit|-D} [OPTIONS] --nodes <NODES>
 
 Options:
   -e, --env-name <ENV_NAME>
@@ -74,19 +74,19 @@ Workflow:
     - Another way is to use the `lighthouse validator-manager create`
         - So there is no need to prepare an extra tool
         - You need to prepare a mnemonic in advance
-            - E.g., create a new one with `nb new-mnemonic`
+            - E.g., create a new one with `exp new-mnemonic`
 2. `CONTRACT='0x4242424242424242424242424242424242424242'`
 3. `KEY='/PATH/TO/YOUR/PRIVATE/KEY'`
 4. `RPC='http://localhost:8545'`
-5. `nb deposit -C $CONTRACT -D deposit_data-xxx.json -W $KEY -R $RPC`
+5. `exp deposit -C $CONTRACT -D deposit_data-xxx.json -W $KEY -R $RPC`
 
 Example:
 
 ```shell
 # Create a devnet with 1 non-fuhrer node
-nb dev create -n 1
+exp dev create -n 1
 
-NODE_HOME=$(nb dev | jq '.meta.nodes."1".node_home' | tr -d '"')
+NODE_HOME=$(exp dev | jq '.meta.nodes."1".node_home' | tr -d '"')
 
 TESTNET_DIR="${NODE_HOME}/genesis"
 
@@ -96,22 +96,22 @@ CONTRACT=$(grep -Po '(?<=DEPOSIT_CONTRACT_ADDRESS:)\s*[\w]+' ${CFG_PATH})
 VC_DATA_DIR="${NODE_HOME}/cl/vc"
 VC_API_TOKEN="${VC_DATA_DIR}/validators/api-token.txt"
 
-EL_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.el_rpc')
+EL_RPC_PORT=$(exp dev | jq '.meta.nodes."1".ports.el_rpc')
 EL_RPC_ENDPOINT="http://localhost:${EL_RPC_PORT}"
 
-BN_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.cl_bn_rpc')
+BN_RPC_PORT=$(exp dev | jq '.meta.nodes."1".ports.cl_bn_rpc')
 BN_RPC_ENDPOINT="http://localhost:${BN_RPC_PORT}"
 
-VC_RPC_PORT=$(nb dev | jq '.meta.nodes."1".ports.cl_vc_rpc')
+VC_RPC_PORT=$(exp dev | jq '.meta.nodes."1".ports.cl_vc_rpc')
 VC_RPC_ENDPOINT="http://localhost:${VC_RPC_PORT}"
 
-wallet=$(nb dev | jq '[.meta.premined_accounts][0]')
+wallet=$(exp dev | jq '[.meta.premined_accounts][0]')
 WALLET_ADDR=$(echo ${wallet} | jq 'keys[0]' | tr -d '"')
 WALLET_KEY=$(echo ${wallet} | jq '[.[]][0].secretKey' | tr -d '"')
 WALLET_KEY_PATH="wallet_key"
 printf "${WALLET_KEY}" >${WALLET_KEY_PATH}
 
-nb new-mnemonic | sed '/^$/d' >mnemonic
+exp new-mnemonic | sed '/^$/d' >mnemonic
 
 lighthouse validator-manager create \
     --testnet-dir ${TESTNET_DIR} \
@@ -130,7 +130,7 @@ lighthouse validator-manager import \
     --vc-url ${VC_RPC_ENDPOINT} \
     --vc-token ${VC_API_TOKEN}
 
-nb deposit -C ${CONTRACT} -D deposits.json -W ${WALLET_KEY_PATH} -R ${EL_RPC_ENDPOINT}
+exp deposit -C ${CONTRACT} -D deposits.json -W ${WALLET_KEY_PATH} -R ${EL_RPC_ENDPOINT}
 
 # check status
 curl "${BN_RPC_ENDPOINT}/lighthouse/eth1/deposit_cache" -H "accept: application/json" | jq
@@ -146,11 +146,11 @@ Embed Example:
 
 ```shell
 # Create a devnet with 2 non-fuhrer nodes
-nb dev create -n 2
+exp dev create -n 2
 
 # Deposit to all the non-fuhrer nodes
-# Check `nb dev/ddev deposit -h` for detail
-nb dev deposit -N all
+# Check `exp dev/ddev deposit -h` for detail
+exp dev deposit -N all
 ```
 
 ### Refs
