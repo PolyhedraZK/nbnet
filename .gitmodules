@@ -1,0 +1,15 @@
+[submodule "submodules/expander"]
+	path = submodules/expander
+	url = https://github.com/PolyhedraZK/EXPexpander.git
+[submodule "submodules/scdc"]
+	path = submodules/scdc
+	url = https://github.com/PolyhedraZK/EXPscdc.git
+[submodule "submodules/lighthouse"]
+	path = submodules/lighthouse
+	url = https://github.com/PolyhedraZK/EXP-lighthouse
+[submodule "submodules/go-ethereum"]
+	path = submodules/go-ethereum
+	url = https://github.com/PolyhedraZK/EXP-go-ethereum
+[submodule "submodules/reth"]
+	path = submodules/reth
+	url = https://github.com/NBnet/reth
