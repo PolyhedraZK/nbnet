@@ -30,7 +30,7 @@ General intro:
 
 Use `make bin_all` to build the necessary binaries:
 - geth
-- reth
+- reth(unstable, test only!)
 - lighthouse
 - exp
 
