@@ -557,7 +557,11 @@ if set to 'all', then apply the operation to all nodes"
     PushNodes {
         #[clap(short = 'e', long)]
         env_name: Option<String>,
-        #[clap(long)]
+        #[clap(
+            short = 'H',
+            long,
+            help = "format: <local_ip>|<public_ip>, eg. '10.0.0.10|8.8.8.8'"
+        )]
         host_addr: Option<String>,
         #[clap(
             conflicts_with = "fullnode",
