@@ -54,6 +54,7 @@ docker build --build-arg UID=$(id -u) -t ubuntu:expchain_runtime_v0 . || exit 1
 docker rm -f expchain_runtime
 
 docker run -d \
+    --restart=always \
     --user $(id -u) \
     --network=host \
     -v ${HOME}/__EXP_DATA__/tmp:/tmp \

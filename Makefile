@@ -160,7 +160,21 @@ docker_runtime: bin_scd bin_expander
 		$(shell pwd)/submodules/scdc/target/release/scd \
 		$(shell pwd)/submodules/expander/target/release/expander-exec
 
-ddev_docker_runtime: install bin_scd bin_expander
+ddev_docker_runtime: ddev_docker_runtime_prepare ddev_docker_runtime_alone
+
+ddev_docker_runtime_alone:
+	exp ddev host-exec -c \
+		'bash -x /tmp/ddr.sh /tmp/Dockerfile /tmp/scd /tmp/expander-exec'
+	@ printf '\n\x1b[0;33mThe new contents of the $${EXP_DDEV_HOSTS_JSON} file should be:\x1b[0m\n'
+	@ exp ddev show-hosts --json \
+		| sed -r 's/("ssh_port": )[0-9]+/\12222/g' \
+		| sed -r 's/("ssh_user": ")\w*/\1exp/g'
+	@ printf '\n\x1b[0;33mThe new value of the $${EXP_DDEV_HOSTS} should be:\x1b[0m\n'
+	@ exp ddev show-hosts
+
+ddev_docker_runtime_prepare: install bin_scd bin_expander
+	# exp ddev host-exec -c \
+	# 	'sudo su -c "apt update && apt install -y docker.io"'
 	exp ddev host-put-file \
 		-l submodules/scdc/target/release/scd \
 		-r /tmp/scd
@@ -170,14 +184,6 @@ ddev_docker_runtime: install bin_scd bin_expander
 	exp ddev host-put-file -l tools/entrypoint.sh -r /tmp/entrypoint.sh
 	exp ddev host-put-file -l tools/Dockerfile -r /tmp/Dockerfile
 	exp ddev host-put-file -l tools/ddev_docker_runtime.sh -r /tmp/ddr.sh
-	exp ddev host-exec -c \
-		'bash -x /tmp/ddr.sh /tmp/Dockerfile /tmp/scd /tmp/expander-exec'
-	@ printf '\n\x1b[0;33mThe new contents of the $${EXP_DDEV_HOSTS_JSON} file should be:\x1b[0m\n'
-	@ exp ddev show-hosts --json \
-		| sed -r 's/("ssh_port": )[0-9]+/\12222/g' \
-		| sed -r 's/("ssh_user": ")\w*/\1exp/g'
-	@ printf '\n\x1b[0;33mThe new value of the $${EXP_DDEV_HOSTS} should be:\x1b[0m\n'
-	@ exp ddev show-hosts
 
 git_fetch_reset:
 	git fetch
