@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: lints
-      run: cargo || (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y); go || (cd /tmp; wget https://go.dev/dl/go1.22.8.linux-amd64.tar.gz -O go.tgz; tar -xpf go.tgz); source ~/.cargo/env; export PATH=/tmp/go/bin:$PATH; rustup toolchain add nightly; make git_submods; make lint; make bin_all
+      run: cargo || (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y); go || (cd /tmp; wget https://go.dev/dl/go1.22.8.linux-amd64.tar.gz -O go.tgz; tar -xpf go.tgz); source ~/.cargo/env; export PATH=/tmp/go/bin:$PATH; rustup toolchain add nightly; make git_submods; make lint; make bin_geth && make bin_lighthouse
