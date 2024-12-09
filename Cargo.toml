@@ -11,7 +11,7 @@ homepage = "https://github.com/PolyhedraZK/EXPchain"
 repository = "https://github.com/PolyhedraZK/EXPchain.git"
 
 [dependencies]
-clap = { version = "4.5", features = [ "cargo", "derive" ] }
+clap = { version = "4.5.23", features = [ "cargo", "derive" ] }
 clap_complete = "4.5"
 
 serde = { version = "1.0", features = [ "derive" ] }
@@ -22,7 +22,7 @@ regex = "1.11.1"
 
 bip39 = { package = "tiny-bip39", version = "2.0.0" }
 
-alloy = { version = "0.7.2", features = [
+alloy = { version = "0.7.3", features = [
     "network",
     "providers",
     "rpc",
@@ -37,9 +37,9 @@ alloy = { version = "0.7.2", features = [
 sb = { package = "tokio", version = "1.41.0", features = [ "rt" ] }
 
 # self-maintained crates
-ruc = { version = "7.7.3", features = [ "http", "algo_rand" ] }
+ruc = { version = "7.8.5", features = [ "http", "algo_rand" ] }
 
-chaindev = "0.52.6"
+chaindev = "0.52.8"
 vsdb = { version = "3.0", default-features = false }
 
 [build-dependencies]
